@@ -1,0 +1,7 @@
+.incoming-shipment-element-add {
+	border-top:1px solid var(--secondary);
+	border-bottom:1px solid var(--secondary);
+	border-left: 3px inset var(--cyan);
+	border-right: 3px inset var(--cyan);
+	
+}

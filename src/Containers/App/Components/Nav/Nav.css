@@ -1,0 +1,46 @@
+
+:root {
+	--nav-bar-text-color: #96979c;
+	--nav-bar-text-hover-color: white;
+	--table-border: #4fb1f6;
+}
+
+
+nav {
+	overflow: visible;
+}
+ul#menu .parent > .child {
+	position: absolute;
+	border: none;
+	max-height: 0;
+	display: block;
+	overflow: hidden;
+	padding: 0;
+	top: 90%;
+}
+ul#menu a {
+	color: inherit;
+}
+ul#menu li {
+	color: var(--nav-bar-text-color);
+}
+ul.child a.nav-link
+{
+	padding: 0;
+}
+ul#menu .parent {
+	position: relative;
+}
+ul#menu .parent:hover > .child {
+	box-shadow: 0px 4px 4px 3px rgb(0, 0, 0, 0.34);
+	border-top: 4px solid var(--table-border);
+	transition: max-height 1s ease-in-out;
+	max-height: 1000px;
+}
+ul#menu .parent:hover {
+	color: var(--nav-bar-text-hover-color);
+}
+ul#menu ul.child li:hover {
+	background-color: var(--table-border) !important;
+	color: white;
+}
