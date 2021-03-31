@@ -1,5 +1,3 @@
-:root {
-}
 
 * {
 	margin: 0;
@@ -37,10 +35,6 @@ td {
 }
 
 
-.is-invalid
-{
-
-}
 .is-invalid>.form-control
 {
 	border:1px solid var(--danger);
