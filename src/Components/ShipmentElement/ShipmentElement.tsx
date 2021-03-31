@@ -14,7 +14,7 @@ type IShipmentElementProps = {
 	SetQuantity: Function;
 	handleRemove: Function;
 	flavourList: Flavour[];
-	limit:number;
+	limit?:number;
 };
 type IShipmentElementState = {};
 export default class ShipmentElement extends React.Component<IShipmentElementProps, IShipmentElementState> {
@@ -64,7 +64,7 @@ export default class ShipmentElement extends React.Component<IShipmentElementPro
 				</div>
 				<div className={`form-group ${ShipmentEntity.FlavourId}`}>
 					<label htmlFor='flavour'>Flavour</label>
-					<select name="FlavourId" onChange={this.handleChange} value={ShipmentEntity.FlavourId}>
+					<select name="FlavourId"  id="flavour" className="form-control" onChange={this.handleChange} value={ShipmentEntity.FlavourId}>
 						<option  disabled  value='-1'>-- Select Your Option --</option>
 						{flavourList &&
 							flavourList.length > 0 &&

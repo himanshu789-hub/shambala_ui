@@ -41,20 +41,21 @@ const CaretSize = function CaretSize(props: ICaretSizeProps) {
 		}
 	};
 	return (
-		<div className={`form-group ${!props.Size ? 'disabled' : ''} ${!props.Limit?'':quantity>props.Limit?'is-invalid':''}`}>
+		<div className={`form-group p-1 ${!props.Size ? 'disabled' : ''} ${!props.Limit?'':quantity>props.Limit?'border border-danger rounded is-invalid':''}`}>
 			<label htmlFor=''>Quantity</label>
 			<div className='d-flex justify-content-around'>
-				<div className={`form-group ${caret == 0 ? 'is-invalid' : ''}`}>
+				<div className={`form-group `}>
 					<input className='form-control' value={caret} onChange={handleCaretChange} />
 					<small className='form-text text-muted'>Caret</small>
-					<small className='invalid-feedback'>Cannot be Zero</small>
 				</div>
 				<label className='pl-2 pr-2 font-weight-bold'>:</label>
-				<div className={`form-group`}>
+				<div className={`form-group ${pieces>props.Size?'is-invalid':''}`}>
 					<input className='form-control' value={pieces} onChange={handlePiecesChange} />
 					<small className='form-text text-muted'>Pieces</small>
+					<small className="invalid-feedback">Atmost {props.Size}</small>
 				</div>
 			</div>
+			<div className="invalid-feedback pl-1">Quantity Exceed</div>
 		</div>
 	);
 };

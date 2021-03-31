@@ -30,7 +30,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 	}
 	componentWillReceiveProps(nextProps: IShipmentListProps) {
 		if (nextProps != this.props) {
-			const { Products } = this.props;
+			const { Products } = nextProps;
 			let products = new Map<string, Product>();
 			if (Products.length > 0) {
 				Products.forEach(function (value, index) {
@@ -145,12 +145,6 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			return { Shipments: [...IncomingShipments.filter(e => e.Id != Id)] };
 		});
 	};
-	getFlavourLimit(productId: number, flavourId: number) {
-		const { Products } = this.state;
-		if (!productId || !flavourId) return undefined;
-		const Product = Products.get(productId + '');
-		return Product?.Flavour.find(e => e.Id === flavourId)?.Quantity;
-	}
 	render() {
 		const { Shipments: IncomingShipments } = this.state;
 
@@ -160,10 +154,10 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 					{IncomingShipments &&
 						this._componentListProvider &&
 						IncomingShipments.map((value, index) => {
-							const componentList = (this
-								._componentListProvider as ComponentProductListProvider).provideProductListBySubscriptionId(value.Id);
+							const mediator = this._componentListProvider as ComponentProductListProvider;
+							const componentList = mediator.provideProductListBySubscriptionId(value.Id);
 							const flavourList = this._componentListProvider?.getFlavours(value.Id) ?? [];
-							const limit = this.getFlavourLimit(value.ProductId, value.FlavourId);
+							let limit = mediator.getFlavourLimit(value.ProductId, value.FlavourId);
 							return (
 								<ShipmentElement
 									key={value.Id}
@@ -171,7 +165,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 									handleChange={this.handleChange}
 									flavourList={flavourList}
 									ShipmentEntity={value}
-									limit={limit ?? 0}
+									limit={limit}
 									SetQuantity={this.setQuantity}
 									handleRemove={this.handleRemove}
 									SelectProductCaretDetails={this.selectProductCaretDetails}

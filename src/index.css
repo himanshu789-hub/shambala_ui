@@ -41,13 +41,14 @@ td {
 {
 
 }
-.is-invalid .form-control
+.is-invalid>.form-control
 {
 	border:1px solid var(--danger);
 }
-.is-invalid .invalid-feedback
+.is-invalid>.invalid-feedback
 {
  display: block;
+ transition: all 1s ease-in;
 }
 
 button.action {

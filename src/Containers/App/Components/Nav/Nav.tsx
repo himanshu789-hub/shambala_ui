@@ -75,12 +75,12 @@ const Nav = React.memo(function Nav() {
 					</a>
 					<ul className='child dropdown-menu'>
 						<li className='dropdown-item'>
-							<Link to='/incoming/add' className='nav-link' >
+							<Link to='/outgoing/add' className='nav-link' >
 							<i className='fa fa-plus'></i> Add
                             </Link>
 						</li>
 						<li className='dropdown-item'>
-							<Link to='/incoming/search' className='nav-link' >
+							<Link to='/outgoing/search' className='nav-link' >
 							<i className='fa fa-list-alt'></i> Search
                             </Link>
 						</li>

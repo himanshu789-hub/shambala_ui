@@ -170,7 +170,12 @@ export default class ComponentProductListMediator {
 			this._deductProductFlavourByFlavourId(productId, flavourId);
 		}
 	}
-
+	getFlavourLimit(productId: number, flavourId: number) {
+		const Products = this._cloneProductFlavours;
+		if (!productId || !flavourId) return undefined;
+		const Flavours = Products.get(productId);
+		return Flavours?.find(e => e.Id === flavourId)?.Quantity;
+	}
 	getFlavours(subscriptionId: number): Flavour[] {
 		if (!this._componentMappedProduct.has(subscriptionId)) return [];
 		const productId = this._componentMappedProduct.get(subscriptionId) as number;
