@@ -15,7 +15,8 @@ export interface IFlavourMediator {
 	IsFlavourDeleted(productId: number, flavourId: number): boolean;
 	DeductFlavour(productId: number, flavourId: number): void;
 	IsSubscribed(subcriptionId: number, componentId: number): boolean;
-	RestoreFlavour(productId: number, flavourId: number): void;
+	RestoreFlavour(productId: number, flavourId: number): boolean;
+	GetSUbscribedFlavourId(subscriptionId: number, componentId: number): number;
 }
 
 export default class FlavourMediator {
@@ -92,6 +93,14 @@ export default class FlavourMediator {
 	}
 	private _checkSubscription(subscribeId: number) {
 		if (!this._componentFlavourChoosen.has(subscribeId)) throw new Error('Subscription Id Not Set');
+	}
+
+	GetSUbscribedFlavourId(subscriptionId: number, componentId: number): number {
+		const ComponentMapFlavour = this._componentFlavourChoosen.get(subscriptionId);
+		if (!ComponentMapFlavour) throw new Error('Unkwnown Subscription');
+		const FlavourInfo = ComponentMapFlavour.get(componentId);
+		if (!FlavourInfo) throw new Error('Unkwnown Component');
+		return FlavourInfo.Id as number;
 	}
 	GetFlavours(subscriptionId: number, componentId: number, productId: number): Flavour[] {
 		this._checkArgumentNullException(subscriptionId, componentId, productId);
@@ -175,7 +184,7 @@ export default class FlavourMediator {
 			return true;
 		} else throw new Error('Unresgistering Unknown Component');
 	}
-	IsSubscribed(subcriptionId: number, componentId: number):boolean {
+	IsSubscribed(subcriptionId: number, componentId: number): boolean {
 		const ComponentMapFlavour = this._componentFlavourChoosen.get(subcriptionId);
 		if (!ComponentMapFlavour) return false;
 		return ComponentMapFlavour.has(componentId);
@@ -193,10 +202,11 @@ export default class FlavourMediator {
 		flavours = flavours.filter(e => e.Id != flavourId);
 		this._deletedFlavour.push({ Id: flavourId, ProductId: productId });
 	}
-	public RestoreFlavour(productId: number, flavourId: number) {
+	public RestoreFlavour(productId: number, flavourId: number):boolean {
 		this._flavours.set(productId, [
 			...(this._flavours.get(productId) ?? []),
 			{ ...this._getFlavourInfoFromProductId(productId, flavourId) },
 		]);
+		return true;
 	}
 }
