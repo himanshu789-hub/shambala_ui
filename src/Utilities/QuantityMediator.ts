@@ -10,10 +10,11 @@ export interface IQuantityMediator {
 	Unsubscibe(subscriptionId: number, componentId: number): void;
 	ChangeQuantity(subscriptionId: number, componentId: number, productId: number, flavourId: number, quantity: number): boolean;
 	Subscribe(subscriptionId: number, componentId: number, productId: number, flavourId: number, quantity: number): void;
+	IsQuantitySubscribed(subscriptionId: number, componentId: number): boolean;
 }
 type QuantityInfo = Map<number, Map<number, QuantityFlavourInfo>>;
 
-export default class QuantityMediator implements IQuantityMediator{
+export default class QuantityMediator implements IQuantityMediator {
 	_productsWithFlavourLimit: Map<number, Flavour[]>;
 	_cloneProductWithFlavourList: Map<number, Flavour[]>;
 	_componentQuantity: QuantityInfo;
@@ -28,6 +29,11 @@ export default class QuantityMediator implements IQuantityMediator{
 			this._productsWithFlavourLimit.set(Product.Id, CloneFlavours);
 			this._cloneProductWithFlavourList.set(Product.Id, [...CloneFlavours]);
 		}
+	}
+	IsQuantitySubscribed(subscriptionId: number, componentId: number): boolean {
+		const ComponentMapQUantity = this._componentQuantity.get(subscriptionId);
+		if (!ComponentMapQUantity) return false;
+		return ComponentMapQUantity.has(componentId);
 	}
 	private _checkSubscription(subscribeId: number) {
 		if (!this._componentQuantity.has(subscribeId)) throw new Error('Subscription Id Not Set');

@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import ComponentProductMediator, { IProductMediator } from './ComponentProductMediator';
+import ComponentProductMediator, { IProductMediator } from './ProductMediator';
 type ReactComponent = Component<any, any>;
 
 class ProductObserver {
@@ -8,7 +8,7 @@ class ProductObserver {
 	private _subscriptionId: number;
 	private _subject: IProductSubject;
 	private _component: ReactComponent;
-	constructor(subscriptionId: number, componentId: number, component: ReactComponent, subject: IProductSubject) {
+	constructor(subscriptionId: number, componentId: number, component: ReactComponent) {
 		this._subscriptionId = subscriptionId;
 		this._componentId = componentId;
 		this._component = component;

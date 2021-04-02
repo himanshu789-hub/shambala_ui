@@ -11,10 +11,11 @@ export interface IFlavourMediator {
 	Subscribe(subscriptionId: number, componentId: number, productId: number, flavourId: number): void;
 	IsFlavourExhausted(productId: number): boolean;
 	ChangeSubscription(subscriptionId: number, componentId: number, productId: number, flavourId: number): boolean;
-	Unsubscribe(subscriptionId: number, componentId: number, flavourId: number): boolean;
+	Unsubscribe(subscriptionId: number, componentId: number): boolean;
 	IsFlavourDeleted(productId: number, flavourId: number): boolean;
-	DeductFlavour(productId: number, flavourId: number):void;
-	RestoreFlavour(productId: number, flavourId: number):void;
+	DeductFlavour(productId: number, flavourId: number): void;
+	IsSubscribed(subcriptionId: number, componentId: number): boolean;
+	RestoreFlavour(productId: number, flavourId: number): void;
 }
 
 export default class FlavourMediator {
@@ -163,16 +164,21 @@ export default class FlavourMediator {
 		}
 		throw new Error('Changing Subscription For Unregister Component');
 	}
-	Unsubscribe(subscriptionId: number, componentId: number, flavourId: number): boolean {
-		this._checkArgumentNullException(subscriptionId, componentId, flavourId);
+	Unsubscribe(subscriptionId: number, componentId: number): boolean {
+		this._checkArgumentNullException(subscriptionId, componentId);
 		this._checkSubscription(subscriptionId);
 		const SubscriptionComponentMapFlavour = this._componentFlavourChoosen.get(subscriptionId) as FlavourInfo;
 		if (SubscriptionComponentMapFlavour.has(componentId)) {
 			const FlavourWithProductKey = SubscriptionComponentMapFlavour.get(componentId) as FlavourWithProductKey;
 			SubscriptionComponentMapFlavour.delete(componentId);
-			this._restoreFlavour(subscriptionId, FlavourWithProductKey.ProductId, flavourId);
+			this._restoreFlavour(subscriptionId, FlavourWithProductKey.ProductId, FlavourWithProductKey.Id);
 			return true;
 		} else throw new Error('Unresgistering Unknown Component');
+	}
+	IsSubscribed(subcriptionId: number, componentId: number):boolean {
+		const ComponentMapFlavour = this._componentFlavourChoosen.get(subcriptionId);
+		if (!ComponentMapFlavour) return false;
+		return ComponentMapFlavour.has(componentId);
 	}
 	IsFlavourDeleted(productId: number, flavourId: number): boolean {
 		this._checkArgumentNullException(productId, flavourId);
