@@ -5,10 +5,15 @@ type QuantityFlavourInfo = {
 	ProductId: number;
 	Quantity: number;
 };
-
+export interface IQuantityMediator {
+	GetQuantityLimit(productId: number, flavourId: number): number;
+	Unsubscibe(subscriptionId: number, componentId: number): void;
+	ChangeQuantity(subscriptionId: number, componentId: number, productId: number, flavourId: number, quantity: number): boolean;
+	Subscribe(subscriptionId: number, componentId: number, productId: number, flavourId: number, quantity: number): void;
+}
 type QuantityInfo = Map<number, Map<number, QuantityFlavourInfo>>;
 
-export default class QuantityMediator {
+export default class QuantityMediator implements IQuantityMediator{
 	_productsWithFlavourLimit: Map<number, Flavour[]>;
 	_cloneProductWithFlavourList: Map<number, Flavour[]>;
 	_componentQuantity: QuantityInfo;
