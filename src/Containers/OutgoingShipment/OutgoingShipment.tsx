@@ -25,7 +25,7 @@ class OutgoingShipmentAdd extends React.Component<OutgoingShipmentAddProps, Outg
 	render() {
 		return (
 			<div className='outgoing-add'>
-				<ShipmentList Products={this.state.Products} handleSubmit={this.handleSubmit} />
+				<ShipmentList Products={this.state.Products} handleSubmit={this.handleSubmit} ShouldLimitQuantity={true}/>
 			</div>
 		);
 	}

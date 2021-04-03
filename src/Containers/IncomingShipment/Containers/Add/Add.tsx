@@ -33,8 +33,8 @@ export default class IncomingAdd extends React.Component<IIncomingAddProps, IInc
 	render() {
 		const { Products } = this.state;
 		return (
-			<div className="incmoming-add">
-				<ShipmentList Products={Products} handleSubmit={this.handleSubmit} />
+			<div className='incmoming-add'>
+				<ShipmentList Products={Products} handleSubmit={this.handleSubmit} ShouldLimitQuantity={false} />
 			</div>
 		);
 	}

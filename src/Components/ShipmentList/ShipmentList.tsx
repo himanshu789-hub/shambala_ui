@@ -8,6 +8,7 @@ import ComponentProductListProvider from 'Utilities/ComponentProductListProvider
 type IShipmentListProps = {
 	handleSubmit: Function;
 	Products: Product[];
+	ShouldLimitQuantity: boolean;
 };
 type IShipmentListState = {
 	Products: Map<string, Product>;
