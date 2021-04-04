@@ -1,4 +1,4 @@
-import {Product} from 'Types/Product';
+import {Product} from 'Types/types';
 import {AxiosResponse} from 'axios';
 
 export default interface IProductService {

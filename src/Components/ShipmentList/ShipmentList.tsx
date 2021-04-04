@@ -1,7 +1,6 @@
 import React, { ChangeEvent, SyntheticEvent } from 'react';
 import Action from 'Components/Action/Action';
-import { CaretDetails, Flavour, Product } from 'Types/Product';
-import { IShipmentElement } from 'Types/ShipmentElement';
+import { CaretDetails, Flavour, Product,IShipmentElement } from 'Types/types';
 import ShipmentElement from 'Components/ShipmentElement/ShipmentElement';
 import ComponentProductListProvider from 'Utilities/ComponentProductListProvider';
 

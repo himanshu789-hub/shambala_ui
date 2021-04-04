@@ -1,10 +1,9 @@
-import axios, { AxiosResponse } from 'axios';
-import IProductService from 'Contracts/services/IProductService';
-import { Product } from 'Types/Product';
+import  { AxiosResponse } from 'axios';
+import IProductService from 'Contracts/Services/IProductService';
+import { Product } from 'Types/types';
 import { productsWithLimit, productsWithoutLimit } from 'Mock/Product';
 import MockAdapter from 'axios-mock-adapter';
-
-const AxiosClient = axios.create({ baseURL: '/', headers: { 'Content-Type': 'application/json' } });
+import {ProductAxiosClient as AxiosClient} from 'HttpClient/Axios';
 
 let mock = new MockAdapter(AxiosClient);
 

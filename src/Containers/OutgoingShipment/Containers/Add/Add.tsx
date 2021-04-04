@@ -1,22 +1,21 @@
 import React from 'react';
 import ShipmentList from 'Components/ShipmentList/ShipmentList';
-import IProductService from 'Contracts/services/IProductService';
+import IProductService from 'Contracts/Services/IProductService';
 import ProductService from 'Services/ProductService';
-import { Product } from 'Types/Product';
-import { Route, Switch, useRouteMatch } from 'react-router';
+import { Product } from 'Types/types';
 
 type OutgoingShipmentAddProps = {};
 type OutgoingShipmentAddState = {
 	Products: Product[];
 };
-class OutgoingShipmentAdd extends React.Component<OutgoingShipmentAddProps, OutgoingShipmentAddState> {
+export default class OutgoingShipmentAdd extends React.Component<OutgoingShipmentAddProps, OutgoingShipmentAddState> {
 	_productService: IProductService;
 	constructor(props: OutgoingShipmentAddProps) {
 		super(props);
 		this._productService = new ProductService();
-		this.state={
-			Products:[]
-		}
+		this.state = {
+			Products: [],
+		};
 		this.handleSubmit = this.handleSubmit.bind(this);
 	}
 	handleSubmit() {
@@ -25,7 +24,7 @@ class OutgoingShipmentAdd extends React.Component<OutgoingShipmentAddProps, Outg
 	render() {
 		return (
 			<div className='outgoing-add'>
-				<ShipmentList Products={this.state.Products} handleSubmit={this.handleSubmit} ShouldLimitQuantity={true}/>
+				<ShipmentList Products={this.state.Products} handleSubmit={this.handleSubmit} ShouldLimitQuantity={true} />
 			</div>
 		);
 	}
@@ -34,17 +33,4 @@ class OutgoingShipmentAdd extends React.Component<OutgoingShipmentAddProps, Outg
 			this.setState({ Products: res.data });
 		});
 	}
-}
-
-export default function OutgoingShipment() {
-	const match = useRouteMatch();
-	return (
-		<div className='outgoing'>
-			<Switch>
-				<Route path={match.path + '/add'}>
-					<OutgoingShipmentAdd />
-				</Route>
-			</Switch>
-		</div>
-	);
 }

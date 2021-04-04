@@ -1,9 +1,8 @@
 import React, { ChangeEvent, SyntheticEvent } from 'react';
-import { Product } from 'Types/Product';
-import { IShipmentElement } from 'Types/ShipmentElement';
+import { Product,IShipmentElement } from 'Types/types';
 import ShipmentList from 'Components/ShipmentList/ShipmentList';
 import ProductService from 'Services/ProductService';
-import IProductService from 'Contracts/services/IProductService';
+import IProductService from 'Contracts/Services/IProductService';
 
 type IIncomingAddProps = {};
 type IIncomingAddState = {

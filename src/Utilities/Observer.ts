@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import MediatorSubject from './MediatorWrapper';
+import MediatorSubject from './MediatorSubject';
 
 export type ReactComponent = Component<any, any>;
 

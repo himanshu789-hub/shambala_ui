@@ -1,6 +1,5 @@
 import React, { ChangeEvent, SyntheticEvent } from 'react';
-import { CaretDetails, Flavour } from 'Types/Product';
-import { IShipmentElement } from 'Types/ShipmentElement';
+import { CaretDetails, Flavour,IShipmentElement } from 'Types/types';
 import CaretSizeInput from 'Components/CaretSize/CaretSize';
 import { provideValidNumber } from 'Utilities/Utilities';
 import './ShipmentElement.css';

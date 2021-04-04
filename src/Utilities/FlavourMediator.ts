@@ -1,4 +1,4 @@
-import { Flavour, Product } from 'Types/Product';
+import { Flavour, Product } from 'Types/types';
 
 type FlavourWithProductKey = {
 	Id: number;

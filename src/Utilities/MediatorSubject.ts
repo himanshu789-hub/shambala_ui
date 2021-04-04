@@ -1,5 +1,5 @@
 import { ProductInfo } from 'Types/Mediator';
-import { Flavour, Product } from 'Types/Product';
+import { Flavour, Product } from 'Types/types';
 import FlavourMediator, { IFlavourMediator } from './FlavourMediator';
 import QuantityMediator, { IQuantityMediator } from './QuantityMediator';
 import ComponentProductMediator, { IProductMediator } from './ProductMediator';
@@ -48,7 +48,7 @@ export default class MediatorSubject {
 							this._flavourMediator.RestoreFlavour(productId, previoudFlavourId) &&
 							this._productMediator.IsProductDeleted(productId) &&
 							this._productMediator.RestoreProduct(productId);
-						this._quantityMediator.IsQuantitySubscribed(subscriptionId, componentId) &&
+     						this._quantityMediator.IsQuantitySubscribed(subscriptionId, componentId) &&
 							this._quantityMediator.Unsubscibe(subscriptionId, componentId);
 					}
 					if (this._flavourMediator.IsFlavourExhausted(productId)) {
