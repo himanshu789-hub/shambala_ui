@@ -86,6 +86,26 @@ const Nav = React.memo(function Nav() {
 						</li>
 					</ul>
 				</li>
+					<li className='nav-item parent'>
+					<a className='nav-link' href='#'>
+						<span className='d-inline-flex flex-column justify-content-center align-items-center'>
+							<i className='fa fa-shopping-bag fa-2x'></i>
+							<label>Invoices</label>
+						</span>
+					</a>
+					<ul className='child dropdown-menu'>
+						<li className='dropdown-item'>
+							<Link to='/invoice/add' className='nav-link' >
+							<i className='fa fa-plus'></i> Add
+                            </Link>
+						</li>
+						<li className='dropdown-item'>
+							<Link to='/invoice/search' className='nav-link' >
+							<i className='fa fa-list-alt'></i> Search
+                            </Link>
+						</li>
+					</ul>
+				</li>
 			</ul>
 		</nav>
 	);

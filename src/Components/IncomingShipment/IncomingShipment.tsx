@@ -1,6 +1,7 @@
 import Add from '../../Containers/IncomingShipment/Add/Add';
 import React from 'react';
 import { useRouteMatch, Route } from 'react-router';
+import Search from '../../Containers/IncomingShipment/Search/Search';
 
 const IncomingShipment = React.memo(function IncomingShipment() {
 	const math = useRouteMatch();
@@ -10,7 +11,7 @@ const IncomingShipment = React.memo(function IncomingShipment() {
 				<Add />
 			</Route>
 			<Route path={math.path + '/search'}>
-		         
+		         <Search/>
 			</Route>
 		</div>
 	);

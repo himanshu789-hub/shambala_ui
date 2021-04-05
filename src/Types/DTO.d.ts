@@ -16,7 +16,7 @@ export type Scheme = {
 	Value: number;
 };
 export type ShopInvoice = {
-	ShopId:number,SchemeId:number,Shipments:IShipmentElement[]
+	ShopId:number|undefined,SchemeId:number|undefined,Shipments:IShipmentElement[]
 }
 export type Shop = {
 	Id: number;

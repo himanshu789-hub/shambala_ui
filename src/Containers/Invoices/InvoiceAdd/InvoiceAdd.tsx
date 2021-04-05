@@ -1,8 +1,6 @@
 import { CallStatus } from 'Components/Loader/Loader';
-import IOutgoingService from 'Contracts/Services/IOutgoingShipmentService';
 import React from 'react';
-import OutgoingService from 'Services/OutgoingShipmentService';
-import { OutgoingShipmentDetails, Shop, ShopInvoice } from 'Types/DTO';
+import { ShopInvoice } from 'Types/DTO';
 import { RouteComponentProps } from 'react-router-dom';
 import ShopSelector from './Containers/ShopSelector/ShopSelector';
 import InvoiceScheme from './Containers/InvoiceScheme/InvoiceScheme';
@@ -18,12 +16,12 @@ type InvoicesState = {
 	Products: Product[];
 };
 export default class Invoice extends React.Component<IInvoiceProps, InvoicesState> {
-	_productService:IProductService;
+	_productService: IProductService;
 	constructor(props: IInvoiceProps) {
 		super(props);
 		this.state = {
 			APIStatus: CallStatus.EMPTY,
-			ShopInvoice: { SchemeId: -1, Shipments: [], ShopId: -1 },
+			ShopInvoice: { SchemeId: undefined, Shipments: [], ShopId: undefined },
 			Products: [],
 		};
 		this._productService = new ProductService();
@@ -50,19 +48,25 @@ export default class Invoice extends React.Component<IInvoiceProps, InvoicesStat
 			IsAllValid = false;
 		return IsAllValid;
 	};
-	handleSubmit=(shipments:IShipmentElement[])=>{
-		this.setState(({ShopInvoice})=>{return {ShopInvoice:{...ShopInvoice,Shipments:shipments}}});
-	}
+	handleSubmit = (shipments: IShipmentElement[]) => {
+		this.setState(({ ShopInvoice }) => {
+			return { ShopInvoice: { ...ShopInvoice, Shipments: shipments } };
+		});
+	};
 	render() {
 		const {
-			ShopInvoice: { ShopId, SchemeId },Products
+			ShopInvoice: { ShopId, SchemeId },
+			Products,
 		} = this.state;
 		return (
 			<div>
 				<ShopSelector handleSelection={this.handleSelection} />
-				<InvoiceScheme handleSchemeSelection={this.handleSelection} ShopId={this.state.ShopInvoice.ShopId} />
-				{ShopId != -1 && SchemeId != -1 && <ShipmentList Products={Products} ShouldLimitQuantity={false} handleSubmit={this.handleSubmit}/>}
+				{ShopId && <InvoiceScheme handleSchemeSelection={this.handleSelection} ShopId={this.state.ShopInvoice.ShopId} />}
+				{ShopId && SchemeId && <ShipmentList Products={Products} ShouldLimitQuantity={false} handleSubmit={this.handleSubmit} />}
 			</div>
 		);
+	}
+	componentDidMount(){
+		this._productService.GetAll().then(res=>this.setState({Products:res.data}))
 	}
 }

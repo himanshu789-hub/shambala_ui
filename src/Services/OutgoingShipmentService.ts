@@ -7,11 +7,11 @@ import {OutgoingShipmentDetails} from 'Types/DTO';
 import {OutgoingShipment} from 'Types/Types';
 
 const mock = new MockAdapter(OutgoingShipmentClient, { delayResponse: 3000 });
-mock.onGet(/\/outgoingshipment\/\d/i).reply(200, OutgoingShipmentProducts);
-mock.onGet(/\/outgoingshipment\/search/i).reply(200, OutgoingShipmentValue);
+mock.onGet(/\/outgoing\/getbyid/i).reply(200, OutgoingShipmentProducts);
+mock.onGet(/\/outgoing\/search/i).reply(200, OutgoingShipmentValue);
 export default class OutgoingService implements IOutgoingShipment {
 	GetShipmentDetailsById(Id: number): Promise<AxiosResponse<OutgoingShipmentDetails>> {
-		return OutgoingShipmentClient.get('getById/1');
+		return OutgoingShipmentClient.get('getById');
 	}
 	GetShipmentByDateAndSalesmanId(SalesmanId: number, Date: string): Promise<AxiosResponse<OutgoingShipment[]>> {
 		return OutgoingShipmentClient.get('search');

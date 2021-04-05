@@ -1,11 +1,11 @@
 import React, { ChangeEvent, SyntheticEvent } from 'react';
 import Action from 'Components/Action/Action';
-import { CaretDetails, Flavour, Product,IShipmentElement } from 'Types/Types';
+import { CaretDetails, Flavour, Product, IShipmentElement } from 'Types/Types';
 import ShipmentElement from 'Components/ShipmentElement/ShipmentElement';
 import ComponentProductListProvider from 'Utilities/ComponentProductListProvider';
 
 type IShipmentListProps = {
-	handleSubmit: (Shipments:IShipmentElement[])=>void;
+	handleSubmit: (Shipments: IShipmentElement[]) => void;
 	Products: Product[];
 	ShouldLimitQuantity: boolean;
 };
@@ -106,7 +106,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			console.log('InValid Form');
 		} else {
 			const { handleSubmit } = this.props;
-			const {Shipments} = this.state;
+			const { Shipments } = this.state;
 			handleSubmit(Shipments);
 			console.log('Valid Form');
 		}
@@ -177,5 +177,24 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				<Action handleAdd={this.addAShipment} handleProcess={this.handleSubmit} />
 			</div>
 		);
+	}
+
+	componentDidMount() {
+		const { Products } = this.props;
+		if (Products.length > 0) {
+			let products = new Map<string, Product>();
+			if (Products.length > 0) {
+				Products.forEach(function (value, index) {
+					products.set(value.Id + '', value);
+				});
+				this._products = new Map(products);
+				this._componentListProvider = new ComponentProductListProvider([
+					...Products.map(e => {
+						return { ...e };
+					}),
+				]);
+				this.setState({ Products: products });
+			}
+		}
 	}
 }

@@ -31,7 +31,7 @@ const VariableSection = function (props: VariableSectionProps) {
 };
 
 type InvoiceSchemeProps = {
-	ShopId: number;
+	ShopId: number | undefined;
 	handleSchemeSelection: (name: string, value: any) => void;
 };
 type InvoiceSchemeState = {
@@ -126,14 +126,20 @@ export default class InvoiceScheme extends React.Component<InvoiceSchemeProps, I
 	componentDidMount() {
 		const { ShopId } = this.props;
 		if (ShopId) {
-			this._schemeService.GetByShopId(ShopId).then(res => {
-				const choosenSchemeType = res.data ? SchemeType.FIXED : SchemeType.VARIABLE;
-				this.setState({ SelectedScheme: res.data, APIMessage: 'Gathering All Scheme', ChoosenSchemeType: choosenSchemeType });
-				if (choosenSchemeType) this.props.handleSchemeSelection('SchemeId', res.data.Id);
-			});
+			
+			this._schemeService
+				.GetByShopId(ShopId)
+				.then(res => {
+					const choosenSchemeType = res.data ? SchemeType.FIXED : SchemeType.VARIABLE;
+					this.setState({ SelectedScheme: res.data, APIMessage: 'Gathering All Scheme', ChoosenSchemeType: choosenSchemeType });
+					if (choosenSchemeType) this.props.handleSchemeSelection('SchemeId', res.data.Id);
+				})
+				.catch(e => this.setState({ APIStatus: CallStatus.ERROR }));
 			this._schemeService
 				.GetAll()
-				.then(res => this.setState({ SchemeList: res.data, APIMessage: undefined, APIStatus: CallStatus.LOADED }));
+				.then(res => this.setState({ SchemeList: res.data, APIMessage: undefined, APIStatus: CallStatus.LOADED }))
+				.catch(e => this.setState({ APIStatus: CallStatus.ERROR }));
+			
 		}
 	}
 }
