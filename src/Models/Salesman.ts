@@ -1,4 +1,4 @@
-import {SalesmanProperties} from 'Types/types';
+import {SalesmanProperties} from 'Types/Types';
 export class Salesman {
 	Id: number;
 	FirstName: string;

@@ -1,11 +1,11 @@
 import React, { ChangeEvent, SyntheticEvent } from 'react';
 import Action from 'Components/Action/Action';
-import { CaretDetails, Flavour, Product,IShipmentElement } from 'Types/types';
+import { CaretDetails, Flavour, Product,IShipmentElement } from 'Types/Types';
 import ShipmentElement from 'Components/ShipmentElement/ShipmentElement';
 import ComponentProductListProvider from 'Utilities/ComponentProductListProvider';
 
 type IShipmentListProps = {
-	handleSubmit: Function;
+	handleSubmit: (Shipments:IShipmentElement[])=>void;
 	Products: Product[];
 	ShouldLimitQuantity: boolean;
 };
@@ -106,7 +106,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			console.log('InValid Form');
 		} else {
 			const { handleSubmit } = this.props;
-			handleSubmit();
+			const {Shipments} = this.state;
+			handleSubmit(Shipments);
 			console.log('Valid Form');
 		}
 	}

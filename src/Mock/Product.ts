@@ -1,4 +1,4 @@
-import { Product } from 'Types/types';
+import { Product } from 'Types/Types';
 
 export let productsWithLimit: Product[] = [
 	{

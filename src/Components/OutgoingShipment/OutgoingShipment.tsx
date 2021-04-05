@@ -1,6 +1,7 @@
-import { Route, Switch, useRouteMatch } from 'react-router';
+import { Route, RouteComponentProps, Switch, useRouteMatch } from 'react-router';
 import OutgoingShipmentAdd from '../../Containers/OutgoingShipment/Containers/Add/Add';
 import OutgoingShipmentSearch from 'Containers/OutgoingShipment/Containers/Search/Search';
+import OutgoingShipmentReturn from 'Containers/OutgoingShipment/Containers/Return/Return';
 
 export default function OutgoingShipment() {
 	const match = useRouteMatch();
@@ -10,9 +11,10 @@ export default function OutgoingShipment() {
 				<Route path={match.path + '/add'}>
 					<OutgoingShipmentAdd />
 				</Route>
-				<Route path={match.path+'/search'}>
-					<OutgoingShipmentSearch/>
+				<Route path={match.path + '/search'}>
+					<OutgoingShipmentSearch />
 				</Route>
+				<Route path={match.path + '/return/:id'} component={(props: RouteComponentProps) => <OutgoingShipmentReturn {...props} />} />
 			</Switch>
 		</div>
 	);

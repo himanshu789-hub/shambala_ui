@@ -1,5 +1,5 @@
 import React, { ChangeEvent, SyntheticEvent } from 'react';
-import { Product,IShipmentElement } from 'Types/types';
+import { Product,IShipmentElement } from 'Types/Types';
 import ShipmentList from 'Components/ShipmentList/ShipmentList';
 import ProductService from 'Services/ProductService';
 import IProductService from 'Contracts/Services/IProductService';
@@ -20,7 +20,7 @@ export default class IncomingAdd extends React.Component<IIncomingAddProps, IInc
 		this.handleSubmit = this.handleSubmit.bind(this);
 	}
 
-	handleSubmit() {
+	handleSubmit(shipments:IShipmentElement[]) {
 		const element = document.getElementsByClassName('is-invalid');
 		if (element.length > 0) {
 			console.log('Invalid Form');

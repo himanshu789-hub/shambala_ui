@@ -1,4 +1,4 @@
-import { Product } from 'Types/types';
+import { Product } from 'Types/Types';
 import { ProductInfo } from 'Types/Mediator';
 
 type ProductComponentMap = Map<number, number>;

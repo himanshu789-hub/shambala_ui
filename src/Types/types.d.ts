@@ -12,12 +12,11 @@ export type SalesmanProperties = {
 	FirstName: string;
 	LastName: string;
 };
+export type ChoosenScheme = {
+	Id:number;
+	SchemeType:number;
+}
 
-export type OutgoingShipmentDetails = {
-	Id: number;
-	OutgoingShipmentDetail: OutgoingShipment;
-	Products: Product[];
-};
 export type OutgoingShipment = {
 	Id: number;
 	DateCreated: string;

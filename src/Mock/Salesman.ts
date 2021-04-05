@@ -1,4 +1,4 @@
-import { SalesmanProperties } from 'Types/types';
+import { SalesmanProperties } from 'Types/Types';
 
 export const Salesman: SalesmanProperties[] = [
 	{ FirstName: 'John', Id: 1, LastName: 'Doe' },

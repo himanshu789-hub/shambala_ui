@@ -1,7 +1,8 @@
 import { OutgoingStatus } from 'Enums/Enum';
-import { SalesmanProperties,Product,OutgoingShipment, OutgoingShipmentDetails } from 'Types/types';
+import { SalesmanProperties,Product,OutgoingShipment } from 'Types/Types';
 import { productsWithLimit } from './Product';
 import { Salesman } from './Salesman';
+import {OutgoingShipmentDetails} from 'Types/DTO';
 
 
 export const OutgoingShipmentValue: OutgoingShipment[] = [

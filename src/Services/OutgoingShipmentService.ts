@@ -3,7 +3,8 @@ import IOutgoingShipment from 'Contracts/Services/IOutgoingShipmentService';
 import { OutgoingShipmentValue, OutgoingShipmentProducts } from 'Mock/Shipment';
 import MockAdapter from 'axios-mock-adapter';
 import { OutgoingShipmentClient } from 'HttpClient/Axios';
-import {OutgoingShipment,OutgoingShipmentDetails} from 'Types/types';
+import {OutgoingShipmentDetails} from 'Types/DTO';
+import {OutgoingShipment} from 'Types/Types';
 
 const mock = new MockAdapter(OutgoingShipmentClient, { delayResponse: 3000 });
 mock.onGet(/\/outgoingshipment\/\d/i).reply(200, OutgoingShipmentProducts);

@@ -2,7 +2,7 @@ import React from 'react';
 import ShipmentList from 'Components/ShipmentList/ShipmentList';
 import IProductService from 'Contracts/Services/IProductService';
 import ProductService from 'Services/ProductService';
-import { Product } from 'Types/types';
+import { Product } from 'Types/Types';
 
 type OutgoingShipmentAddProps = {};
 type OutgoingShipmentAddState = {

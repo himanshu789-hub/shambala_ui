@@ -1,6 +1,6 @@
 import Loader, { CallStatus } from 'Components/Loader/Loader';
 import React, { SyntheticEvent } from 'react';
-import { OutgoingShipment, SalesmanProperties } from 'Types/types';
+import { OutgoingShipment, SalesmanProperties } from 'Types/Types';
 import './Search.css';
 import { OutgoingStatus } from 'Enums/Enum';
 import { Salesman as SalesmanValues } from 'Mock/Salesman';
@@ -116,14 +116,16 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 										<td>{new Salesman(value.Salesman).GetFullName()}</td>
 										<td>{value.DateCreated}</td>
 										<td>
-											{IsPending?
-											<Link
-													to={`/invoice?shipmentId=${value.Id}`}
-													className={'action bg-warning text-white'}>
-													Proceed To Invoice 
-											</Link>
-												:
-											<label className="badge badge-success">Completed</label>}
+											{IsPending ? (
+												<span className='form-group'>
+													<Link to={`/outgoing/return/${value.Id}`} className='action bg-warning text-white'>
+														Pending
+													</Link>
+													<small className='form-text text-muted'>Click To Proceed To Return</small>
+												</span>
+											) : (
+												<label className='badge badge-success'>Completed</label>
+											)}
 										</td>
 									</tr>
 								);
