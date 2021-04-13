@@ -8,8 +8,13 @@ import ShipmentList from 'Components/ShipmentList/ShipmentList';
 import { IShipmentElement, Product } from 'Types/Types';
 import IProductService from 'Contracts/Services/IProductService';
 import ProductService from 'Services/ProductService';
+import RowsWrapper from './Containers/ItemsWrapper/RowsWrapper';
+import MediatorSubject from 'Utilities/MediatorSubject';
 
-interface IInvoiceProps extends RouteComponentProps {}
+interface IInvoiceProps extends RouteComponentProps {
+	Mediator: MediatorSubject;
+	SubscriptionId: number;
+}
 type InvoicesState = {
 	APIStatus: number;
 	ShopInvoice: ShopInvoice;
@@ -58,15 +63,20 @@ export default class Invoice extends React.Component<IInvoiceProps, InvoicesStat
 			ShopInvoice: { ShopId, SchemeId },
 			Products,
 		} = this.state;
+		const { Mediator, SubscriptionId } = this.props;
 		return (
-			<div>
-				<ShopSelector handleSelection={this.handleSelection} />
-				{ShopId && <InvoiceScheme handleSchemeSelection={this.handleSelection} ShopId={this.state.ShopInvoice.ShopId} />}
-				{ShopId && SchemeId && <ShipmentList Products={Products} ShouldLimitQuantity={false} handleSubmit={this.handleSubmit} />}
+			<div className='card'>
+				<div className='card-head'>
+					<ShopSelector handleSelection={this.handleSelection} />
+				</div>
+				<div className='card-body'>
+					{ShopId && <InvoiceScheme handleSchemeSelection={this.handleSelection} ShopId={this.state.ShopInvoice.ShopId} />}
+					{ShopId && SchemeId && <RowsWrapper mediator={Mediator} subscriptionId={SubscriptionId} />}
+				</div>
 			</div>
 		);
 	}
-	componentDidMount(){
-		this._productService.GetAll().then(res=>this.setState({Products:res.data}))
+	componentDidMount() {
+		this._productService.GetAll().then(res => this.setState({ Products: res.data }));
 	}
 }

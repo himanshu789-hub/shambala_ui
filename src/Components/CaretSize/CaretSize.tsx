@@ -2,7 +2,7 @@ import { ChangeEvent, useState } from 'react';
 import { provideValidNumber } from 'Utilities/Utilities';
 interface ICaretSizeProps {
 	Size: number;
-	handleInput: Function;
+	handleInput: (num:number)=>void;
 	Limit?: number;
 }
 const CaretSize = function CaretSize(props: ICaretSizeProps) {

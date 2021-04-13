@@ -19,14 +19,14 @@ const Nav = React.memo(function Nav() {
 								<i className='fa fa-plus'></i> Add
 							</Link>
 						</li>
-						<li className='dropdown-item'>
+						{/* <li className='dropdown-item'>
 							<Link to='/incoming/search' className='nav-link'>
 								<i className='fa fa-list-alt'></i> Search
 							</Link>
-						</li>
+						</li> */}
 					</ul>
 				</li>
-				<li className='nav-item parent'>
+				{/* <li className='nav-item parent'>
 					<Link className='nav-link' to='#'>
 						<span className='d-inline-flex flex-column justify-content-center align-items-center'>
 							<i className='fa fa-cubes fa-2x'></i>
@@ -65,8 +65,8 @@ const Nav = React.memo(function Nav() {
                             </Link>
 						</li>
 					</ul>
-				</li>
-							<li className='nav-item parent'>
+				</li> */}
+				<li className='nav-item parent'>
 					<a className='nav-link' href='#'>
 						<span className='d-inline-flex flex-column justify-content-center align-items-center'>
 							<i className='fa fa-truck fa-2x'></i>
@@ -75,18 +75,18 @@ const Nav = React.memo(function Nav() {
 					</a>
 					<ul className='child dropdown-menu'>
 						<li className='dropdown-item'>
-							<Link to='/outgoing/add' className='nav-link' >
-							<i className='fa fa-plus'></i> Add
-                            </Link>
+							<Link to='/outgoing/add' className='nav-link'>
+								<i className='fa fa-plus'></i> Add
+							</Link>
 						</li>
 						<li className='dropdown-item'>
-							<Link to='/outgoing/search' className='nav-link' >
-							<i className='fa fa-list-alt'></i> Search
-                            </Link>
+							<Link to='/outgoing/search' className='nav-link'>
+								<i className='fa fa-list-alt'></i> Search
+							</Link>
 						</li>
 					</ul>
 				</li>
-					<li className='nav-item parent'>
+				<li className='nav-item parent'>
 					<a className='nav-link' href='#'>
 						<span className='d-inline-flex flex-column justify-content-center align-items-center'>
 							<i className='fa fa-shopping-bag fa-2x'></i>
@@ -95,15 +95,15 @@ const Nav = React.memo(function Nav() {
 					</a>
 					<ul className='child dropdown-menu'>
 						<li className='dropdown-item'>
-							<Link to='/invoice/add' className='nav-link' >
-							<i className='fa fa-plus'></i> Add
-                            </Link>
+							<Link to='/invoice/add' className='nav-link'>
+								<i className='fa fa-plus'></i> Add
+							</Link>
 						</li>
-						<li className='dropdown-item'>
+						{/* <li className='dropdown-item'>
 							<Link to='/invoice/search' className='nav-link' >
 							<i className='fa fa-list-alt'></i> Search
                             </Link>
-						</li>
+						</li> */}
 					</ul>
 				</li>
 			</ul>

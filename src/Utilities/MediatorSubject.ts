@@ -17,8 +17,11 @@ export default class MediatorSubject {
 		this._quantityMediator = new QuantityMediator(products);
 		this._observers = [];
 	}
-	GetAObserver(subscriptionId: number, componentId: number, component: ReactComponent) {
-		this._observers.push(new Observer(subscriptionId, componentId, component, this));
+	GetAObserver(subscriptionId: number, componentId: number) {
+		
+		const observer = new Observer(subscriptionId, componentId,  this);
+		this._observers.push(observer);
+		return observer;
 	}
 	GetProducts(subscriptionId: number, componentId: number): ProductInfo[] {
 		return this._productMediator.GetDefaultProductList(subscriptionId, componentId);

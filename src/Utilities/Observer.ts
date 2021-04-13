@@ -1,4 +1,6 @@
 import { Component } from 'react';
+import { ProductInfo } from 'Types/Mediator';
+import { Flavour } from 'Types/Types';
 import MediatorSubject from './MediatorSubject';
 
 export type ReactComponent = Component<any, any>;
@@ -8,15 +10,17 @@ export default class Observer {
 	private _componentId: number;
 	private _subscriptionId: number;
 	private _subject: MediatorSubject;
-	private _component: ReactComponent;
+	private _component?: ReactComponent;
 	private _flavourId?: number;
-	constructor(subscriptionId: number, componentId: number, component: ReactComponent, subject: MediatorSubject) {
+	constructor(subscriptionId: number, componentId: number, subject: MediatorSubject) {
 		this._subscriptionId = subscriptionId;
 		this._componentId = componentId;
-		this._component = component;
 		this._subject = subject;
 	}
-	GetProduct() {
+	SetComponent(component: ReactComponent) {
+		this._component = component;
+	}
+	GetProduct(): ProductInfo[] {
 		return this._subject.GetProducts(this._subscriptionId, this._componentId);
 	}
 	GetQuantityLimit() {
@@ -33,10 +37,10 @@ export default class Observer {
 		}
 		this._subject.UnsubscribeToQuantity(this._subscriptionId as number, this._componentId as number);
 	}
-	GetFlavours() {
+	GetFlavours(): Flavour[] {
 		if (this._productId) {
 			console.error('Product Id  no Set');
-			return;
+			return [];
 		}
 		return this._subject.GetFlavours(this._subscriptionId, this._componentId, this._productId as number);
 	}

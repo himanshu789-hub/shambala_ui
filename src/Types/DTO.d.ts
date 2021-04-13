@@ -25,3 +25,11 @@ export type Shop = {
 	IsWithPredinedScheme:boolean;
 	Scheme:Scheme
 };
+
+export type SoldItem = {
+	Id:number;
+	ProductId:number;
+	FlavouId:number;
+    Quantity:number;
+	CaretSize:number;
+}

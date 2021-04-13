@@ -144,11 +144,11 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 								<div className='input-group-text'>Salesman</div>
 							</div>
 							<select className='form-control' name='SalesmanId' onChange={this.handleChange} value={SalesmanId}>
-								<option disabled selected>
+								<option disabled selected value='-1'>
 									--Select A Salesman--
 								</option>
 								{Salesmans.map(e => (
-									<option value={e.Id}>{new Salesman(e).GetFullName()}</option>
+									<option value={e.Id} key={e.Id}>{new Salesman(e).GetFullName()}</option>
 								))}
 							</select>
 						</div>

@@ -1,0 +1,27 @@
+tr,td
+{
+padding:0;margin:0;
+}
+td .form-control
+{
+margin:0;
+border-radius:0;
+}
+.form-control:focus
+{
+border-top:0;
+border-bottom:0;
+}
+.table{
+padding:0;
+margin:0;
+}
+.table>thead>tr>th{font-size:12px;margin:0;padding:0.4rem;color:gray;text-align:center;}
+.table>tbody>tr:hover .form-control{
+background:aliceblue;
+}
+.form-control:focus{
+background:white !important;
+}
+
+.table tr>td{padding:0;margin:0;}
