@@ -23,10 +23,10 @@ export default class Observer {
 	GetProduct(): ProductInfo[] {
 		return this._subject.GetProducts(this._subscriptionId, this._componentId);
 	}
-	GetQuantityLimit() {
+	GetQuantityLimit(): number {
 		if (!(this._productId && this._flavourId)) {
 			console.error('Product or Flavour Not Set');
-			return;
+			return -1;
 		}
 		return this._subject.GetQuantity(this._productId as number, this._flavourId as number);
 	}

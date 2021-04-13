@@ -14,6 +14,7 @@ type ItemsHolderProps = {
 type ItemHolderState = {
 	ProductInfo: ProductInfo[];
 	ProductId: number;
+	QuantityLimit: number;
 	SelectedFlavour: number;
 	FlavourId: Flavour[];
 };
@@ -39,6 +40,8 @@ export default class ItemsHolder extends React.Component<ItemsHolderProps, ItemH
 					break;
 				case 'FlavourId':
 					Observer.SetFlavour(val);
+					const QuantityLimit = Observer.GetQuantityLimit() as number;
+					this.setState({ QuantityLimit: QuantityLimit });
 					break;
 				default:
 					break;
@@ -47,13 +50,10 @@ export default class ItemsHolder extends React.Component<ItemsHolderProps, ItemH
 		}
 	};
 	HandleInput = (e: number) => {
-		const { handleChange, ComponentId } = this.props;
+		const { handleChange, ComponentId, Observer } = this.props;
 		handleChange(ComponentId, 'Quantity', e);
+		Observer.SetQuantity(e);
 	};
-	componentDidMount() {
-		const { Observer } = this.props;
-		Observer.SetComponent(this);
-	}
 	render() {
 		const { ProductInfo, FlavourId: Flavours, SelectedFlavour, ProductId: SelectedProduct } = this.state;
 		const { CaretSize: MaxSize } = this.props;
@@ -92,5 +92,10 @@ export default class ItemsHolder extends React.Component<ItemsHolderProps, ItemH
 				</td>
 			</tr>
 		);
+	}
+
+	componentDidMount() {
+		const { Observer } = this.props;
+		Observer.SetComponent(this);
 	}
 }
