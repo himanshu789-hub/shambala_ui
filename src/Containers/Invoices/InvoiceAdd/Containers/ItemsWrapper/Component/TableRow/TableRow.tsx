@@ -1,9 +1,9 @@
 import CaretSize from 'Components/CaretSize/CaretSize';
-import React, { ChangeEvent, ChangeEventHandler } from 'react';
+import React, { ChangeEvent } from 'react';
 import { ProductInfo } from 'Types/Mediator';
 import { Flavour } from 'Types/Types';
 import Observer from 'Utilities/Observer';
-import './ItemHolder.css';
+import './TableRow.css';
 
 type ItemsHolderProps = {
 	handleChange: (componentId: number, name: string, value: any) => void;
@@ -15,12 +15,19 @@ type ItemHolderState = {
 	ProductInfo: ProductInfo[];
 	ProductId: number;
 	QuantityLimit: number;
-	SelectedFlavour: number;
-	FlavourId: Flavour[];
+	FlavourId: number;
+	Flavours: Flavour[];
 };
-export default class ItemsHolder extends React.Component<ItemsHolderProps, ItemHolderState> {
+export default class TableRow extends React.Component<ItemsHolderProps, ItemHolderState> {
 	constructor(props: ItemsHolderProps) {
 		super(props);
+		this.state = {
+			Flavours: [],
+			ProductId: -1,
+			FlavourId: -1,
+			QuantityLimit: -1,
+			ProductInfo: props.Observer.GetProduct(),
+		};
 	}
 	HandleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
 		const {
@@ -37,6 +44,7 @@ export default class ItemsHolder extends React.Component<ItemsHolderProps, ItemH
 			switch (name) {
 				case 'ProductId':
 					Observer.SetProduct(val);
+					this.setState({ Flavours: Observer.GetFlavours() });
 					break;
 				case 'FlavourId':
 					Observer.SetFlavour(val);
@@ -52,10 +60,11 @@ export default class ItemsHolder extends React.Component<ItemsHolderProps, ItemH
 	HandleInput = (e: number) => {
 		const { handleChange, ComponentId, Observer } = this.props;
 		handleChange(ComponentId, 'Quantity', e);
+
 		Observer.SetQuantity(e);
 	};
 	render() {
-		const { ProductInfo, FlavourId: Flavours, SelectedFlavour, ProductId: SelectedProduct } = this.state;
+		const { ProductInfo, Flavours: Flavours, FlavourId: SelectedFlavour, ProductId: SelectedProduct } = this.state;
 		const { CaretSize: MaxSize } = this.props;
 
 		return (

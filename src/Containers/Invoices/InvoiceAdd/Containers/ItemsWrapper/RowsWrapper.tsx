@@ -2,15 +2,16 @@ import React from 'react';
 import { SoldItem } from 'Types/DTO';
 import MediatorSubject from 'Utilities/MediatorSubject';
 import Observer from 'Utilities/Observer';
-import ItemsHolder from './Component/TableRow/ItemHolder';
-import TableRow from './Component/TableRow/ItemHolder';
+import TableRow from './Component/TableRow/TableRow';
+
 type RowsWrapperProps = {
 	subscriptionId: number;
+	ProvideShopItemToHOC:(Invoices:SoldItem[])=>any,
 	mediator: MediatorSubject;
 };
 type RowsWrapperState = {
 	Members: Memeber[];
-	SoldItem: SoldItem[];
+	SoldItems: SoldItem[];
 };
 type Memeber = {
 	Observer: Observer;
@@ -19,6 +20,9 @@ type Memeber = {
 export default class RowsWrapper extends React.Component<RowsWrapperProps, RowsWrapperState> {
 	constructor(props: RowsWrapperProps) {
 		super(props);
+		this.state = {
+			Members:[],SoldItems:[]
+		}
 	}
 	AddARow = () => {
 		const { mediator, subscriptionId } = this.props;
@@ -29,25 +33,29 @@ export default class RowsWrapper extends React.Component<RowsWrapperProps, RowsW
 			Observer: observer,
 		};
 		const NewSoldItem: SoldItem = { CaretSize: 0, FlavouId: 0, Id: ComponentId, ProductId: 0, Quantity: 0 };
-		this.setState(({ Members, SoldItem }) => {
-			return { Members: [...Members, NewMember], SoldItem: [...SoldItem, NewSoldItem] };
+		this.setState(({ Members, SoldItems: SoldItem }) => {
+			return { Members: [...Members, NewMember], SoldItems: [...SoldItem, NewSoldItem] };
 		});
 	};
+
 	HandeChange = (ComponentId: number, name: string, Value: any) => {
-		const { Members, SoldItem } = this.state;
+		const { Members, SoldItems: SoldItem } = this.state;
+		const {ProvideShopItemToHOC} = this.props;
 		const Member = Members.find(e => e.ComponentId === ComponentId);
 		const soldItem = SoldItem.find(e => e.Id == ComponentId);
-		this.setState(({ SoldItem }) => {
+		
+		this.setState(({ SoldItems: SoldItem }) => {
 			return {
-				SoldItem: SoldItem.map(e => {
+				SoldItems: SoldItem.map(e => {
 					if (e.Id === ComponentId) return { ...e, [name]: Value };
 					return e;
 				}),
 			};
-		});
+		},ProvideShopItemToHOC(this.state.SoldItems));
+
 	};
 	render() {
-		const { SoldItem, Members } = this.state;
+		const { SoldItems: SoldItem, Members } = this.state;
 		return (
 			<div>
 				<table className='table'>
@@ -64,7 +72,7 @@ export default class RowsWrapper extends React.Component<RowsWrapperProps, RowsW
 						{SoldItem.map((e, index) => {
 							const observer = Members.find(f => f.ComponentId == e.Id)?.Observer as Observer;
 							return (
-								<ItemsHolder
+								<TableRow
 									key={e.Id}
 									ComponentId={e.Id}
 									Observer={observer}
