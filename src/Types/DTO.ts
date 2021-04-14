@@ -1,5 +1,5 @@
-import { SchemeType } from 'Enums/Enum';
-import { IShipmentElement } from './Types';
+
+import {  OutgoingShipment, Product } from './Types';
 
 export type OutgoingShipmentDetails = {
 	Id: number;
@@ -35,4 +35,3 @@ export type Shop = {
 	IsWithPredinedScheme: boolean;
 	Scheme: Scheme;
 };
-

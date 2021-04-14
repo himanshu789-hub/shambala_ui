@@ -4,14 +4,16 @@ import ShopSelector from './Containers/ShopSelector/ShopSelector';
 import InvoiceScheme from './Containers/InvoiceScheme/InvoiceScheme';
 import IProductService from 'Contracts/Services/IProductService';
 import ProductService from 'Services/ProductService';
-import RowsWrapper from './Containers/ItemsWrapper/RowsWrapper';
+import RowsWrapper from './Containers/RowsWrapper/RowsWrapper';
 import MediatorSubject from 'Utilities/MediatorSubject';
-import {ShopInvoice,SoldItem} from 'Types/DTO';
+import { ShopInvoice, SoldItem } from '../../../Types/DTO';
+
+
 interface IInvoiceProps {
 	Mediator: MediatorSubject;
 	SubscriptionId: number;
 	HandleDelete: (SubscriptionId: number) => void;
-	ProvideShopInvoiceInfo:(subscriptionId:number,ShopInvoice:ShopInvoice)=>void;
+	ProvideShopInvoiceInfo: (subscriptionId: number, ShopInvoice: ShopInvoice) => void;
 }
 type InvoicesState = {
 	APIStatus: number;
@@ -23,33 +25,40 @@ export default class InvoiceAdd extends React.Component<IInvoiceProps, InvoicesS
 		super(props);
 		this.state = {
 			APIStatus: CallStatus.EMPTY,
-			ShopInvoice: { SchemeId: undefined,Invoices:[], ShopId: undefined },
+			ShopInvoice: { SchemeId: undefined, Invoices: [], ShopId: undefined },
 		};
 		this._productService = new ProductService();
 	}
 	handleSelection = (name: string, value: any) => {
-		const { ProvideShopInvoiceInfo,SubscriptionId} = this.props;
+		const { ProvideShopInvoiceInfo, SubscriptionId } = this.props;
 		switch (name) {
 			case 'ShopId':
-				this.setState(({ ShopInvoice }) => {
-					return { ShopInvoice: { ...ShopInvoice, ShopId: value } };
-				},()=>ProvideShopInvoiceInfo(SubscriptionId,this.state.ShopInvoice));
+				this.setState(
+					({ ShopInvoice }) => {
+						return { ShopInvoice: { ...ShopInvoice, ShopId: value } };
+					},
+					() => ProvideShopInvoiceInfo(SubscriptionId, this.state.ShopInvoice),
+				);
 				break;
 			case 'SchemeId':
-				this.setState(({ ShopInvoice }) => {
-					return { ShopInvoice: { ...ShopInvoice, SchemeId: value } };
-				},()=>ProvideShopInvoiceInfo(SubscriptionId,this.state.ShopInvoice));
+				this.setState(
+					({ ShopInvoice }) => {
+						return { ShopInvoice: { ...ShopInvoice, SchemeId: value } };
+					},
+					() => ProvideShopInvoiceInfo(SubscriptionId, this.state.ShopInvoice),
+				);
 				break;
 			default:
 				break;
 		}
 	};
-	HandleInvoiceItemAdded(Invoices:SoldItem[])
-	{
-         const { ProvideShopInvoiceInfo,SubscriptionId} = this.props;
-		 const {ShopInvoice} = this.state;
-		 this.setState(({ShopInvoice})=>{return {ShopInvoice:{...ShopInvoice,Invoices:Invoices}}});
-         ProvideShopInvoiceInfo(SubscriptionId,{...ShopInvoice,Invoices:Invoices});
+	HandleInvoiceItemAdded=(Invoices: SoldItem[])=> {
+		const { ProvideShopInvoiceInfo, SubscriptionId } = this.props;
+		const { ShopInvoice } = this.state;
+		this.setState(({ ShopInvoice }) => {
+			return { ShopInvoice: { ...ShopInvoice, Invoices: Invoices } };
+		});
+		ProvideShopInvoiceInfo(SubscriptionId, { ...ShopInvoice, Invoices: Invoices });
 	}
 	render() {
 		const {
@@ -67,12 +76,11 @@ export default class InvoiceAdd extends React.Component<IInvoiceProps, InvoicesS
 				<div className='card-body'>
 					{ShopId && <InvoiceScheme handleSchemeSelection={this.handleSelection} ShopId={this.state.ShopInvoice.ShopId} />}
 					{ShopId && SchemeId && (
-						<RowsWrapper mediator={Mediator} subscriptionId={SubscriptionId} ProvideShopItemToHOC={this.HandleInvoiceItemAdded}/>
+						<RowsWrapper mediator={Mediator} subscriptionId={SubscriptionId} ProvideShopItemToHOC={this.HandleInvoiceItemAdded} />
 					)}
 				</div>
 			</div>
 		);
 	}
-	componentDidMount() {
-	}
+	componentDidMount() {}
 }

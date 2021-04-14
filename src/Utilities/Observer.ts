@@ -38,7 +38,7 @@ export default class Observer {
 		this._subject.UnsubscribeToQuantity(this._subscriptionId as number, this._componentId as number);
 	}
 	GetFlavours(): Flavour[] {
-		if (this._productId) {
+		if (!this._productId) {
 			console.error('Product Id  no Set');
 			return [];
 		}

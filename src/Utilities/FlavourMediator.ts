@@ -49,7 +49,14 @@ export default class FlavourMediator {
 		}
 		throw new Error('Unknown Subscription');
 	}
-	private _deductFlavour(subscritpionId: number, ProductId: number, flavourId: number) {}
+	private _deductFlavour(subscritpionId: number, ProductId: number, flavourId: number) {
+          if(!this._deletedSubscriptionFlavour.has(subscritpionId))
+		  {
+              this._deletedSubscriptionFlavour.set(subscritpionId,[{Id:flavourId,ProductId}]);
+		  }
+		  else
+		 	  this._deletedSubscriptionFlavour.get(subscritpionId)?.push({Id:flavourId,ProductId:ProductId});
+	}
 	private _checkArgumentNullException(...params: number[]) {
 		for (let i = 0; i < params.length; i++) if (!params[i]) throw new Error('Argument Not Set');
 	}
@@ -64,6 +71,7 @@ export default class FlavourMediator {
 			const SubscriptionDeletedFlavour = this._deletedSubscriptionFlavour.get(subscribeId) as FlavourWithProductKey[];
 			for (let index = 0; index < SubscriptionDeletedFlavour.length; index++) {
 				const element = SubscriptionDeletedFlavour[index];
+				if(element.ProductId==productId)
 				array = [...array, element.Id];
 			}
 			return array;
@@ -92,7 +100,7 @@ export default class FlavourMediator {
 		return Flavours;
 	}
 	private _checkSubscription(subscribeId: number) {
-		if (!this._componentFlavourChoosen.has(subscribeId)) throw new Error('Subscription Id Not Set');
+		if (!this._componentFlavourChoosen.has(subscribeId)) return false;
 	}
 
 	GetSUbscribedFlavourId(subscriptionId: number, componentId: number): number {
@@ -103,6 +111,7 @@ export default class FlavourMediator {
 		return FlavourInfo.Id as number;
 	}
 	GetFlavours(subscriptionId: number, componentId: number, productId: number): Flavour[] {
+		debugger;
 		this._checkArgumentNullException(subscriptionId, componentId, productId);
 		if (this._componentFlavourChoosen.has(subscriptionId)) {
 			const SubscriptionComponentMapFlavour = this._componentFlavourChoosen.get(subscriptionId) as FlavourInfo;
@@ -116,14 +125,18 @@ export default class FlavourMediator {
 					this.IsFlavourDeleted(productId, FlavourID)
 				) {
 					return [
-						...this._removeFlavoursFromArray(this._flavours.get(subscriptionId) as Flavour[], deletedflours),
+		// see here
+						...this._removeFlavoursFromArray(this._flavours.get(productId) as Flavour[], deletedflours),
 						{ ...this._getFlavourInfoFromProductId(productId, FlavourID) },
 					];
-				} else return [...this._removeFlavoursFromArray(this._flavours.get(subscriptionId) as Flavour[], deletedflours)];
+				} 
+				// see here
+				else return [...this._removeFlavoursFromArray(this._flavours.get(productId) as Flavour[], deletedflours)];
 			} else {
 				const GlobalDeletedProduct = this._deletedFlavour.filter(e => e.ProductId == productId).map(e => e.Id);
 				return this._cloneFlavoursArray(
-					this._removeFlavoursFromArray(this._flavours.get(subscriptionId) as Flavour[], [
+					// here also
+					this._removeFlavoursFromArray(this._flavours.get(productId) as Flavour[], [
 						...deletedflours,
 						...GlobalDeletedProduct,
 					]),

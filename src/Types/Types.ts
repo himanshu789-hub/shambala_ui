@@ -23,10 +23,12 @@ export type OutgoingShipment = {
 	Salesman: SalesmanProperties;
 	Status: number;
 };
-type CaretDetails = {
+export type CaretDetails = {
 	Id: number;
 	CaretSize: number;
 };
+
+
 export type IShipmentElement = {
 	Id: number;
 	ProductId: number;
@@ -36,7 +38,7 @@ export type IShipmentElement = {
 	FlavourId: number;
 };
 
-type Flavour = {
+export type Flavour = {
 	Id: number;
 	Title: string;
 	Quantity?: number;

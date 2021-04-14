@@ -72,7 +72,11 @@ export default class ComponentProductMediator implements IProductMediator {
 		return { Title: name, Id: productId };
 	}
 	IsAlreadySubscribed(subcriptionId: number, componentId: number): boolean {
-		this._checkSubscription(subcriptionId);
+		try {
+			this._checkSubscription(subcriptionId);
+		} catch (error) {
+			return false;
+		}
 		const ComponentMapProduct = this._componentProductMap.get(subcriptionId) as ProductComponentMap;
 		return ComponentMapProduct.has(componentId);
 	}
