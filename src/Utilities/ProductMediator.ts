@@ -62,7 +62,7 @@ export default class ComponentProductMediator implements IProductMediator {
 		return FilteredProduct;
 	}
 	private _isProductDeletedForSubscriptionId(subscrptionId: number, productId: number): boolean {
-		if (this._subscriptionDeletedProduct.has(subscrptionId)) return false;
+		if (!(this._subscriptionDeletedProduct.has(subscrptionId))) return false;
 		const productDeleted = Array.from(this._subscriptionDeletedProduct.get(subscrptionId) as Set<number>);
 		return productDeleted.includes(productId);
 	}
@@ -126,7 +126,13 @@ export default class ComponentProductMediator implements IProductMediator {
 	}
 
 	Unsubscribe(subscriptionId: number, componentId: number): boolean {
-		this._checkSubscription(subscriptionId);
+		try{
+this._checkSubscription(subscriptionId);
+		
+		}
+		catch(error){
+return false;
+		}
 		const ComponentMapProduct = this._componentProductMap.get(subscriptionId) as ProductComponentMap;
 		if (ComponentMapProduct.has(componentId)) {
 			const ProductId = ComponentMapProduct.get(componentId) as number;
@@ -137,7 +143,7 @@ export default class ComponentProductMediator implements IProductMediator {
 			ComponentMapProduct.delete(subscriptionId);
 			return true;
 		}
-		throw new Error('Unknown Component');
+		return false;
 	}
 	ChangeSubscription(subscriptionId: number, componentId: number, productId: number): boolean {
 		this._checkSubscription(subscriptionId);

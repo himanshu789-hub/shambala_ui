@@ -10,6 +10,7 @@ type ItemsHolderProps = {
 	CaretSize?: number;
 	ComponentId: number;
 	Observer: Observer;
+	HandleDelete:(componentId:number)=>void;
 };
 type ItemHolderState = {
 	ProductInfo: ProductInfo[];
@@ -28,6 +29,11 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 			QuantityLimit: -1,
 			ProductInfo: props.Observer.GetProduct(),
 		};
+	}
+	Delete=()=>{
+		const {Observer,ComponentId,HandleDelete} = this.props;
+		Observer.Unubscribe();
+		HandleDelete(ComponentId);
 	}
 	HandleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
 		const {
@@ -60,17 +66,35 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 	HandleInput = (e: number) => {
 		const { handleChange, ComponentId, Observer } = this.props;
 		handleChange(ComponentId, 'Quantity', e);
-
 		Observer.SetQuantity(e);
 	};
+	HandleClick=(e:React.FocusEvent<HTMLSelectElement>)=>{
+       const {Observer} = this.props;
+       const {  currentTarget : {name}} = e;
+	   console.log(name+' Click Event Triggers');
+	   switch(name){
+		   case 'FlavourId':
+		   this.setState({Flavours:Observer.GetFlavours()});
+		   break;
+		   case 'ProductId':
+		   this.setState({ProductInfo:Observer.GetProduct()});
+		   break;
+		   default: break;
+	   }            
+	}
 	render() {
-		const { ProductInfo, Flavours: Flavours, FlavourId: SelectedFlavour, ProductId: SelectedProduct } = this.state;
-		const { CaretSize: MaxSize } = this.props;
+		const { ProductInfo, QuantityLimit,Flavours: Flavours, FlavourId: SelectedFlavour, ProductId: SelectedProduct } = this.state;
+		const { CaretSize: MaxSize,Observer } = this.props;
 
 		return (
 			<tr>
 				<td>
-					<select className='form-control' name='ProductId' value={SelectedProduct} onChange={this.HandleChange}>
+					<select
+						className={`form-control ${SelectedProduct == -1 ? 'is-invalid' : ''}`}
+						name='ProductId'
+						value={SelectedProduct}
+						onChange={this.HandleChange}
+						 onFocus={this.HandleClick}>
 						<option disabled selected value='-1'>
 							-- Select A Product --
 						</option>
@@ -82,7 +106,11 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 					</select>
 				</td>
 				<td>
-					<select className='form-control' name='FlavourId' value={SelectedFlavour} onChange={this.HandleChange}>
+					<select
+						className={`form-control ${SelectedFlavour == -1 ? 'is-invalid' : ''}`}
+						name='FlavourId'
+						value={SelectedFlavour}
+						onChange={this.HandleChange} onFocus={this.HandleClick}>
 						<option disabled selected value='-1'>
 							-- Select A Flavour --
 						</option>
@@ -94,10 +122,13 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 					</select>
 				</td>
 				<td>
-					<input className='form-control' value={MaxSize} />
+					<input className={`form-control ${MaxSize == 0 ? 'is-invalid' : ''}`} value={MaxSize} />
 				</td>
 				<td>
-					<CaretSize Size={MaxSize ?? 0} handleInput={this.HandleInput} />
+					<CaretSize Size={MaxSize ?? 0} handleInput={this.HandleInput} Limit={QuantityLimit}/>
+				</td>
+				<td>
+					<button onClick={this.Delete} className="btn btn-light w-100"><i className="fa fa-trash"></i></button>
 				</td>
 			</tr>
 		);

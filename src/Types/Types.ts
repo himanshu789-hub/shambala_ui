@@ -46,6 +46,6 @@ export type Flavour = {
 export type Product = {
 	Id: number;
 	Name: string;
-	Carets: CaretDetails[];
+	CaretSize: number;
 	Flavour: Flavour[];
 };

@@ -64,7 +64,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 									...e,
 									ProductId: ProductId,
 									FlavourId,
-									CaretSize: this._products.get(Value + '')?.Carets[0].CaretSize ?? 0,
+									CaretSize: this.selectProductCaretDetails(e.ProductId+''),
 								};
 							}
 							return { ...e };
@@ -128,10 +128,10 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				],
 			});
 	};
-	selectProductCaretDetails = (Id: string): CaretDetails[] => {
+	selectProductCaretDetails = (Id: string): number => {
 		let product = this._products.get(Id);
-		if (product) return product.Carets;
-		return [];
+		if (product) return product.CaretSize;
+		return 0;
 	};
 	setQuantity = (Id: number, quantity: number) => {
 		this.handleChange({ Id, Name: 'TotalReceivedPieces', Value: quantity });
@@ -169,7 +169,6 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 									limit={limit}
 									SetQuantity={this.setQuantity}
 									handleRemove={this.handleRemove}
-									SelectProductCaretDetails={this.selectProductCaretDetails}
 								/>
 							);
 						})}

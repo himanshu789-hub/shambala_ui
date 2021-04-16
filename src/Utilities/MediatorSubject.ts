@@ -17,9 +17,13 @@ export default class MediatorSubject {
 		this._quantityMediator = new QuantityMediator(products);
 		this._observers = [];
 	}
+	UnsubscribeAComponent(subscriptionId: number, componentId: number) {
+		this._flavourMediator.Unsubscribe(subscriptionId, componentId);
+		this._productMediator.Unsubscribe(subscriptionId, componentId);
+		this._quantityMediator.Unsubscibe(subscriptionId, componentId);
+	}
 	GetAObserver(subscriptionId: number, componentId: number) {
-		
-		const observer = new Observer(subscriptionId, componentId,  this);
+		const observer = new Observer(subscriptionId, componentId, this);
 		this._observers.push(observer);
 		return observer;
 	}
@@ -47,16 +51,16 @@ export default class MediatorSubject {
 				if (this._flavourMediator.IsSubscribed(subscriptionId, componentId)) {
 					const previoudFlavourId = this._flavourMediator.GetSUbscribedFlavourId(subscriptionId, componentId);
 					if (this._flavourMediator.ChangeSubscription(subscriptionId, componentId, productId, flavourId)) {
-						this._flavourMediator.IsFlavourExhausted(productId) &&
-							this._flavourMediator.RestoreFlavour(productId, previoudFlavourId) &&
-							this._productMediator.IsProductDeleted(productId) &&
-							this._productMediator.RestoreProduct(productId);
-     						this._quantityMediator.IsQuantitySubscribed(subscriptionId, componentId) &&
+						// this._flavourMediator.IsFlavourExhausted(subscriptionId,productId) &&
+						// 	this._flavourMediator.RestoreFlavour(productId, previoudFlavourId) &&
+						// 	this._productMediator.IsProductDeleted(productId) &&
+						// 	this._productMediator.RestoreProduct(productId);
+						this._quantityMediator.IsQuantitySubscribed(subscriptionId, componentId) &&
 							this._quantityMediator.Unsubscibe(subscriptionId, componentId);
 					}
-					if (this._flavourMediator.IsFlavourExhausted(productId)) {
-						this._productMediator.DeleteProduct(productId);
-					}
+					// if (this._flavourMediator.IsFlavourExhausted(productId)) {
+					// 	//this._productMediator.DeleteProduct(productId);
+					// }
 					if (quantity) {
 						if (this._quantityMediator.IsQuantitySubscribed(subscriptionId, componentId)) {
 							this._quantityMediator.ChangeQuantity(subscriptionId, componentId, productId, flavourId, quantity);

@@ -14,20 +14,19 @@ interface IInvoiceProps {
 	SubscriptionId: number;
 	HandleDelete: (SubscriptionId: number) => void;
 	ProvideShopInvoiceInfo: (subscriptionId: number, ShopInvoice: ShopInvoice) => void;
+	GetCaretSizeByProductId:(productId:number)=>number;
 }
 type InvoicesState = {
 	APIStatus: number;
 	ShopInvoice: ShopInvoice;
 };
 export default class InvoiceAdd extends React.Component<IInvoiceProps, InvoicesState> {
-	_productService: IProductService;
 	constructor(props: IInvoiceProps) {
 		super(props);
 		this.state = {
 			APIStatus: CallStatus.EMPTY,
 			ShopInvoice: { SchemeId: undefined, Invoices: [], ShopId: undefined },
 		};
-		this._productService = new ProductService();
 	}
 	handleSelection = (name: string, value: any) => {
 		const { ProvideShopInvoiceInfo, SubscriptionId } = this.props;
@@ -64,7 +63,7 @@ export default class InvoiceAdd extends React.Component<IInvoiceProps, InvoicesS
 		const {
 			ShopInvoice: { ShopId, SchemeId },
 		} = this.state;
-		const { Mediator, SubscriptionId, HandleDelete } = this.props;
+		const { Mediator, SubscriptionId, HandleDelete,GetCaretSizeByProductId } = this.props;
 		return (
 			<div className='card'>
 				<div className='card-head d-flex justify-content-between'>
@@ -76,7 +75,7 @@ export default class InvoiceAdd extends React.Component<IInvoiceProps, InvoicesS
 				<div className='card-body'>
 					{ShopId && <InvoiceScheme handleSchemeSelection={this.handleSelection} ShopId={this.state.ShopInvoice.ShopId} />}
 					{ShopId && SchemeId && (
-						<RowsWrapper mediator={Mediator} subscriptionId={SubscriptionId} ProvideShopItemToHOC={this.HandleInvoiceItemAdded} />
+						<RowsWrapper mediator={Mediator} subscriptionId={SubscriptionId} GetCaretSizeByProductId={GetCaretSizeByProductId} ProvideShopItemToHOC={this.HandleInvoiceItemAdded} />
 					)}
 				</div>
 			</div>

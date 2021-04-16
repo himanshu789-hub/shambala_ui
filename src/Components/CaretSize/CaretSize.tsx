@@ -35,6 +35,7 @@ const CaretSize = function CaretSize(props: ICaretSizeProps) {
 		if (validNum <= Max_Pieces_Allow) {
 			const pieces = validNum;
 			const quantity = calculateTotalQuantity(caret, pieces);
+			
 			setQuantity(quantity);
 			handleInput(quantity);
 			setPieces(pieces);

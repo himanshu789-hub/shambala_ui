@@ -55,7 +55,12 @@ export default class QuantityMediator implements IQuantityMediator {
 			.Quantity as number;
 	}
 	Unsubscibe(subscriptionId: number, componentId: number) {
+		try {
 		this._checkSubscription(subscriptionId);
+			
+		} catch (error) {
+		return false;	
+		}
 		this._checkArgumentNullException(subscriptionId, componentId);
 		const QuantityComponentList = this._componentQuantity.get(subscriptionId) as Map<number, QuantityFlavourInfo>;
 		if (QuantityComponentList.has(componentId)) {
@@ -71,7 +76,8 @@ export default class QuantityMediator implements IQuantityMediator {
 			if (QuantityAssigned.has(componentId)) {
 				const QuantityFlavourInfo = QuantityAssigned.get(componentId) as QuantityFlavourInfo;
 				this._restoreQuantity(QuantityFlavourInfo.ProductId, QuantityFlavourInfo.FlavourId, QuantityFlavourInfo.Quantity);
-				this._deductQuantity(productId, flavourId, quantity);
+				const QuantityFlavourInfoNew = QuantityAssigned.get(componentId)?.Quantity as number;
+				if (QuantityFlavourInfoNew && quantity <= QuantityFlavourInfoNew) this._deductQuantity(productId, flavourId, quantity);
 				return true;
 			} else throw new Error('Unknown Component');
 		}

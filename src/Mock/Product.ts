@@ -2,10 +2,7 @@ import { Product } from 'Types/Types';
 
 export let productsWithLimit: Product[] = [
 	{
-		Carets: [
-			{ CaretSize: 12, Id: 1 },
-			{ CaretSize: 24, Id: 2 },
-		],
+		CaretSize: 12,
 		Id: 1,
 		Name: '100 RGB',
 		Flavour: [
@@ -15,10 +12,7 @@ export let productsWithLimit: Product[] = [
 		],
 	},
 	{
-		Carets: [
-			{ CaretSize: 12, Id: 1 },
-			{ CaretSize: 24, Id: 2 },
-		],
+		CaretSize:30,
 		Id: 2,
 		Name: '200 RGB',
 		Flavour: [
@@ -28,19 +22,13 @@ export let productsWithLimit: Product[] = [
 		],
 	},
 	{
-		Carets: [
-			{ CaretSize: 12, Id: 1 },
-			{ CaretSize: 24, Id: 2 },
-		],
+		CaretSize: 24,
 		Id: 3,
 		Name: '300 RGB',
 		Flavour: [{ Id: 1, Title: 'No Flavour', Quantity: 112 }],
 	},
 	{
-		Carets: [
-			{ CaretSize: 12, Id: 1 },
-			{ CaretSize: 24, Id: 2 },
-		],
+		CaretSize: 24,
 		Id: 4,
 		Name: '400 RGB',
 		Flavour: [
@@ -50,7 +38,7 @@ export let productsWithLimit: Product[] = [
 		],
 	},
 	{
-		Carets: [{ CaretSize: 12, Id: 1 }],
+		CaretSize:24,
 		Id: 5,
 		Name: '500 RGB',
 		Flavour: [{ Id: 1, Title: 'No Flavour', Quantity: 10 }],
@@ -58,10 +46,7 @@ export let productsWithLimit: Product[] = [
 ];
 export let productsWithoutLimit: Product[] = [
 	{
-		Carets: [
-			{ CaretSize: 12, Id: 1 },
-			{ CaretSize: 24, Id: 2 },
-		],
+		CaretSize:12,
 		Id: 1,
 		Name: '100 RGB',
 		Flavour: [
@@ -71,10 +56,7 @@ export let productsWithoutLimit: Product[] = [
 		],
 	},
 	{
-		Carets: [
-			{ CaretSize: 12, Id: 1 },
-			{ CaretSize: 24, Id: 2 },
-		],
+		CaretSize: 10,
 		Id: 2,
 		Name: '200 RGB',
 		Flavour: [
@@ -84,19 +66,13 @@ export let productsWithoutLimit: Product[] = [
 		],
 	},
 	{
-		Carets: [
-			{ CaretSize: 12, Id: 1 },
-			{ CaretSize: 24, Id: 2 },
-		],
+		CaretSize: 12,
 		Id: 3,
 		Name: '300 RGB',
 		Flavour: [{ Id: 1, Title: 'No Flavour' }],
 	},
 	{
-		Carets: [
-			{ CaretSize: 12, Id: 1 },
-			{ CaretSize: 24, Id: 2 },
-		],
+		CaretSize: 24,
 		Id: 4,
 		Name: '400 RGB',
 		Flavour: [
@@ -106,7 +82,7 @@ export let productsWithoutLimit: Product[] = [
 		],
 	},
 	{
-		Carets: [{ CaretSize: 12, Id: 1 }],
+		CaretSize: 30,
 		Id: 5,
 		Name: '500 RGB',
 		Flavour: [{ Id: 1, Title: 'No Flavour' }],

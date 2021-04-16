@@ -6,8 +6,9 @@ import TableRow from './Component/TableRow/TableRow';
 
 type RowsWrapperProps = {
 	subscriptionId: number;
-	ProvideShopItemToHOC:(Invoices:SoldItem[])=>any,
+	ProvideShopItemToHOC: (Invoices: SoldItem[]) => any;
 	mediator: MediatorSubject;
+	GetCaretSizeByProductId: (productId: number) => number;
 };
 type RowsWrapperState = {
 	Members: Memeber[];
@@ -21,38 +22,45 @@ export default class RowsWrapper extends React.Component<RowsWrapperProps, RowsW
 	constructor(props: RowsWrapperProps) {
 		super(props);
 		this.state = {
-			Members:[],SoldItems:[]
-		}
+			Members: [],
+			SoldItems: [],
+		};
 	}
 	AddARow = () => {
 		const { mediator, subscriptionId } = this.props;
-		const ComponentId = Math.random()*10;
+		const ComponentId = Math.random() * 10;
 		const observer = mediator.GetAObserver(subscriptionId, ComponentId);
 		const NewMember: Memeber = {
 			ComponentId,
 			Observer: observer,
 		};
 		const NewSoldItem: SoldItem = { CaretSize: 0, FlavouId: 0, Id: ComponentId, ProductId: 0, Quantity: 0 };
+
 		this.setState(({ Members, SoldItems: SoldItem }) => {
 			return { Members: [...Members, NewMember], SoldItems: [...SoldItem, NewSoldItem] };
 		});
 	};
-
+	DeleteARow = (componentId: number) => {
+		const {ProvideShopItemToHOC} = this.props;
+ 		this.setState(({ SoldItems }) => {
+			return { SoldItems: SoldItems.filter(e => e.Id != componentId) };
+		},()=>ProvideShopItemToHOC(this.state.SoldItems));
+	};
 	HandeChange = (ComponentId: number, name: string, Value: any) => {
 		const { Members, SoldItems: SoldItem } = this.state;
-		const {ProvideShopItemToHOC} = this.props;
+		const { ProvideShopItemToHOC, GetCaretSizeByProductId } = this.props;
 		const Member = Members.find(e => e.ComponentId === ComponentId);
 		const soldItem = SoldItem.find(e => e.Id == ComponentId);
-		
+		let CaretMaxSize = soldItem?.CaretSize ?? 0;
+		if (name == 'ProductId') CaretMaxSize = GetCaretSizeByProductId(Value);
 		this.setState(({ SoldItems: SoldItem }) => {
 			return {
 				SoldItems: SoldItem.map(e => {
-					if (e.Id === ComponentId) return { ...e, [name]: Value };
+					if (e.Id === ComponentId) return { ...e, [name]: Value, CaretSize: CaretMaxSize };
 					return e;
 				}),
 			};
-		},ProvideShopItemToHOC(this.state.SoldItems));
-
+		}, ProvideShopItemToHOC(this.state.SoldItems));
 	};
 	render() {
 		const { SoldItems: SoldItem, Members } = this.state;
@@ -78,6 +86,7 @@ export default class RowsWrapper extends React.Component<RowsWrapperProps, RowsW
 									Observer={observer}
 									handleChange={this.HandeChange}
 									CaretSize={e.CaretSize}
+									HandleDelete={this.DeleteARow}
 								/>
 							);
 						})}

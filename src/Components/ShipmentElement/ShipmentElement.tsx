@@ -1,19 +1,18 @@
 import React, { ChangeEvent, SyntheticEvent } from 'react';
-import { CaretDetails, Flavour,IShipmentElement } from 'Types/Types';
+import { CaretDetails, Flavour, IShipmentElement } from 'Types/Types';
 import CaretSizeInput from 'Components/CaretSize/CaretSize';
 import { provideValidNumber } from 'Utilities/Utilities';
 import './ShipmentElement.css';
 import { ShipmentProperty } from 'Types/Types';
-import {ProductKeyWithName} from 'Types/Types';
+import { ProductKeyWithName } from 'Types/Types';
 type IShipmentElementProps = {
 	ShipmentEntity: IShipmentElement;
 	handleChange: (property: ShipmentProperty) => void;
 	ProductList: ProductKeyWithName[];
-	SelectProductCaretDetails: (Id: string) => CaretDetails[];
 	SetQuantity: Function;
 	handleRemove: Function;
 	flavourList: Flavour[];
-	limit?:number;
+	limit?: number;
 };
 type IShipmentElementState = {};
 export default class ShipmentElement extends React.Component<IShipmentElementProps, IShipmentElementState> {
@@ -42,19 +41,23 @@ export default class ShipmentElement extends React.Component<IShipmentElementPro
 		}
 	}
 	render() {
-		const { ProductList, ShipmentEntity, SelectProductCaretDetails, handleRemove, flavourList } = this.props;
-		const CaretDetails = SelectProductCaretDetails(ShipmentEntity.ProductId + '');
+		const { ProductList, ShipmentEntity, handleRemove, flavourList } = this.props;
 		const caretSize = ShipmentEntity.CaretSize;
 		return (
 			<div className='incoming-shipment-element-add d-flex  justify-content-around flex-nowrap'>
 				<div className={`form-group ${!ShipmentEntity.ProductId ? 'is-invalid' : ''}`}>
 					<label htmlFor='product'>Product Name</label>
-					<select className='form-control' value={ShipmentEntity.ProductId} data-src={ShipmentEntity.Id} name='ProductId' onChange={this.handleChange}>
-						<option value='0' disabled >
+					<select
+						className='form-control'
+						value={ShipmentEntity.ProductId}
+						data-src={ShipmentEntity.Id}
+						name='ProductId'
+						onChange={this.handleChange}>
+						<option value='0' disabled>
 							-- Select Your Option --
 						</option>
 						{Array.from(ProductList).map(value => (
-							<option value={value.Id} key={value.Id} >
+							<option value={value.Id} key={value.Id}>
 								{value.Name}
 							</option>
 						))}
@@ -63,32 +66,25 @@ export default class ShipmentElement extends React.Component<IShipmentElementPro
 				</div>
 				<div className={`form-group ${ShipmentEntity.FlavourId}`}>
 					<label htmlFor='flavour'>Flavour</label>
-					<select name="FlavourId"  id="flavour" className="form-control" onChange={this.handleChange} value={ShipmentEntity.FlavourId}>
-						<option  disabled  value='-1'>-- Select Your Option --</option>
-						{flavourList &&
-							flavourList.length > 0 &&
-							flavourList.map(e => (
-								<option value={e.Id} >
-									{e.Title}
-								</option>
-							))}
+					<select
+						name='FlavourId'
+						id='flavour'
+						className='form-control'
+						onChange={this.handleChange}
+						value={ShipmentEntity.FlavourId}>
+						<option disabled value='-1'>
+							-- Select Your Option --
+						</option>
+						{flavourList && flavourList.length > 0 && flavourList.map(e => <option value={e.Id}>{e.Title}</option>)}
 					</select>
 				</div>
 				<div className={`form-group ${ShipmentEntity.CaretSize == 0 ? 'is-invalid' : ''}`}>
 					<label htmlFor='caretSize'>CaretSize</label>
-					<select className='form-control' name='CaretSize' onChange={this.handleChange} placeholder='Select Caret Size'>
-						{CaretDetails &&
-							CaretDetails.length > 0 &&
-							CaretDetails.map((value, index) => (
-								<option value={value.CaretSize} key={index} defaultChecked={caretSize == value.CaretSize}>
-									{value.CaretSize}
-								</option>
-							))}
-					</select>
+					<input className="form-control" disabled value={ShipmentEntity.CaretSize}/>
 					<div className='invalid-feedback'>Product Not Selected!</div>
 				</div>
 
-				<CaretSizeInput Size={caretSize} handleInput={this.setQuantity} Limit={this.props.limit}/>
+				<CaretSizeInput Size={caretSize} handleInput={this.setQuantity} Limit={this.props.limit} />
 				<div className='form-group'>
 					<label>Defected Pieces</label>
 					<input

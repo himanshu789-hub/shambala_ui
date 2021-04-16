@@ -6,10 +6,12 @@ import ProductService from 'Services/ProductService';
 import IProductService from 'Contracts/Services/IProductService';
 import Action from 'Components/Action/Action';
 import { ShopInvoice } from 'Types/DTO';
+import { Product } from 'Types/Types';
 interface IInvoiceAddWrapperProps extends RouteComponentProps {}
 type InvoiceAddWrapperState = {
 	Mediator: MediatorSubject;
 	ShopSubscriber: ShopSubscriber[];
+	Products: Product[];
 };
 type ShopSubscriber = {
 	SubscriptionId: number;
@@ -22,6 +24,7 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 		this.state = {
 			Mediator: new MediatorSubject([]),
 			ShopSubscriber: [],
+			Products: [],
 		};
 		this._productService = new ProductService();
 	}
@@ -46,6 +49,10 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 			};
 		});
 	};
+	GetCaretSizeByProductId = (productId: number):number => {
+		const { Products } = this.state;
+		return Products.find(e=>e.Id==productId)?.CaretSize??0;
+	};
 	HandleProcess = () => {};
 	render() {
 		const { Mediator } = this.state;
@@ -59,6 +66,7 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 							key={e.SubscriptionId}
 							HandleDelete={this.HandleDelete}
 							ProvideShopInvoiceInfo={this.HandeShopInvoice}
+							GetCaretSizeByProductId={this.GetCaretSizeByProductId}
 						/>
 					))}
 				</div>
@@ -67,6 +75,8 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 		);
 	}
 	componentDidMount() {
-		this._productService.GetProductWithLimit().then(res => this.setState({ Mediator: new MediatorSubject(res.data) }));
+		this._productService
+			.GetProductWithLimit()
+			.then(res => this.setState({ Mediator: new MediatorSubject(res.data), Products: res.data }));
 	}
 }

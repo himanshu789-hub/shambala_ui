@@ -30,6 +30,12 @@ export default class Observer {
 		}
 		return this._subject.GetQuantity(this._productId as number, this._flavourId as number);
 	}
+	Unubscribe(){
+		if(!(this._componentId && this._subscriptionId)){
+			return;
+		}
+		this._subject.UnsubscribeAComponent(this._subscriptionId,this._componentId);
+	}
 	UnsubscribeToQuantity(quantity: number) {
 		if (!(this._subscriptionId && this._componentId)) {
 			console.error('Product or Flavour Not Set');
@@ -37,6 +43,7 @@ export default class Observer {
 		}
 		this._subject.UnsubscribeToQuantity(this._subscriptionId as number, this._componentId as number);
 	}
+	
 	GetFlavours(): Flavour[] {
 		if (!this._productId) {
 			console.error('Product Id  no Set');
