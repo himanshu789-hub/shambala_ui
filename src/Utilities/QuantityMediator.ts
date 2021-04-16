@@ -48,6 +48,7 @@ export default class QuantityMediator implements IQuantityMediator {
 	}
 	private _restoreQuantity(productId: number, flavourId: number, quantity: number) {
 		const Flavours = this._productsWithFlavourLimit.get(productId) as Flavour[];
+	
 		((Flavours.find(e => e.Id === flavourId) as Flavour).Quantity as number) += quantity;
 	}
 	GetQuantityLimit(productId: number, flavourId: number): number {
@@ -65,7 +66,9 @@ export default class QuantityMediator implements IQuantityMediator {
 		const QuantityComponentList = this._componentQuantity.get(subscriptionId) as Map<number, QuantityFlavourInfo>;
 		if (QuantityComponentList.has(componentId)) {
 			const QuantityFlavourInfo = QuantityComponentList.get(componentId) as QuantityFlavourInfo;
+
 			this._restoreQuantity(QuantityFlavourInfo.ProductId, QuantityFlavourInfo.FlavourId, QuantityFlavourInfo.Quantity);
+			QuantityComponentList.delete(componentId);
 			return true;
 		}
 		return false;

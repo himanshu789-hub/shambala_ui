@@ -35,6 +35,11 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 		Observer.Unubscribe();
 		HandleDelete(ComponentId);
 	}
+	HandleFocus = ()=>{
+		const {Observer} = this.props;
+		Observer.UnsubscribeToQuantity();
+		this.setState({QuantityLimit:Observer.GetQuantityLimit()})
+	}
 	HandleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
 		const {
 			currentTarget: { name, value },
@@ -63,10 +68,13 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 			handleChange(ComponentId, name, val);
 		}
 	};
-	HandleInput = (e: number) => {
+	HandleInput = (num: number) => {
 		const { handleChange, ComponentId, Observer } = this.props;
-		handleChange(ComponentId, 'Quantity', e);
-		Observer.SetQuantity(e);
+
+		Observer.UnsubscribeToQuantity();
+		handleChange(ComponentId, 'Quantity', num);
+		Observer.SetQuantity(num);
+		
 	};
 	HandleClick=(e:React.FocusEvent<HTMLSelectElement>)=>{
        const {Observer} = this.props;
@@ -125,7 +133,7 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 					<input className={`form-control ${MaxSize == 0 ? 'is-invalid' : ''}`} value={MaxSize} />
 				</td>
 				<td>
-					<CaretSize Size={MaxSize ?? 0} handleInput={this.HandleInput} Limit={QuantityLimit}/>
+					<CaretSize Size={MaxSize ?? 0} handleInput={this.HandleInput} Limit={QuantityLimit} OnFocusIn={this.HandleFocus}/>
 				</td>
 				<td>
 					<button onClick={this.Delete} className="btn btn-light w-100"><i className="fa fa-trash"></i></button>

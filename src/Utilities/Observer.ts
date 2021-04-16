@@ -36,7 +36,7 @@ export default class Observer {
 		}
 		this._subject.UnsubscribeAComponent(this._subscriptionId,this._componentId);
 	}
-	UnsubscribeToQuantity(quantity: number) {
+	UnsubscribeToQuantity() {
 		if (!(this._subscriptionId && this._componentId)) {
 			console.error('Product or Flavour Not Set');
 			return;

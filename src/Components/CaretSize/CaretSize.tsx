@@ -2,8 +2,10 @@ import { ChangeEvent, useState } from 'react';
 import { provideValidNumber } from 'Utilities/Utilities';
 interface ICaretSizeProps {
 	Size: number;
-	handleInput: (num:number)=>void;
+	handleInput: (num: number) => void;
 	Limit?: number;
+	OnFocusIn?: () => void;
+	OnFocusOut?: () => void;
 }
 const CaretSize = function CaretSize(props: ICaretSizeProps) {
 	const [caret, setCart] = useState<number>(0);
@@ -24,7 +26,6 @@ const CaretSize = function CaretSize(props: ICaretSizeProps) {
 			const caret = validNum;
 			const quantity = calculateTotalQuantity(caret, pieces);
 			setQuantity(quantity);
-			handleInput(quantity);
 			setCart(caret);
 		}
 	};
@@ -35,27 +36,34 @@ const CaretSize = function CaretSize(props: ICaretSizeProps) {
 		if (validNum <= Max_Pieces_Allow) {
 			const pieces = validNum;
 			const quantity = calculateTotalQuantity(caret, pieces);
-			
+
 			setQuantity(quantity);
-			handleInput(quantity);
 			setPieces(pieces);
 		}
 	};
+	const handleFocusEvent = () => {
+		const { OnFocusIn, OnFocusOut } = props;
+		OnFocusIn && OnFocusIn();
+	}
+	const handleBlurEvent = () => {
+		handleInput(quantity);
+	}
 	return (
 		<div className={!quantity ? 'border border-danger is-invalid rounded' : ''}>
 			<div
-				className={`form-group p-1 ${!props.Size ? 'disabled' : ''} ${
-					!props.Limit ? '' : quantity > props.Limit ? 'border border-danger rounded is-invalid' : ''
-				}`}>
+				className={`form-group p-1 ${!props.Size ? 'disabled' : ''} ${!props.Limit ? '' : quantity > props.Limit ? 'border border-danger rounded is-invalid' : ''
+					}`}>
 				<label htmlFor=''>Quantity</label>
 				<div className='d-flex justify-content-around'>
 					<div className={`form-group `}>
-						<input className='form-control' value={caret} onChange={handleCaretChange} />
+						<input className='form-control' value={caret} onChange={handleCaretChange}
+							disabled={(props.Limit != undefined && props.Limit < 0)} onFocus={handleFocusEvent} onBlur={handleBlurEvent} />
 						<small className='form-text text-muted'>Caret</small>
 					</div>
 					<label className='pl-2 pr-2 font-weight-bold'>:</label>
 					<div className={`form-group ${pieces > props.Size ? 'is-invalid' : ''}`}>
-						<input className='form-control' value={pieces} onChange={handlePiecesChange} />
+						<input className='form-control' value={pieces} onChange={handlePiecesChange} 
+						disabled={(props.Limit != undefined && props.Limit < 0)} onFocus={handleFocusEvent} onBlur={handleBlurEvent}/>
 						<small className='form-text text-muted'>Pieces</small>
 						<small className='invalid-feedback'>Atmost {props.Size}</small>
 					</div>
@@ -63,6 +71,7 @@ const CaretSize = function CaretSize(props: ICaretSizeProps) {
 				<div className='invalid-feedback pl-1'>Quantity Exceed</div>
 			</div>
 			<div className='invalid-feedback pl-1'>Cannot Be Zero</div>
+			<small>Quantity Limit is {props.Limit}</small>
 		</div>
 	);
 };
