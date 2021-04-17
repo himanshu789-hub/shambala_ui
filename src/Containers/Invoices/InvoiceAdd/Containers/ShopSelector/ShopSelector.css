@@ -1,0 +1,9 @@
+.shop .loader-wrapper 
+{
+    height:100px;
+    width:100%;
+}
+.shop .loader-wrapper .text-info
+{
+    display:none !important;
+}

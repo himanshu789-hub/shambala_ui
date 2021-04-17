@@ -10,7 +10,7 @@ export interface IProductMediator {
 	Subscribe(subscriptionId: number, componentId: number, productId: number): void;
 	Unsubscribe(subscriptionId: number, componentId: number): boolean;
 	IsAlreadySubscribed(subcriptionId: number, componentId: number): boolean;
-	ChangeSubscription(subscriptionId: number, componentId: number, productId: number): boolean;
+	ChangeSubscription(subscriptionId: number, componentId: number, productId: number): boolean;	UnsubscribeASubscription(subscriptionId:number):boolean;
 }
 export default class ComponentProductMediator implements IProductMediator {
 	_cloneProduct: Map<number, string>;
@@ -29,6 +29,25 @@ export default class ComponentProductMediator implements IProductMediator {
 		}
 		this._deletedProducts = new Set();
 		this._componentProductMap = new Map();
+	}
+	UnsubscribeASubscription(subscriptionId: number): boolean {
+		try {
+			this._checkArgumentNullException(subscriptionId);
+			const SubscriptionMappedCOmponent = this._componentProductMap.get(subscriptionId);
+			if (SubscriptionMappedCOmponent) {
+				Array.from(SubscriptionMappedCOmponent).forEach((value) => {
+					const componentId = value[0];
+					const item = value[1];
+					this.Unsubscribe(subscriptionId, componentId);
+				});
+				this._componentProductMap.delete(subscriptionId);
+				return true;
+			}
+		}
+		catch (error) {
+		}
+
+		return false;
 	}
 
 	private _checkArgumentNullException(...params: number[]) {

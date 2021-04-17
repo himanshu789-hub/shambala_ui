@@ -17,9 +17,10 @@ export interface IFlavourMediator {
 	IsSubscribed(subcriptionId: number, componentId: number): boolean;
 	RestoreFlavour(productId: number, flavourId: number): boolean;
 	GetSUbscribedFlavourId(subscriptionId: number, componentId: number): number;
+	UnsubscribeASubscription(subscriptionId:number):boolean;
 }
 
-export default class FlavourMediator {
+export default class FlavourMediator  implements IFlavourMediator{
 	private _cloneFlavours: Map<number, Flavour[]>;
 	private _flavours: Map<number, Flavour[]>;
 	private _deletedFlavour: FlavourWithProductKey[];
@@ -39,6 +40,25 @@ export default class FlavourMediator {
 		}
 		this._componentFlavourChoosen = new Map();
 		this._deletedSubscriptionFlavour = new Map();
+	}
+	UnsubscribeASubscription(subscriptionId: number): boolean {
+		try {
+			this._checkArgumentNullException(subscriptionId);
+			const SubscriptionMappedCOmponent = this._componentFlavourChoosen.get(subscriptionId);
+			if (SubscriptionMappedCOmponent) {
+				Array.from(SubscriptionMappedCOmponent).forEach((value) => {
+					const componentId = value[0];
+					const item = value[1];
+					this.Unsubscribe(subscriptionId, componentId);
+				});
+				this._componentFlavourChoosen.delete(subscriptionId);
+				return true;
+			}
+		}
+		catch (error) {
+		}
+
+		return false;
 	}
 
 	private _restoreFlavour(subscriptionId: number, productId: number, flavourId: number) {

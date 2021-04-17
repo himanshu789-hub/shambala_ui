@@ -25,3 +25,17 @@ background:white !important;
 }
 
 .table tr>td{padding:0;margin:0;}
+.table > .form-control{
+    margin: 0  !important;
+}
+.table td.caret .invalid-feedback{
+    display: none !important;
+}
+.table td.caret .form-group
+{
+    margin:0;
+}
+.table td.caret label:nth-of-type(1)
+{
+    display:none  !important;
+}

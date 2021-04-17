@@ -100,7 +100,7 @@ export default class InvoiceScheme extends React.Component<InvoiceSchemeProps, I
 									FIXED
 								</label>
 							</div>
-							<div className='form-check'>
+							<div className='form-check ml-2 mr-2'>
 								<input
 									className='form-check-input'
 									type='radio'
@@ -111,6 +111,19 @@ export default class InvoiceScheme extends React.Component<InvoiceSchemeProps, I
 								/>
 								<label className='form-check-label' htmlFor='exampleRadios3'>
 									VARIABLE
+								</label>
+							</div>
+							<div className='form-check'>
+								<input
+									className='form-check-input'
+									type='radio'
+									name='ChoosenSchemeType'
+									id='exampleRadios3'
+									onChange={this.handleChange}
+									value={SchemeType.NONE}
+								/>
+								<label className='form-check-label' htmlFor='exampleRadios3'>
+									NONE
 								</label>
 							</div>
 						</div>

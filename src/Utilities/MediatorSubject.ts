@@ -22,6 +22,11 @@ export default class MediatorSubject {
 		this._productMediator.Unsubscribe(subscriptionId, componentId);
 		this._quantityMediator.Unsubscibe(subscriptionId, componentId);
 	}
+	Unsubscribe(subscriptionId: number) {
+		this._flavourMediator.UnsubscribeASubscription(subscriptionId);
+		this._productMediator.UnsubscribeASubscription(subscriptionId);
+		this._quantityMediator.UnsubscribeASubscription(subscriptionId);
+	}
 	GetAObserver(subscriptionId: number, componentId: number) {
 		const observer = new Observer(subscriptionId, componentId, this);
 		this._observers.push(observer);

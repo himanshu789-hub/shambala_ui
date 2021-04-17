@@ -2,7 +2,6 @@
 .loader-wrapper
 {
 	position: relative;
-	width: 100vw;
 	height: 400px;
 }
 .loader-holder

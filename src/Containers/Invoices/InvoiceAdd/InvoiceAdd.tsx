@@ -7,7 +7,7 @@ import ProductService from 'Services/ProductService';
 import RowsWrapper from './Containers/RowsWrapper/RowsWrapper';
 import MediatorSubject from 'Utilities/MediatorSubject';
 import { ShopInvoice, SoldItem } from '../../../Types/DTO';
-
+import './InvoiceAdd.css';
 
 interface IInvoiceProps {
 	Mediator: MediatorSubject;

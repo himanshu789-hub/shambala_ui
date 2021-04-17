@@ -1,0 +1,16 @@
+.card
+{
+    margin:1rem;
+}
+.card-head
+{
+    padding:0;
+}
+.card-head>.form-control
+{
+    margin:0;
+}
+.card-head .dropdown
+{
+    margin:0;
+}

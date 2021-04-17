@@ -65,7 +65,7 @@ export default class RowsWrapper extends React.Component<RowsWrapperProps, RowsW
 	render() {
 		const { SoldItems: SoldItem, Members } = this.state;
 		return (
-			<div>
+			<div >
 				<table className='table'>
 					<thead className='bg-light'>
 						<tr>
@@ -92,7 +92,7 @@ export default class RowsWrapper extends React.Component<RowsWrapperProps, RowsW
 						})}
 					</tbody>
 				</table>
-				<button onClick={this.AddARow}>
+				<button onClick={this.AddARow} className="btn btn-primary btn-sm">
 					<i className='fa fa-plus'></i> Add More Item
 				</button>
 			</div>

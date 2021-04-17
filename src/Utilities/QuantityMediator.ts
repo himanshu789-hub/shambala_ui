@@ -10,7 +10,7 @@ export interface IQuantityMediator {
 	Unsubscibe(subscriptionId: number, componentId: number): void;
 	ChangeQuantity(subscriptionId: number, componentId: number, productId: number, flavourId: number, quantity: number): boolean;
 	Subscribe(subscriptionId: number, componentId: number, productId: number, flavourId: number, quantity: number): void;
-	IsQuantitySubscribed(subscriptionId: number, componentId: number): boolean;
+	IsQuantitySubscribed(subscriptionId: number, componentId: number): boolean; UnsubscribeASubscription(subscriptionId: number): boolean;
 }
 type QuantityInfo = Map<number, Map<number, QuantityFlavourInfo>>;
 
@@ -30,6 +30,25 @@ export default class QuantityMediator implements IQuantityMediator {
 			this._cloneProductWithFlavourList.set(Product.Id, [...CloneFlavours]);
 		}
 	}
+	UnsubscribeASubscription(subscriptionId: number): boolean {
+		try {
+			this._checkArgumentNullException(subscriptionId);
+			const SubscriptionMappedCOmponent = this._componentQuantity.get(subscriptionId);
+			if (SubscriptionMappedCOmponent) {
+				Array.from(SubscriptionMappedCOmponent).forEach((value) => {
+					const componentId = value[0];
+					const item = value[1];
+					this.Unsubscibe(subscriptionId, componentId);
+				});
+				this._componentQuantity.delete(subscriptionId);
+				return true;
+			}
+		}
+		catch (error) {
+		}
+
+		return false;
+	}
 	IsQuantitySubscribed(subscriptionId: number, componentId: number): boolean {
 		const ComponentMapQUantity = this._componentQuantity.get(subscriptionId);
 		if (!ComponentMapQUantity) return false;
@@ -48,7 +67,7 @@ export default class QuantityMediator implements IQuantityMediator {
 	}
 	private _restoreQuantity(productId: number, flavourId: number, quantity: number) {
 		const Flavours = this._productsWithFlavourLimit.get(productId) as Flavour[];
-	
+
 		((Flavours.find(e => e.Id === flavourId) as Flavour).Quantity as number) += quantity;
 	}
 	GetQuantityLimit(productId: number, flavourId: number): number {
@@ -57,10 +76,10 @@ export default class QuantityMediator implements IQuantityMediator {
 	}
 	Unsubscibe(subscriptionId: number, componentId: number) {
 		try {
-		this._checkSubscription(subscriptionId);
-			
+			this._checkSubscription(subscriptionId);
+
 		} catch (error) {
-		return false;	
+			return false;
 		}
 		this._checkArgumentNullException(subscriptionId, componentId);
 		const QuantityComponentList = this._componentQuantity.get(subscriptionId) as Map<number, QuantityFlavourInfo>;

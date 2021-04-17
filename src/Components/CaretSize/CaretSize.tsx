@@ -71,7 +71,6 @@ const CaretSize = function CaretSize(props: ICaretSizeProps) {
 				<div className='invalid-feedback pl-1'>Quantity Exceed</div>
 			</div>
 			<div className='invalid-feedback pl-1'>Cannot Be Zero</div>
-			<small>Quantity Limit is {props.Limit}</small>
 		</div>
 	);
 };

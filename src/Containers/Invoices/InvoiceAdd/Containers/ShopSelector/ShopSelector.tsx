@@ -1,6 +1,6 @@
 import Loader, { CallStatus } from 'Components/Loader/Loader';
 import IShopService from 'Contracts/Services/IShopService';
-import { ChangeEvent, MouseEvent, MouseEventHandler, useState } from 'react';
+import React, { ChangeEvent, MouseEvent, MouseEventHandler, useState } from 'react';
 import ShopService from 'Services/ShopService';
 import { Shop } from 'Types/DTO';
 import './ShopSelector.css';
@@ -17,17 +17,17 @@ export default function ShopSelector(props: ShopSelectorProps) {
 	const ShopServiceHandler: IShopService = new ShopService();
 	const handleChange = (e: MouseEvent<HTMLLabelElement>) => {
 		setShouldDropdownDisplay(false);
-		
+
 		setAPIStatus(CallStatus.EMPTY);
-		
+
 		setName(e.currentTarget.dataset.name ?? '');
 		props.handleSelection('ShopId', Number.parseInt(e.currentTarget.dataset.value as string));
 	};
 
 	return (
-		<div className='form-group dropdown'>
+		<div className='form-group dropdown shop'>
 			<input
-				className='form-control col-3'
+				className='form-control'
 				value={name}
 				placeholder='Enter Shop Name'
 				onChange={e => {
@@ -41,15 +41,16 @@ export default function ShopSelector(props: ShopSelectorProps) {
 					setShouldDropdownDisplay(true);
 				}}
 			/>
-			<Loader Status={APIStatus} Size={24} Message={'Gathering Shop Names . . .'}>
-				<div className={`dropdown-menu ${showDropdown ? 'show' : ''}`}>
-					{shops.map((value, index) => (
+			<div className={`dropdown-menu ${showDropdown ? 'show' : ''}`}>
+				<Loader Status={APIStatus} >
+					<React.Fragment>{shops.map((value, index) => (
 						<label data-value={value.Id} data-name={value.Name} className='dropdown-item' onClick={handleChange}>
 							{value.Name}
 						</label>
-					))}
-				</div>
-			</Loader>
+					))}</React.Fragment>
+				</Loader>
+			</div>
+
 		</div>
 	);
 }

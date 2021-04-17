@@ -3,7 +3,7 @@ export enum OutgoingStatus {
 }
 
 export enum SchemeType {
-    FIXED=1,VARIABLE
+    FIXED=1,VARIABLE,NONE
 }
 
 export enum SchemeKey {

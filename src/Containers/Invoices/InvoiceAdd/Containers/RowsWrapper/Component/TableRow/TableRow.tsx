@@ -132,7 +132,7 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 				<td>
 					<input className={`form-control ${MaxSize == 0 ? 'is-invalid' : ''}`} value={MaxSize} />
 				</td>
-				<td>
+				<td className="caret">
 					<CaretSize Size={MaxSize ?? 0} handleInput={this.HandleInput} Limit={QuantityLimit} OnFocusIn={this.HandleFocus}/>
 				</td>
 				<td>

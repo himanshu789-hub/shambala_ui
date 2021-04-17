@@ -35,6 +35,8 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 		});
 	};
 	HandleDelete = (SubscriptionId: number) => {
+		const {Mediator} = this.state;
+		Mediator.Unsubscribe(SubscriptionId);
 		this.setState(({ ShopSubscriber }) => {
 			return { ShopSubscriber: ShopSubscriber.filter(e => e.SubscriptionId != SubscriptionId) };
 		});
