@@ -24,6 +24,7 @@ export default class OutgoingShipmentAdd extends React.Component<OutgoingShipmen
 	render() {
 		return (
 			<div className='outgoing-add'>
+			    <h4>Create Outgoing Shipment</h4>
 				<ShipmentList Products={this.state.Products} handleSubmit={this.handleSubmit} ShouldLimitQuantity={true} />
 			</div>
 		);
