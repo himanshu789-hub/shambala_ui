@@ -1,16 +1,14 @@
-import ComponentError from 'Components/ComponentError/ComponentError';
 import Loader, { CallStatus } from 'Components/Loader/Loader';
-import ShipmentList from 'Components/ShipmentList/ShipmentList';
+import ShipmentList from 'Containers/ShipmentList/ShipmentList';
 import IOutgoingService from 'Contracts/Services/IOutgoingShipmentService';
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import OutgoingService from 'Services/OutgoingShipmentService';
 import { IShipmentElement, Product } from 'Types/Types';
 
-interface IOutgoingShipmentReturnProps extends RouteComponentProps {}
+interface IOutgoingShipmentReturnProps extends RouteComponentProps { }
 type OutgoingShipmentReturnState = {
 	ApiStatus: number;
-	AnyComponentError: boolean;
 	Products: Product[];
 };
 export default class OutgoingShipmentReturn extends React.Component<IOutgoingShipmentReturnProps, OutgoingShipmentReturnState> {
@@ -20,27 +18,24 @@ export default class OutgoingShipmentReturn extends React.Component<IOutgoingShi
 		this.state = {
 			ApiStatus: CallStatus.LOADING,
 			Products: [],
-			AnyComponentError: false,
 		};
 		this._outgoingService = new OutgoingService();
 	}
-	handleSubmit = (shipments: IShipmentElement[]) => {};
+	handleSubmit = (shipments: IShipmentElement[]) => { };
 	render() {
-		const { ApiStatus, Products, AnyComponentError } = this.state;
+		const { ApiStatus, Products } = this.state;
 		return (
-			<ComponentError show={AnyComponentError}>
-				<div className='returns'>
-					<Loader Status={ApiStatus} Message={'Gathering Shipment Info'}>
-						<ShipmentList Products={Products} ShouldLimitQuantity={true} handleSubmit={this.handleSubmit} />
-					</Loader>
-				</div>
-			</ComponentError>
+			<div className='returns'>
+				<Loader Status={ApiStatus} Message={'Gathering Shipment Info'}>
+					<ShipmentList Products={Products} ShouldLimitQuantity={true} handleSubmit={this.handleSubmit} />
+				</Loader>
+			</div>
 		);
 	}
 	componentDidMount() {
 		const {
 			match: { params },
 		} = this.props;
-		this._outgoingService.GetShipmentDetailsById(1).then(res => this.setState({ Products: res.data.Products ,ApiStatus:CallStatus.LOADED}));
+		this._outgoingService.GetShipmentDetailsById(1).then(res => this.setState({ Products: res.data.Products, ApiStatus: CallStatus.LOADED }));
 	}
 }

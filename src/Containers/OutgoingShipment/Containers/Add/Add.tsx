@@ -1,5 +1,5 @@
 import React from 'react';
-import ShipmentList from 'Components/ShipmentList/ShipmentList';
+import ShipmentList from 'Containers/ShipmentList/ShipmentList';
 import IProductService from 'Contracts/Services/IProductService';
 import ProductService from 'Services/ProductService';
 import { Product } from 'Types/Types';

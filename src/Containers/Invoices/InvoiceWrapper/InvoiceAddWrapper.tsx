@@ -59,7 +59,7 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 	render() {
 		const { Mediator } = this.state;
 		return (
-			<div className=' invoices'>
+			<div className='invoices'>
 				<div className='d-flex flex-column'>
 					{this.state.ShopSubscriber.map(e => (
 						<InvoiceAdd

@@ -1,6 +1,6 @@
 import React, { ChangeEvent, SyntheticEvent } from 'react';
 import { Product,IShipmentElement } from 'Types/Types';
-import ShipmentList from 'Components/ShipmentList/ShipmentList';
+import ShipmentList from 'Containers/ShipmentList/ShipmentList';
 import ProductService from 'Services/ProductService';
 import IProductService from 'Contracts/Services/IProductService';
 
