@@ -1,5 +1,5 @@
 import Loader, { CallStatus } from 'Components/Loader/Loader';
-import IShopService from 'Contracts/Services/IShopService';
+import IShopService from 'Contracts/services/IShopService';
 import React, { ChangeEvent, MouseEvent, MouseEventHandler, useState } from 'react';
 import ShopService from 'Services/ShopService';
 import { Shop } from 'Types/DTO';

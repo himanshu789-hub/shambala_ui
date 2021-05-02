@@ -176,3 +176,10 @@ a.action:active:before {
 		transform: rotate(360deg);
 	}
 }
+
+.app-head
+{
+	background-color: #343a4080;
+	color: white;
+	padding: 7px;
+}

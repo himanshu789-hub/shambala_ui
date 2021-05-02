@@ -2,7 +2,7 @@ import React, { ChangeEvent, SyntheticEvent } from 'react';
 import { Product,IShipmentElement } from 'Types/Types';
 import ShipmentList from 'Containers/ShipmentList/ShipmentList';
 import ProductService from 'Services/ProductService';
-import IProductService from 'Contracts/Services/IProductService';
+import IProductService from 'Contracts/services/IProductService';
 
 type IIncomingAddProps = {};
 type IIncomingAddState = {
@@ -33,6 +33,7 @@ export default class IncomingAdd extends React.Component<IIncomingAddProps, IInc
 		const { Products } = this.state;
 		return (
 			<div className='incmoming-add'>
+				<h5 className="app-head">Add Incoming Shipments</h5>
 				<ShipmentList Products={Products} handleSubmit={this.handleSubmit} ShouldLimitQuantity={false} />
 			</div>
 		);

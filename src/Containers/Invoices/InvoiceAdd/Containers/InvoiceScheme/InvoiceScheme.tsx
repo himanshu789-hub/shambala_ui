@@ -1,5 +1,5 @@
 import Loader, { CallStatus } from 'Components/Loader/Loader';
-import ISchemeService from 'Contracts/Services/ISchemeService';
+import ISchemeService from 'Contracts/services/ISchemeService';
 import { SchemeType } from 'Enums/Enum';
 import React, { ChangeEvent, Fragment, useState } from 'react';
 import SchemeService from 'Services/SchemeService';
@@ -40,6 +40,9 @@ export default class InvoiceScheme extends React.Component<InvoiceSchemeProps, I
 					this.setState(({ SelectedScheme }) => {
 						return { ChoosenScheme: (SelectedScheme as Scheme).Id };
 					});
+					else
+					this.setState({ChoosenScheme:-1});
+
 				this.setState({ ChoosenSchemeType: scheme });
 				break;
 			default:
@@ -56,11 +59,11 @@ export default class InvoiceScheme extends React.Component<InvoiceSchemeProps, I
 		return (
 			<Loader Status={APIStatus} Message={APIMessage}>
 				<React.Fragment>
-					<SchemeOptions ChoosenScheme={ChoosenScheme}
+					<SchemeOptions ChoosenSchemeType={ChoosenSchemeType}
 					HandleChange={this.handleChange} 
-				    ShouldDisabledFixed={SelectedScheme!=undefined} />
+				    ShouldDisabledFixed={!SelectedScheme} />
 					{
-						ChoosenScheme === SchemeType.VARIABLE && (
+						ChoosenSchemeType === SchemeType.VARIABLE && (
 							<SchemeList SchemeList={Lists} handleSelection={this.handleSelection} />
 						)
 					}

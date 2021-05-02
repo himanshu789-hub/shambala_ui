@@ -32,10 +32,10 @@ export default class FlavourMediator  implements IFlavourMediator{
 		this._deletedFlavour = [];
 		for (var i = 0; i < products.length; i++) {
 			const product = products[i];
-			this._flavours.set(product.Id, product.Flavour);
+			this._flavours.set(product.Id, product.Flavours);
 
 			let CloneFlavours: Array<Flavour> = [];
-			for (let j = 0; j < product.Flavour.length; j++) CloneFlavours.push({ ...product.Flavour[j] });
+			for (let j = 0; j < product.Flavours.length; j++) CloneFlavours.push({ ...product.Flavours[j] });
 			this._cloneFlavours.set(product.Id, CloneFlavours);
 		}
 		this._componentFlavourChoosen = new Map();

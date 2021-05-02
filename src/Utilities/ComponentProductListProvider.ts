@@ -20,7 +20,7 @@ export default class ComponentProductListMediator {
 		this._cloneProductFlavours = new Map<number, Flavour[]>();
 
 		productList.forEach(element => {
-			this._cloneProductFlavours.set(element.Id, element.Flavour);
+			this._cloneProductFlavours.set(element.Id, element.Flavours);
 			this._cloneProductNames.set(element.Id, element.Name);
 		});
 		this._productNames = new Map(this._cloneProductNames);
@@ -36,7 +36,7 @@ export default class ComponentProductListMediator {
 			if (
 				AllFlavours.length &&
 				!this._deletedProductIds.has(productId) &&
-				AllFlavours.length == Array.from(this._componentMappedProduct.values()).filter(e => e == productId).length
+				AllFlavours.length == Array.from(this._componentMappedFlavour.values()).filter(e => e == productId).length
 			) {
 				this._productNames.delete(productId);
 				this._deletedProductIds.add(productId);
@@ -121,7 +121,7 @@ export default class ComponentProductListMediator {
 		this._productDoNotExists(productId);
 		return undefined;
 	}
-	setASubscription(subscriptonId: number, productId: number) {
+	SetASubscription(subscriptonId: number, productId: number) {
 		if (!productId || !subscriptonId) {
 			throw new Error('ArgumentNullException');
 		}
@@ -149,7 +149,7 @@ export default class ComponentProductListMediator {
 		this._componentMappedProduct.set(subscriptonId, productId);
 		this._deleteProductIfAllConsumed(productId);
 	}
-	subscribedToFlavourId(subscriptionId: number, productId: number, flavourId: number) {
+	SubscribedToFlavourId(subscriptionId: number, productId: number, flavourId: number) {
 		if (!productId || !subscriptionId || !flavourId) {
 			throw new Error('ArgumentNullException');
 		}
@@ -169,13 +169,13 @@ export default class ComponentProductListMediator {
 			this._deductProductFlavourByFlavourId(productId, flavourId);
 		}
 	}
-	getFlavourLimit(productId: number, flavourId: number) {
+	GetFlavourLimit(productId: number, flavourId: number) {
 		const Products = this._cloneProductFlavours;
 		if (!productId || !flavourId) return undefined;
 		const Flavours = Products.get(productId);
 		return Flavours?.find(e => e.Id === flavourId)?.Quantity;
 	}
-	getFlavours(subscriptionId: number): Flavour[] {
+	GetFlavours(subscriptionId: number): Flavour[] {
 		if (!this._componentMappedProduct.has(subscriptionId)) return [];
 		const productId = this._componentMappedProduct.get(subscriptionId) as number;
 		if (!this._componentMappedFlavour.has(subscriptionId)) {

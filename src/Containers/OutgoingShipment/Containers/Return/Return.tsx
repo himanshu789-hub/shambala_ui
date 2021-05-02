@@ -1,6 +1,6 @@
 import Loader, { CallStatus } from 'Components/Loader/Loader';
 import ShipmentList from 'Containers/ShipmentList/ShipmentList';
-import IOutgoingService from 'Contracts/Services/IOutgoingShipmentService';
+import IOutgoingService from 'Contracts/services/IOutgoingShipmentService';
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import OutgoingService from 'Services/OutgoingShipmentService';
@@ -26,7 +26,7 @@ export default class OutgoingShipmentReturn extends React.Component<IOutgoingShi
 		const { ApiStatus, Products } = this.state;
 		return (
 			<div className='returns'>
-			<h4>Outgoing Shipment Return</h4>
+			<h5 className="app-head">Outgoing Shipment Return</h5>
 				<Loader Status={ApiStatus} Message={'Gathering Shipment Info'}>
 					<ShipmentList Products={Products} ShouldLimitQuantity={true} handleSubmit={this.handleSubmit} />
 				</Loader>

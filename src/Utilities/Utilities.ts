@@ -13,7 +13,7 @@ export function deepCloneProducts(products:Product[])
     for(let i=0;i<products.length;i++)
 	{
 		const Product = products[i];
-		const Flavours = Product.Flavour;
+		const Flavours = Product.Flavours;
 		let CloneFlavours = [];
 		for(let j=0;j<Flavours.length;j++)
 		{

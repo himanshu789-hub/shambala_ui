@@ -1,5 +1,5 @@
 import { AxiosResponse } from 'axios';
-import IOutgoingShipment from 'Contracts/Services/IOutgoingShipmentService';
+import IOutgoingShipment from 'Contracts/services/IOutgoingShipmentService';
 import { OutgoingShipmentValue, OutgoingShipmentProducts } from 'Mock/Shipment';
 import MockAdapter from 'axios-mock-adapter';
 import { OutgoingShipmentClient } from 'HttpClient/Axios';

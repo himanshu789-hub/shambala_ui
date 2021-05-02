@@ -3,12 +3,12 @@ import { ChangeEvent } from "react";
 import { Scheme } from "Types/DTO";
 
 type DisplaySchemeProps = {
-	ChoosenScheme: number;
+	ChoosenSchemeType: number;
 	ShouldDisabledFixed:boolean;
 	HandleChange: (name: string, value: any) => void;
 }
 const SchemeOptions = (props: DisplaySchemeProps) => {
-	const { ChoosenScheme,ShouldDisabledFixed} = props;
+	const { ChoosenSchemeType: ChoosenScheme,ShouldDisabledFixed} = props;
 	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
 		const { HandleChange } = props;
 		const { name, value } = e.currentTarget;
@@ -25,7 +25,7 @@ const SchemeOptions = (props: DisplaySchemeProps) => {
 						name='ChoosenSchemeType'
 						id='exampleRadios2'
 						value={SchemeType.FIXED}
-						checked={ChoosenScheme == SchemeType.FIXED}
+						checked={ChoosenScheme === SchemeType.FIXED}
 						disabled={ShouldDisabledFixed}
 						onChange={handleChange}
 					/>
@@ -39,7 +39,7 @@ const SchemeOptions = (props: DisplaySchemeProps) => {
 						type='radio'
 						name='ChoosenSchemeType'
 						id='exampleRadios3'
-						checked={ChoosenScheme == SchemeType.VARIABLE || ShouldDisabledFixed}
+						checked={ChoosenScheme === SchemeType.VARIABLE || ShouldDisabledFixed}
 						onChange={handleChange}
 						value={SchemeType.VARIABLE}
 					/>
@@ -55,14 +55,15 @@ const SchemeOptions = (props: DisplaySchemeProps) => {
 						id='exampleRadios4'
 						onChange={handleChange}
 						value={SchemeType.NONE}
-						checked={ChoosenScheme == SchemeType.NONE}
+						checked={ChoosenScheme === SchemeType.NONE}
+						
 					/>
 					<label className='form-check-label' htmlFor='exampleRadios4'>
 						NONE
 			</label>
 				</div>
 			</div>
-			<small className='invalid-feedback text-danger'>{ChoosenScheme == -1 ? 'Please Select A Scheme' : ''}</small>
+			<small className='invalid-feedback text-danger'>{ChoosenScheme == -1 ? 'Please Select A Scheme Type' : ''}</small>
 		</div>
 
 	);

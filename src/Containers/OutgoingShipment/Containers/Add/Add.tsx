@@ -1,6 +1,6 @@
 import React from 'react';
 import ShipmentList from 'Containers/ShipmentList/ShipmentList';
-import IProductService from 'Contracts/Services/IProductService';
+import IProductService from 'Contracts/services/IProductService';
 import ProductService from 'Services/ProductService';
 import { Product } from 'Types/Types';
 
@@ -24,7 +24,7 @@ export default class OutgoingShipmentAdd extends React.Component<OutgoingShipmen
 	render() {
 		return (
 			<div className='outgoing-add'>
-			    <h4>Create Outgoing Shipment</h4>
+			    <h5 className="app-head">Add Outgoing Shipment</h5>
 				<ShipmentList Products={this.state.Products} handleSubmit={this.handleSubmit} ShouldLimitQuantity={true} />
 			</div>
 		);

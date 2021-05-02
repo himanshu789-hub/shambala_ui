@@ -13,8 +13,9 @@ const SchemeList = function (props: VariableSectionProps) {
 		props.handleSelection(selectedScheme);
 	};
 	return (
-		<div className='variable-scheme-section'>
-			<select name='schemes' onChange={handleChange} value={schemeSelected}>
+		<div className='variable-scheme-section form-group'>
+			<small>Please Select a Scheme : </small>
+			<select name='schemes' className="form-control-sm" onChange={handleChange} value={schemeSelected}>
 				<option selected disabled>
 					-- Select A Scheme Type --
 				</option>

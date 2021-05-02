@@ -1,5 +1,5 @@
 import { AxiosResponse } from 'axios';
-import IShopService from 'Contracts/Services/IShopService';
+import IShopService from 'Contracts/services/IShopService';
 import { Shop } from 'Types/DTO';
 import { ShopClient } from 'HttpClient/Axios';
 import MockAdapter from 'axios-mock-adapter';

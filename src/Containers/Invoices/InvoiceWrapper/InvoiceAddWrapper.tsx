@@ -3,7 +3,7 @@ import InvoiceAdd from '../InvoiceAdd/InvoiceAdd';
 import { RouteComponentProps } from 'react-router-dom';
 import MediatorSubject from 'Utilities/MediatorSubject';
 import ProductService from 'Services/ProductService';
-import IProductService from 'Contracts/Services/IProductService';
+import IProductService from 'Contracts/services/IProductService';
 import Action from 'Components/Action/Action';
 import { ShopInvoice } from 'Types/DTO';
 import { Product } from 'Types/Types';

@@ -1,5 +1,5 @@
 import  { AxiosResponse } from 'axios';
-import IProductService from 'Contracts/Services/IProductService';
+import IProductService from 'Contracts/services/IProductService';
 import { Product } from 'Types/Types';
 import { productsWithLimit, productsWithoutLimit } from 'Mock/Product';
 import MockAdapter from 'axios-mock-adapter';

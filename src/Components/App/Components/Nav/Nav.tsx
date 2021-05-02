@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link,NavLink } from 'react-router-dom';
 
 import './Nav.css';
 const Nav = React.memo(function Nav() {
@@ -7,12 +7,12 @@ const Nav = React.memo(function Nav() {
 		<nav id='navigation' className='bg-dark'>
 			<ul className='nav' id='menu'>
 				<li className='nav-item parent'>
-					<Link className='nav-link' to='/incoming'>
+					<NavLink activeClassName="active" className='nav-link' to='/incoming'>
 						<span className='d-inline-flex flex-column align-items-center'>
 							<i className='fa fa-ship fa-2x'></i>
 							<label>Incoming</label>
 						</span>
-					</Link>
+					</NavLink>
 					<ul className='dropdown-menu child'>
 						<li className='dropdown-item'>
 							<Link to='/incoming/add' className='nav-link'>
@@ -67,12 +67,12 @@ const Nav = React.memo(function Nav() {
 					</ul>
 				</li> */}
 				<li className='nav-item parent'>
-					<a className='nav-link' href='#'>
+					<NavLink className='nav-link' activeClassName="active" to="/outgoing">
 						<span className='d-inline-flex flex-column justify-content-center align-items-center'>
 							<i className='fa fa-truck fa-2x'></i>
 							<label>Outgoing</label>
 						</span>
-					</a>
+					</NavLink>
 					<ul className='child dropdown-menu'>
 						<li className='dropdown-item'>
 							<Link to='/outgoing/add' className='nav-link'>
@@ -87,12 +87,12 @@ const Nav = React.memo(function Nav() {
 					</ul>
 				</li>
 				<li className='nav-item parent'>
-					<a className='nav-link' href='#'>
+					<NavLink className='nav-link' activeClassName="active" to="/invoice">
 						<span className='d-inline-flex flex-column justify-content-center align-items-center'>
 							<i className='fa fa-shopping-bag fa-2x'></i>
 							<label>Invoices</label>
 						</span>
-					</a>
+					</NavLink>
 					<ul className='child dropdown-menu'>
 						<li className='dropdown-item'>
 							<Link to='/invoice/add' className='nav-link'>

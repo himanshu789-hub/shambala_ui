@@ -25,7 +25,7 @@ export default class QuantityMediator implements IQuantityMediator {
 		for (let i = 0; i < products.length; i++) {
 			const Product = products[i];
 			let CloneFlavours = [];
-			for (let j = 0; j < Product.Flavour.length; j++) CloneFlavours.push({ ...Product.Flavour[j] });
+			for (let j = 0; j < Product.Flavours.length; j++) CloneFlavours.push({ ...Product.Flavours[j] });
 			this._productsWithFlavourLimit.set(Product.Id, CloneFlavours);
 			this._cloneProductWithFlavourList.set(Product.Id, [...CloneFlavours]);
 		}

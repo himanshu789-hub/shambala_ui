@@ -44,3 +44,8 @@ ul#menu ul.child li:hover {
 	background-color: var(--table-border) !important;
 	color: white;
 }
+a.active
+{
+color: white !important;
+font-weight: bold ;
+}

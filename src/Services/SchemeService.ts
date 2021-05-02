@@ -1,4 +1,4 @@
-import ISchemeService from 'Contracts/Services/ISchemeService';
+import ISchemeService from 'Contracts/services/ISchemeService';
 import { Scheme } from 'Types/DTO';
 import { SchemeClient } from 'HttpClient/Axios';
 import { AxiosResponse } from 'axios';

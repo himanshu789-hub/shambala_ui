@@ -6,7 +6,7 @@ import { OutgoingStatus } from 'Enums/Enum';
 import { Salesman as SalesmanValues } from 'Mock/Salesman';
 import { Salesman } from 'Models/Salesman';
 import { Link } from 'react-router-dom';
-import IOUtgoingShipmentService from 'Contracts/Services/IOutgoingShipmentService';
+import IOUtgoingShipmentService from 'Contracts/services/IOutgoingShipmentService';
 import OutgoingService from 'Services/OutgoingShipmentService';
 type OutgoingShipmentSearchProps = {};
 type Search = {
@@ -136,7 +136,7 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 		);
 		return (
 			<div className='search'>
-				<h1>Search Outgoing Shipments</h1>
+				<h5 className="app-head">Search Outgoing Shipments</h5>
 				<div className='form-inline justify-content-center'>
 					<div className='d-flex flex-column'>
 						<div className='input-group mr-2'>

@@ -53,7 +53,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		if (Name == 'ProductId') {
 			const componentMediator = this._componentListProvider as ComponentProductListProvider;
 			const ProductId = Number.parseInt(Value);
-			componentMediator.setASubscription(Id, ProductId);
+			componentMediator.SetASubscription(Id, ProductId);
 			this.setState(({ Shipments: IncomingShipments }) => {
 				return {
 					Shipments: [
@@ -64,7 +64,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 									...e,
 									ProductId: ProductId,
 									FlavourId,
-									CaretSize: this.selectProductCaretDetails(e.ProductId+''),
+									CaretSize: this.selectProductCaretDetails(ProductId),
 								};
 							}
 							return { ...e };
@@ -74,7 +74,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			});
 		} else if (Name == 'FlavourId') {
 			const ProductId = IncomingShipments.find(e => e.Id == Id)?.ProductId as number;
-			(this._componentListProvider as ComponentProductListProvider).subscribedToFlavourId(Id, ProductId, Number.parseInt(Value));
+			(this._componentListProvider as ComponentProductListProvider).SubscribedToFlavourId(Id, ProductId, Number.parseInt(Value));
 			this.setState(({ Shipments: IncomingShipments }) => {
 				return {
 					Shipments: [
@@ -128,8 +128,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				],
 			});
 	};
-	selectProductCaretDetails = (Id: string): number => {
-		let product = this._products.get(Id);
+	selectProductCaretDetails = (Id: number): number => {
+		let product = this._products.get(Id+'');
 		if (product) return product.CaretSize;
 		return 0;
 	};
@@ -157,8 +157,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						IncomingShipments.map((value, index) => {
 							const mediator = this._componentListProvider as ComponentProductListProvider;
 							const componentList = mediator.provideProductListBySubscriptionId(value.Id);
-							const flavourList = this._componentListProvider?.getFlavours(value.Id) ?? [];
-							let limit = mediator.getFlavourLimit(value.ProductId, value.FlavourId);
+							const flavourList = this._componentListProvider?.GetFlavours(value.Id) ?? [];
+							let limit = mediator.GetFlavourLimit(value.ProductId, value.FlavourId);
 							return (
 								<ShipmentElement
 									key={value.Id}
