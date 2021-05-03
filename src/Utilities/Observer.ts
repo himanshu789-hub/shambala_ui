@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { ProductInfo } from 'Types/Mediator';
-import { Flavour } from 'Types/Types';
+import { Flavour } from 'Types/DTO';
 import MediatorSubject from './MediatorSubject';
 
 export type ReactComponent = Component<any, any>;

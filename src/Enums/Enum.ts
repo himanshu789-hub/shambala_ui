@@ -1,5 +1,5 @@
 export enum OutgoingStatus {
-    PENDING=1,COMPLETED
+   PENDING=1,RETURNED,COMPLETED
 }
 
 export enum SchemeType {

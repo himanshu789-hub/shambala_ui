@@ -1,4 +1,4 @@
-import { Product } from "Types/Types";
+import { Product } from "Types/DTO";
 
 export const provideValidNumber = (num: string): number => {
 	if (!num.length) return 0;

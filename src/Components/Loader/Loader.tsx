@@ -11,17 +11,34 @@ type LoaderProps = {
 	Size?: number;
 	children?: JSX.Element;
 	Status: number;
-	Message?:string;
+	Message?: string;
 };
+export interface ApiStatusInfo  {
+Message?:string;
+Status:CallStatus;
+}
 interface LoaderSizeProperty extends CSSProperties {
 	'--size': string;
+}
+function RequestError() {
+	return <div className="sa">
+		<div className="sa-warning">
+			<div className="sa-warning-body"></div>
+			<div className="sa-warning-dot"></div>
+		</div>
+	</div>;
+}
+
+function Error(props: { msg?: string }) {
+	const Message = props.msg ?? "An Error Occured While Requesting Data";
+	return <div className="d-flex flex-column justify-content-center align-items-center"><RequestError /><small className="text-center">{Message}</small></div>;
 }
 export default function Loader(props: LoaderProps) {
 	const { Size, Status } = props;
 	const LoaderProerties = { '--size': (Size ?? 50) + 'px' } as LoaderSizeProperty;
-	const Message = props.Message??"Gathering Data . . .";
-	if (Status==CallStatus.ERROR) return <div>An Error Occured While Requesting Data</div>;
-	if (Status == CallStatus.EMPTY) return <React.Fragment></React.Fragment>;
+	const Message = props.Message ?? "Gathering Data . . .";
+	if (Status == CallStatus.ERROR) return <Error msg={props.Message} />;
+	else if (Status == CallStatus.EMPTY) return <React.Fragment></React.Fragment>;
 	else if (Status === CallStatus.LOADING)
 		return (
 			<Fragment>

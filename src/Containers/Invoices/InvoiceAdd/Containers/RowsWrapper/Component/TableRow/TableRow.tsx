@@ -1,7 +1,7 @@
 import CaretSize from 'Components/CaretSize/CaretSize';
 import React, { ChangeEvent } from 'react';
 import { ProductInfo } from 'Types/Mediator';
-import { Flavour } from 'Types/Types';
+import { Flavour } from 'Types/DTO';
 import Observer from 'Utilities/Observer';
 import './TableRow.css';
 

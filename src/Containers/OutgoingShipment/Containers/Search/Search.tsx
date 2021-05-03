@@ -1,13 +1,15 @@
-import Loader, { CallStatus } from 'Components/Loader/Loader';
+import Loader, { CallStatus, ApiStatusInfo } from 'Components/Loader/Loader';
 import React, { SyntheticEvent } from 'react';
 import { OutgoingShipment, SalesmanProperties } from 'Types/Types';
 import './Search.css';
 import { OutgoingStatus } from 'Enums/Enum';
-import { Salesman as SalesmanValues } from 'Mock/Salesman';
-import { Salesman } from 'Models/Salesman';
 import { Link } from 'react-router-dom';
 import IOUtgoingShipmentService from 'Contracts/services/IOutgoingShipmentService';
 import OutgoingService from 'Services/OutgoingShipmentService';
+import ISalesmanService from 'Contracts/services/ISalesmanService';
+import { SalesmanService } from 'Services/SalesmanService';
+import { SalesmanDTO } from 'Types/DTO';
+import SalesmanList from 'Components/SalesmanList/SalesmanList';
 type OutgoingShipmentSearchProps = {};
 type Search = {
 	SalesmanId: string;
@@ -15,30 +17,35 @@ type Search = {
 };
 type OutgoingShipmentSearchState = {
 	Search: Search;
-	Salesmans: SalesmanProperties[];
+	Salesmans: SalesmanDTO[];
 	OutgoingShipments: OutgoingShipment[];
-	APIStatus: CallStatus;
 	ShouldValidate: boolean;
 	ErrorMessage: { [key: string]: string };
+	SalemansRequestInfo: ApiStatusInfo;
+	OutgoingShipmentRequestInfo: ApiStatusInfo;
 };
 export default class OutgoingShipmentSearch extends React.Component<OutgoingShipmentSearchProps, OutgoingShipmentSearchState> {
 	OutgoingShipmentService: IOUtgoingShipmentService;
+	SalesmanService: ISalesmanService;
 	constructor(props: OutgoingShipmentSearchProps) {
 		super(props);
 		this.state = {
-			APIStatus: CallStatus.EMPTY,
+			OutgoingShipmentRequestInfo: { Status: CallStatus.EMPTY }, SalemansRequestInfo: { Status: CallStatus.EMPTY },
 			Salesmans: [],
 			ErrorMessage: {},
 			ShouldValidate: false,
 			OutgoingShipments: [],
 			Search: { DateCreated: '', SalesmanId: '-1' },
 		};
+		this.SalesmanService = new SalesmanService();
 		this.IsValid = this.IsValid.bind(this);
 		this.OutgoingShipmentService = new OutgoingService();
 		this.handleChange = this.handleChange.bind(this);
 		this.handleClick = this.handleClick.bind(this);
 	}
-
+	handleSelection = (Id: number) => {
+		this.setState(({ Search }) => { return { Search: { ...Search, SalesmanId: Id + '' } } });
+	}
 	handleChange(e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) {
 		const {
 			currentTarget: { name, value },
@@ -47,12 +54,13 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 			return { Search: { ...prevState.Search, [name]: value } };
 		});
 	}
+
 	IsValid(): boolean {
 		const { SalesmanId, DateCreated } = this.state.Search;
 		let IsValid = true;
 		if (SalesmanId == '-1') {
 			this.setState(prevState => {
-				return { ErrorMessage: { ...prevState.ErrorMessage, SalesmanId: 'Please Select A Value' } };
+				return { ErrorMessage: { ...prevState.ErrorMessage, SalesmanId: 'Please Select A Salesman' } };
 			});
 			IsValid = false;
 		} else
@@ -78,10 +86,10 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 		} = this.state;
 
 		if (this.IsValid()) {
-			this.setState({ APIStatus: CallStatus.LOADING });
+			this.setState({ OutgoingShipmentRequestInfo: { Status: CallStatus.LOADING, Message: 'Gathering Shipments Info' } });
 			this.OutgoingShipmentService.GetShipmentByDateAndSalesmanId(Number.parseInt(SalesmanId), DateCreated).then(res =>
-				this.setState({ OutgoingShipments: res.data, APIStatus: CallStatus.LOADED }),
-			);
+				this.setState({ OutgoingShipments: res.data, OutgoingShipmentRequestInfo: { Status: CallStatus.LOADED } }),
+			).catch(() => this.setState({ OutgoingShipmentRequestInfo: { Status: CallStatus.ERROR, Message: "Error Gathering Shipments Info" } }));
 		} else {
 			this.setState({ ShouldValidate: true });
 		}
@@ -90,10 +98,9 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 		const {
 			Search: { DateCreated: Date, SalesmanId },
 			Salesmans,
-			APIStatus,
 			ShouldValidate,
 			OutgoingShipments,
-			ErrorMessage,
+			ErrorMessage, OutgoingShipmentRequestInfo, SalemansRequestInfo
 		} = this.state;
 		const LoaderChildren: JSX.Element = (
 			<div className='table-wrapper'>
@@ -113,7 +120,7 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 								return (
 									<tr key={index}>
 										<td>{index + 1}</td>
-										<td>{new Salesman(value.Salesman).GetFullName()}</td>
+										<td>{value.Salesman.FullName}</td>
 										<td>{value.DateCreated}</td>
 										<td>
 											{IsPending ? (
@@ -139,20 +146,12 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 				<h5 className="app-head">Search Outgoing Shipments</h5>
 				<div className='form-inline justify-content-center'>
 					<div className='d-flex flex-column'>
-						<div className='input-group mr-2'>
-							<div className='input-group-prepend'>
-								<div className='input-group-text'>Salesman</div>
-							</div>
-							<select className='form-control' name='SalesmanId' onChange={this.handleChange} value={SalesmanId}>
-								<option disabled selected value='-1'>
-									--Select A Salesman--
-								</option>
-								{Salesmans.map(e => (
-									<option value={e.Id} key={e.Id}>{new Salesman(e).GetFullName()}</option>
-								))}
-							</select>
-						</div>
-						<small className='form-text  text-danger'>{ShouldValidate && ErrorMessage['SalesmanId']}</small>
+						<Loader Status={SalemansRequestInfo.Status} Message={SalemansRequestInfo.Message} Size={50} >
+							<React.Fragment>
+								<SalesmanList Salesmans={Salesmans} handleSelection={this.handleSelection} />
+								<small className='form-text  text-danger'>{ShouldValidate && ErrorMessage['SalesmanId']}</small>
+							</React.Fragment>
+						</Loader>
 					</div>
 					<div className='d-flex flex-column'>
 						<div className='input-group mr-5'>
@@ -168,12 +167,15 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 					</button>
 				</div>
 				<div className='outgoing-table'>
-					<Loader children={LoaderChildren} Status={APIStatus} />
+					<Loader children={LoaderChildren} Status={OutgoingShipmentRequestInfo.Status} Message={OutgoingShipmentRequestInfo.Message} />
 				</div>
 			</div>
 		);
 	}
 	componentDidMount() {
-		this.setState({ Salesmans: SalesmanValues });
+		this.setState({ SalemansRequestInfo:{Status:CallStatus.LOADING,Message:'Gathering All Salesman'} });
+		this.SalesmanService.GetAll()
+			.then(response => this.setState({ SalemansRequestInfo:{Status:CallStatus.LOADED,Message:''}, Salesmans: response.data }))
+			.catch(() => this.setState({ SalemansRequestInfo:{Message:'Error Gathering Salesman',Status:CallStatus.ERROR}}));
 	}
 }

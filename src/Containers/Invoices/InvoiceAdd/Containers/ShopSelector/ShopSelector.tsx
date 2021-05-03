@@ -17,9 +17,7 @@ export default function ShopSelector(props: ShopSelectorProps) {
 	const ShopServiceHandler: IShopService = new ShopService();
 	const handleChange = (e: MouseEvent<HTMLLabelElement>) => {
 		setShouldDropdownDisplay(false);
-
 		setAPIStatus(CallStatus.EMPTY);
-
 		setName(e.currentTarget.dataset.name ?? '');
 		props.handleSelection('ShopId', Number.parseInt(e.currentTarget.dataset.value as string));
 	};
@@ -37,7 +35,7 @@ export default function ShopSelector(props: ShopSelectorProps) {
 					ShopServiceHandler.GetByName(name).then(res => {
 						setShopList(res.data);
 						setAPIStatus(CallStatus.LOADED);
-					});
+					}).catch(()=>setAPIStatus(CallStatus.ERROR));
 					setShouldDropdownDisplay(true);
 				}}
 			/>

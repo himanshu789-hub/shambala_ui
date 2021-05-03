@@ -2,8 +2,6 @@ import React from 'react';
 import { CallStatus } from 'Components/Loader/Loader';
 import ShopSelector from './Containers/ShopSelector/ShopSelector';
 import InvoiceScheme from './Containers/InvoiceScheme/InvoiceScheme';
-import IProductService from 'Contracts/services/IProductService';
-import ProductService from 'Services/ProductService';
 import RowsWrapper from './Containers/RowsWrapper/RowsWrapper';
 import MediatorSubject from 'Utilities/MediatorSubject';
 import { ShopInvoice, SoldItem } from '../../../Types/DTO';

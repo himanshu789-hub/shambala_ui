@@ -1,5 +1,5 @@
 import { ProductInfo } from 'Types/Mediator';
-import { Flavour, Product } from 'Types/Types';
+import { Flavour, Product } from 'Types/DTO';
 import FlavourMediator, { IFlavourMediator } from './FlavourMediator';
 import QuantityMediator, { IQuantityMediator } from './QuantityMediator';
 import ComponentProductMediator, { IProductMediator } from './ProductMediator';

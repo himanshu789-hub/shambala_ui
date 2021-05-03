@@ -1,10 +1,12 @@
 import React, { ChangeEvent, SyntheticEvent } from 'react';
-import { CaretDetails, Flavour, IShipmentElement } from 'Types/Types';
+import { CaretDetails } from 'Types/Types';
 import CaretSizeInput from 'Components/CaretSize/CaretSize';
 import { provideValidNumber } from 'Utilities/Utilities';
 import './ShipmentElement.css';
 import { ShipmentProperty } from 'Types/Types';
 import { ProductKeyWithName } from 'Types/Types';
+import { Flavour, IShipmentElement } from 'Types/DTO';
+
 type IShipmentElementProps = {
 	ShipmentEntity: IShipmentElement;
 	handleChange: (property: ShipmentProperty) => void;

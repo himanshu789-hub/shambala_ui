@@ -1,22 +1,17 @@
-import  { AxiosResponse } from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import IProductService from 'Contracts/services/IProductService';
-import { Product } from 'Types/Types';
-import { productsWithLimit, productsWithoutLimit } from 'Mock/Product';
-import MockAdapter from 'axios-mock-adapter';
-import {ProductAxiosClient as AxiosClient} from 'HttpClient/Axios';
-
-let mock = new MockAdapter(AxiosClient);
-
-mock.onGet('/products').reply(200, productsWithoutLimit);
-mock.onGet('/productsLimit').reply(200, productsWithLimit);
+import { ProductAxiosClient as AxiosClient } from 'HttpClient/Axios';
+import { IShipmentElement, Product } from 'Types/DTO';
 
 export default class ProductService implements IProductService {
-	setErrorHandler = (callBack: () => void) => callBack();
-
-	GetAll(): Promise<AxiosResponse<Product[]>> {
-		return AxiosClient.get('products');
+	Add(shipment: IShipmentElement[]): Promise<AxiosResponse<void>> {
+		return axios.post('add', shipment);
 	}
-	GetProductWithLimit(): Promise<AxiosResponse<Product[]>> {
-		return AxiosClient.get('productsLimit');
+    GetProductWithLimit():Promise<AxiosResponse<Product[]>>
+	{
+       return axios.get('GetAllWithLimit');
+	}           
+	GetProductWithoutLimit(): Promise<AxiosResponse<Product[]>> {
+		return AxiosClient.get('GetAllWithoutLimit');
 	}
 }

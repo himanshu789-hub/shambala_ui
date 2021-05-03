@@ -1,5 +1,5 @@
 import {SalesmanProperties} from 'Types/Types';
-export class Salesman {
+export class SalesmanModal {
 	Id: number;
 	FirstName: string;
 	LastName: string;

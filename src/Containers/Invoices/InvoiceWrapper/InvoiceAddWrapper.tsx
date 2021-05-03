@@ -5,8 +5,7 @@ import MediatorSubject from 'Utilities/MediatorSubject';
 import ProductService from 'Services/ProductService';
 import IProductService from 'Contracts/services/IProductService';
 import Action from 'Components/Action/Action';
-import { ShopInvoice } from 'Types/DTO';
-import { Product } from 'Types/Types';
+import { ShopInvoice,Product } from 'Types/DTO';
 interface IInvoiceAddWrapperProps extends RouteComponentProps {}
 type InvoiceAddWrapperState = {
 	Mediator: MediatorSubject;
@@ -78,7 +77,7 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 	}
 	componentDidMount() {
 		this._productService
-			.GetProductWithLimit()
+			.GetProductWithoutLimit()
 			.then(res => this.setState({ Mediator: new MediatorSubject(res.data), Products: res.data }));
 	}
 }

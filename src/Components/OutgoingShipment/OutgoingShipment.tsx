@@ -8,13 +8,11 @@ export default function OutgoingShipment() {
 	return (
 		<div className='outgoing'>
 			<Switch>
-				<Route path={match.path + '/add'}>
-					<OutgoingShipmentAdd />
-				</Route>
+				<Route path={match.path + '/add'} children={(props)=><OutgoingShipmentAdd {...props}/>}/>
 				<Route path={match.path + '/search'}>
 					<OutgoingShipmentSearch />
 				</Route>
-				<Route path={match.path + '/return/:id'} component={(props: RouteComponentProps) => <OutgoingShipmentReturn {...props} />} />
+				<Route path={match.path + '/return/:id'} component={(props: RouteComponentProps<{ id: string }>) => <OutgoingShipmentReturn {...props} />} />
 			</Switch>
 		</div>
 	);

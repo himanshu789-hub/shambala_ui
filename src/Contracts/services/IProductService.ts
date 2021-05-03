@@ -1,7 +1,7 @@
-import {Product} from 'Types/Types';
 import {AxiosResponse} from 'axios';
-
+import {IShipmentElement,Product} from 'Types/DTO';
 export default interface IProductService {
-	GetAll: () => Promise<AxiosResponse<Product[]>>;
-	GetProductWithLimit(): Promise<AxiosResponse<Product[]>>
+	Add(shipment:IShipmentElement[]):Promise<AxiosResponse<void>>;
+	GetProductWithoutLimit(): Promise<AxiosResponse<Product[]>>;
+	GetProductWithLimit():Promise<AxiosResponse<Product[]>>
 }

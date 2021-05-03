@@ -1,4 +1,5 @@
-import { ProductKeyWithName,Product,Flavour } from 'Types/Types';
+import { Flavour, Product } from 'Types/DTO';
+import { ProductKeyWithName } from 'Types/Types';
 export default class ComponentProductListMediator {
 	private _cloneProductNames: Map<number, string>;
 	private _cloneProductFlavours: Map<number, Flavour[]>;

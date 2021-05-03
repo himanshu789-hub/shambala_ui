@@ -1,6 +1,6 @@
-import { SalesmanProperties } from 'Types/Types';
+import { SalesmanDTO } from 'Types/DTO';
 
-export const Salesman: SalesmanProperties[] = [
-	{ FirstName: 'John', Id: 1, LastName: 'Doe' },
-	{ FirstName: 'John', Id: 2, LastName: 'Wick' },
+export const Salesman: SalesmanDTO[] = [
+	{ FullName: 'John Doe', Id: 1 },
+	{ FullName: 'John Beans', Id: 2 },
 ];

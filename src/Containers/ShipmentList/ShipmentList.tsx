@@ -1,9 +1,9 @@
 import React, { ChangeEvent, SyntheticEvent } from 'react';
 import Action from 'Components/Action/Action';
-import { CaretDetails, Flavour, Product, IShipmentElement } from 'Types/Types';
+import { CaretDetails } from 'Types/Types';
 import ShipmentElement from 'Components/ShipmentElement/ShipmentElement';
 import ComponentProductListProvider from 'Utilities/ComponentProductListProvider';
-
+import { Product,Flavour,IShipmentElement } from 'Types/DTO';
 type IShipmentListProps = {
 	handleSubmit: (Shipments: IShipmentElement[]) => void;
 	Products: Product[];
@@ -180,7 +180,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 
 	componentDidMount() {
 		const { Products } = this.props;
-		if (Products.length > 0) {
+		if (Products && Products.length > 0) {
 			let products = new Map<string, Product>();
 			if (Products.length > 0) {
 				Products.forEach(function (value, index) {

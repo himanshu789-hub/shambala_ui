@@ -1,4 +1,4 @@
-import { Flavour, Product } from 'Types/Types';
+import { Flavour, Product } from 'Types/DTO';
 
 type QuantityFlavourInfo = {
 	FlavourId: number;

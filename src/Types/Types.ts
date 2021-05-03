@@ -1,3 +1,6 @@
+import { SalesmanModal } from "Models/Salesman";
+import { SalesmanDTO } from "./DTO";
+
 export type ShipmentProperty = {
 	Id: number;
 	Name: string;
@@ -13,39 +16,17 @@ export type SalesmanProperties = {
 	LastName: string;
 };
 export type ChoosenScheme = {
-	Id:number;
-	SchemeType:number;
+	Id: number;
+	SchemeType: number;
 }
 
 export type OutgoingShipment = {
 	Id: number;
 	DateCreated: string;
-	Salesman: SalesmanProperties;
+	Salesman: SalesmanDTO;
 	Status: number;
 };
 export type CaretDetails = {
 	Id: number;
 	CaretSize: number;
-};
-
-
-export type IShipmentElement = {
-	Id: number;
-	ProductId: number;
-	TotalRecivedPieces: number;
-	CaretSize: number;
-	TotalDefectedPieces: number;
-	FlavourId: number;
-};
-
-export type Flavour = {
-	Id: number;
-	Title: string;
-	Quantity?: number;
-};
-export type Product = {
-	Id: number;
-	Name: string;
-	CaretSize: number;
-	Flavours: Flavour[];
 };
