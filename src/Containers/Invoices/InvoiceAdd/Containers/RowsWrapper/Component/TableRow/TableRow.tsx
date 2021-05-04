@@ -9,7 +9,7 @@ type ItemsHolderProps = {
 	handleChange: (componentId: number, name: string, value: any) => void;
 	CaretSize?: number;
 	ComponentId: number;
-	Observer: Observer;
+	GetObserver(componentId:number):void;
 	HandleDelete: (componentId: number) => void;
 };
 type ItemHolderState = {

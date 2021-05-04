@@ -10,9 +10,6 @@ import { InvoiceContext } from './Context';
 import Observer from 'Utilities/Observer';
 interface IInvoiceAddWrapperProps extends RouteComponentProps { }
 
-type Member = {
-	Observer: Observer;
-};
 
 type InvoiceAddWrapperState = {
 	Mediator: MediatorSubject;
@@ -115,6 +112,7 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 				<div className='d-flex flex-column'>
 					<InvoiceContext.Provider value={{
 						GetObserverBySubscriberAndComponentId: this.GetObserverBySubscriptionAndComponentId,
+						HandleChange:this.HandeShopInvoice
 						// HandleChange: this.HandeShopInvoice,
 						// HandleShopOrSchemeChange: this.HandleShopOrSchemeChange,
 						// HandleComponentDelete:this.HandleComponentDelete,

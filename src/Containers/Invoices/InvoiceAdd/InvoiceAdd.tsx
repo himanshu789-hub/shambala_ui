@@ -3,17 +3,17 @@ import { CallStatus } from 'Components/Loader/Loader';
 import ShopSelector from './Containers/ShopSelector/ShopSelector';
 import InvoiceScheme from './Containers/InvoiceScheme/InvoiceScheme';
 import RowsWrapper from './Containers/RowsWrapper/RowsWrapper';
-import MediatorSubject from 'Utilities/MediatorSubject';
 import { ShopInvoice, SoldItem } from '../../../Types/DTO';
 import './InvoiceAdd.css';
+import { InvoiceContext } from '../InvoiceWrapper/Context';
 
 interface IInvoiceProps {
 	SubscriptionId: number;
 	HandleDelete: (SubscriptionId: number) => void;
 	GetCaretSizeByProductId: (productId: number) => number;
 	ShopInvoice: ShopInvoice;
-	AddASubscriberComponent(subscriptionId:number):void;
-	HandleComponentDelete(subscriptionId:number,componentId:number):void;
+	AddASubscriberComponent(subscriptionId: number): void;
+	HandleComponentDelete(subscriptionId: number, componentId: number): void;
 	HandleShopOrSchemeChange(subscriptionId: number, name: string, value: any): void;
 }
 type InvoicesState = {
@@ -33,9 +33,9 @@ export default class InvoiceAdd extends React.Component<IInvoiceProps, InvoicesS
 	}
 	render() {
 
-		const { ShopInvoice: { SchemeId, ShopId,Invoices:SoldItems } } = this.props;
+		const { ShopInvoice: { SchemeId, ShopId, Invoices: SoldItems } } = this.props;
 
-		const { SubscriptionId, HandleDelete, GetCaretSizeByProductId ,AddASubscriberComponent,HandleComponentDelete} = this.props;
+		const { SubscriptionId, HandleDelete, GetCaretSizeByProductId, AddASubscriberComponent, HandleComponentDelete } = this.props;
 		return (
 			<div className='card'>
 				<div className='card-head d-flex justify-content-between'>
@@ -46,8 +46,16 @@ export default class InvoiceAdd extends React.Component<IInvoiceProps, InvoicesS
 				</div>
 				<div className='card-body'>
 					{ShopId && <InvoiceScheme handleSchemeSelection={this.HandleSelection} ShopId={ShopId} />}
-					{ShopId && SchemeId && (						
-						<RowsWrapper  subscriptionId={SubscriptionId} GetCaretSizeByProductId={GetCaretSizeByProductId} HandleComponentDelete={HandleComponentDelete} AddASubscriptionComponent={AddASubscriberComponent} SoldItems={SoldItems} />
+					{ShopId && SchemeId && (
+						<InvoiceContext.Consumer>
+							{
+								({GetObserverBySubscriberAndComponentId,HandleChange}) =>
+								 <RowsWrapper 
+								 GetObserverBySubscriberAndComponentId={GetObserverBySubscriberAndComponentId} 
+								 HandleChange={HandleChange}
+								 subscriptionId={SubscriptionId} GetCaretSizeByProductId={GetCaretSizeByProductId} HandleComponentDelete={HandleComponentDelete} AddASubscriptionComponent={AddASubscriberComponent} SoldItems={SoldItems} />
+							}
+						</InvoiceContext.Consumer>
 					)}
 				</div>
 			</div>

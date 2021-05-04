@@ -9,6 +9,8 @@ type RowsWrapperProps = {
 	AddASubscriptionComponent(subscription: number): void;
 	GetCaretSizeByProductId: (productId: number) => number;
 	HandleComponentDelete(subscriptionId: number, componentId: number): void;
+	HandleChange(subscriptionId: number, componentId: number, name: string, value: string): void;
+	GetObserverBySubscriberAndComponentId(subscriptionId: number, componentId: number): Observer;
 	SoldItems: SoldItem[];
 };
 type RowsWrapperState = {
@@ -30,9 +32,13 @@ export default class RowsWrapper extends React.Component<RowsWrapperProps, RowsW
 		HandleComponentDelete(subscriptionId, componentId);
 	};
 	HandeChange = (ComponentId: number, name: string, Value: any) => {
-		const { GetCaretSizeByProductId } = this.props;
-
+		const { GetCaretSizeByProductId, HandleChange, subscriptionId } = this.props;
+		HandleChange(subscriptionId, ComponentId, name, Value);
 	};
+	GetObserverByComonentId = (componentId: number): Observer => {
+		const { subscriptionId, GetObserverBySubscriberAndComponentId } = this.props;
+		return GetObserverBySubscriberAndComponentId(subscriptionId, componentId);
+	}
 	render() {
 		const { subscriptionId, SoldItems } = this.props;
 		return (
@@ -48,25 +54,18 @@ export default class RowsWrapper extends React.Component<RowsWrapperProps, RowsW
 						</tr>
 					</thead>
 					<tbody>
-
-						{<InvoiceContext.Consumer>
-							{({ GetObserverBySubscriberAndComponentId }) => SoldItems.map((e, index) => {
-								const Observer = ((GetObserverBySubscriberAndComponentId as any)(subscriptionId, e.Id) as Observer);
-								const observerInfo = Observer.GetObserverInfo();
-								return (
-									<TableRow
-										key={observerInfo.ComponentId}
-										ComponentId={observerInfo.ComponentId}
-										Observer={Observer}
-										handleChange={this.HandeChange}
-										CaretSize={e.CaretSize}
-										HandleDelete={this.DeleteARow}
-									/>
-								);
-							})}
-
-						</InvoiceContext.Consumer>
-						}
+						{SoldItems.map((e, index) => {
+							return (
+								<TableRow
+									key={e.Id}
+									ComponentId={e.Id}
+									GetObserver={this.GetObserverByComonentId}
+									handleChange={this.HandeChange}
+									CaretSize={e.CaretSize}
+									HandleDelete={this.DeleteARow}
+								/>
+							)
+						})}
 					</tbody>
 				</table>
 				<button onClick={this.AddARow} className="btn btn-primary btn-sm">
