@@ -11,11 +11,10 @@ mock.onGet(/\/api\/product\/getallwithoutlimit/i).reply(200,productsWithoutLimit
 
 export default class ProductService implements IProductService {
 	Add(shipment: IShipmentElement[]): Promise<AxiosResponse<void>> {
-		return axios.post('add', shipment);
+		return ProductAxiosClient.post('add', shipment);
 	}
-    GetProductWithLimit():Promise<AxiosResponse<Product[]>>
-	{
-       return axios.get('GetAllWithLimit');
+    GetProductWithLimit():Promise<AxiosResponse<Product[]>>{
+       return ProductAxiosClient.get('GetAllWithLimit');
 	}           
 	GetProductWithoutLimit(): Promise<AxiosResponse<Product[]>> {
 		return AxiosClient.get('GetAllWithoutLimit');

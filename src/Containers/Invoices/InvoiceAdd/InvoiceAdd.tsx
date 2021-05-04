@@ -45,8 +45,8 @@ export default class InvoiceAdd extends React.Component<IInvoiceProps, InvoicesS
 					</button>
 				</div>
 				<div className='card-body'>
-					{ShopId && <InvoiceScheme handleSchemeSelection={this.HandleSelection} ShopId={ShopId} />}
-					{ShopId && SchemeId && (
+					{ShopId!=0 && <InvoiceScheme handleSchemeSelection={this.HandleSelection} ShopId={ShopId} />}
+					{ShopId!=0 && SchemeId && (
 						<InvoiceContext.Consumer>
 							{
 								({GetObserverBySubscriberAndComponentId,HandleChange}) =>

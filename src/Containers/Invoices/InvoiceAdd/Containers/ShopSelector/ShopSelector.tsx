@@ -45,7 +45,7 @@ export default function ShopSelector(props: ShopSelectorProps) {
 			<div className={`dropdown-menu ${showDropdown ? 'show' : ''}`}>
 				<Loader Status={APIStatus} >
 					<React.Fragment>{shops.map((value, index) => (
-						<label data-value={value.Id} data-name={value.Name} className='dropdown-item' onClick={handleSelect}>
+						<label data-value={value.Id} data-name={value.Name} key={value.Id} className='dropdown-item' onClick={handleSelect}>
 							{value.Name}
 						</label>
 					))}</React.Fragment>

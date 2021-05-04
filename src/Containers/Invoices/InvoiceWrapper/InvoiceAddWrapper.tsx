@@ -8,6 +8,7 @@ import Action from 'Components/Action/Action';
 import { ShopInvoice, Product, SoldItem } from 'Types/DTO';
 import { InvoiceContext } from './Context';
 import Observer from 'Utilities/Observer';
+import Loader, { ApiStatusInfo, CallStatus } from 'Components/Loader/Loader';
 interface IInvoiceAddWrapperProps extends RouteComponentProps { }
 
 
@@ -16,6 +17,7 @@ type InvoiceAddWrapperState = {
 	ShopSubscriber: ShopSubscriber[];
 	Products: Product[];
 	InvoiceMappedObserver: Map<number, Observer[]>;
+	ApiStatus:ApiStatusInfo;
 };
 type ShopSubscriber = {
 	SubscriptionId: number;
@@ -30,6 +32,7 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 			Mediator: new MediatorSubject([]),
 			ShopSubscriber: [],
 			Products: [],
+			ApiStatus:{Status:CallStatus.EMPTY,Message:''},
 			InvoiceMappedObserver: new Map()
 		};
 		this._productService = new ProductService();
@@ -55,7 +58,7 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 		const Observers = InvoiceMappedObserver.get(subscriptionId) as Observer[];
 		Observers.push(Observer);
 		const ShopInvoice = ShopSubscriber.find(e => e.SubscriptionId == subscriptionId)?.ShopInvcoice as ShopInvoice;
-		ShopInvoice.Invoices.push({ CaretSize: 0, FlavouId: -1, ProductId: -1, Id: ComponentId, Quantity: 0 });
+		ShopInvoice.Invoices.push({ CaretSize: 0, FlavourId: -1, ProductId: -1, Id: ComponentId, Quantity: 0 });
 		this.setState({ ShopSubscriber: ShopSubscriber });
 	}
 	HandleDelete = (SubscriptionId: number) => {
@@ -89,7 +92,11 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 		// else if (name == 'Quantity') {
 		// 	Mediator.SetASubscription(SubscriptionId, ComponentId, SoldItem.ProductId, SoldItem.FlavouId, value);
 		// }
-		if (Object.keys(ShopInvoice).includes(name))
+		if(name=="ProductId")
+		{
+			SoldItem.CaretSize = this.GetCaretSizeByProductId(value);
+		}
+		if (Object.keys(SoldItem).includes(name))
 			(SoldItem as any)[name] = value;
 		this.setState({ ShopSubscriber: ShopSubscriber });
 	};
@@ -107,20 +114,22 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 	};
 	HandleSubmit = () => { };
 	render() {
+		const {ApiStatus:{Status,Message}} = this.state;
 		return (
+			<Loader Status={Status} Message={Message}>
 			<div className='invoices'>
 				<div className='d-flex flex-column'>
+					
 					<InvoiceContext.Provider value={{
 						GetObserverBySubscriberAndComponentId: this.GetObserverBySubscriptionAndComponentId,
 						HandleChange:this.HandeShopInvoice
-						// HandleChange: this.HandeShopInvoice,
 						// HandleShopOrSchemeChange: this.HandleShopOrSchemeChange,
 						// HandleComponentDelete:this.HandleComponentDelete,
 						// AddASoldItem: this.AddASubscriberComponent
 					}}>
 
 						{this.state.ShopSubscriber.map(e => (
-
+                           
 							<InvoiceAdd
 								SubscriptionId={e.SubscriptionId}
 								key={e.SubscriptionId}
@@ -139,11 +148,13 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 				<Action handleAdd={this.AddASubscriber} handleProcess={this.HandleSubmit} />
 
 			</div>
+			</Loader>
 		);
 	}
 	componentDidMount() {
+		this.setState({ApiStatus:{Status:CallStatus.LOADING,Message:'Gathering Shipment Product Info'}});
 		this._productService
-			.GetProductWithoutLimit()
-			.then(res => this.setState({ Mediator: new MediatorSubject(res.data), Products: res.data }));
+			.GetProductWithLimit()
+			.then(res => this.setState({ Mediator: new MediatorSubject(res.data), Products: res.data,ApiStatus:{Status:CallStatus.LOADED,Message:''} })).catch(()=>this.setState({ApiStatus:{Status:CallStatus.LOADED,Message:undefined}}));
 	}
 }

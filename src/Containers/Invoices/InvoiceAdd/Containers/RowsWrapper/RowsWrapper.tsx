@@ -59,6 +59,7 @@ export default class RowsWrapper extends React.Component<RowsWrapperProps, RowsW
 								<TableRow
 									key={e.Id}
 									ComponentId={e.Id}
+									Item={e}
 									GetObserver={this.GetObserverByComonentId}
 									handleChange={this.HandeChange}
 									CaretSize={e.CaretSize}

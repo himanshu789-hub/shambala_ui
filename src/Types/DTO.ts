@@ -55,7 +55,7 @@ export type Scheme = {
 export type SoldItem = {
 	Id: number;
 	ProductId: number;
-	FlavouId: number;
+	FlavourId: number;
 	Quantity: number;
 	CaretSize: number;
 };

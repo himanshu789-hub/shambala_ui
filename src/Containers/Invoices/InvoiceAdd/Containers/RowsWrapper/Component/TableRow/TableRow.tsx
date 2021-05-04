@@ -9,33 +9,35 @@ type ItemsHolderProps = {
 	handleChange: (componentId: number, name: string, value: any) => void;
 	CaretSize?: number;
 	ComponentId: number;
-	GetObserver(componentId:number):void;
+	GetObserver(componentId: number): Observer;
 	HandleDelete: (componentId: number) => void;
+	Item: SoldItem;
 };
 type ItemHolderState = {
 	ProductInfo: ProductInfo[];
 	QuantityLimit: number;
 	Flavours: Flavour[];
-	Item: SoldItem;
 };
 export default class TableRow extends React.Component<ItemsHolderProps, ItemHolderState> {
 	constructor(props: ItemsHolderProps) {
 		super(props);
-		const { Observer } = this.props;
+		const { GetObserver, ComponentId } = this.props;
+		const Observer = GetObserver(ComponentId);
 		this.state = {
 			Flavours: [],
 			QuantityLimit: -1,
-			ProductInfo: props.Observer.GetProduct(),
-			Item: { CaretSize: 0, FlavouId: -1, Id: Observer.GetObserverInfo().ComponentId, ProductId: -1, Quantity: 0 }
+			ProductInfo: Observer.GetProduct(),
 		};
 	}
 	Delete = () => {
-		const { Observer, ComponentId, HandleDelete } = this.props;
+		const { GetObserver, ComponentId, HandleDelete } = this.props;
+		const Observer = GetObserver(ComponentId);
 		Observer.Unubscribe();
 		HandleDelete(ComponentId);
 	}
 	HandleFocus = () => {
-		const { Observer } = this.props;
+		const { GetObserver, ComponentId } = this.props;
+		const Observer = GetObserver(ComponentId);
 		Observer.UnsubscribeToQuantity();
 		this.setState({ QuantityLimit: Observer.GetQuantityLimit() })
 	}
@@ -46,14 +48,13 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 		const { handleChange, ComponentId } = this.props;
 		if (name == 'ProductId' || name == 'FlavourId') {
 			const val = Number.parseInt(value);
-			this.setState(prevState => {
-				return { ...prevState, [name]: val };
-			});
 
-			const { Observer } = this.props;
+			const { GetObserver, ComponentId } = this.props;
+			const Observer = GetObserver(ComponentId);
 			switch (name) {
 				case 'ProductId':
 					Observer.SetProduct(val);
+
 					this.setState({ Flavours: Observer.GetFlavours() });
 					break;
 				case 'FlavourId':
@@ -68,15 +69,16 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 		}
 	};
 	HandleInput = (num: number) => {
-		const { handleChange, ComponentId, Observer } = this.props;
-
+		const { handleChange, ComponentId, GetObserver } = this.props;
+		const Observer = GetObserver(ComponentId);
 		Observer.UnsubscribeToQuantity();
 		handleChange(ComponentId, 'Quantity', num);
 		Observer.SetQuantity(num);
 
 	};
 	HandleClick = (e: React.FocusEvent<HTMLSelectElement>) => {
-		const { Observer } = this.props;
+		const { GetObserver, ComponentId } = this.props;
+		const Observer = GetObserver(ComponentId);
 		const { currentTarget: { name } } = e;
 		console.log(name + ' Click Event Triggers');
 		switch (name) {
@@ -91,8 +93,8 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 	}
 
 	render() {
-		const { ProductInfo, QuantityLimit, Flavours: Flavours, Item:{ProductId,FlavouId}} = this.state;
-		const { CaretSize: MaxSize } = this.props;
+		const { ProductInfo, QuantityLimit, Flavours: Flavours } = this.state;
+		const { CaretSize: MaxSize, Item: { ProductId, FlavourId } } = this.props;
 
 		return (
 			<tr>
@@ -101,9 +103,11 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 						className={`form-control ${ProductId == -1 ? 'is-invalid' : ''}`}
 						name='ProductId'
 						value={ProductId}
+						defaultValue={'-1'}
 						onChange={this.HandleChange}
 						onFocus={this.HandleClick}>
-						<option disabled selected value='-1'>
+
+						<option disabled  value='-1'>
 							-- Select A Product --
 						</option>
 						{ProductInfo.map(e => (
@@ -115,13 +119,12 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 				</td>
 				<td>
 					<select
-						className={`form-control ${FlavouId == -1 ? 'is-invalid' : ''}`}
+						className={`form-control ${FlavourId == -1 ? 'is-invalid' : ''}`}
 						name='FlavourId'
-						value={FlavouId}
+						value={FlavourId}
+						defaultValue={'-1'}
 						onChange={this.HandleChange} onFocus={this.HandleClick}>
-						<option disabled selected value='-1'>
-							-- Select A Flavour --
-						</option>
+						<option disabled  value='-1'>-- Select A Flavour -- </option>
 						{Flavours.map(e => (
 							<option key={e.Id} value={e.Id}>
 								{e.Title}
@@ -130,7 +133,7 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 					</select>
 				</td>
 				<td>
-					<input className={`form-control ${MaxSize == 0 ? 'is-invalid' : ''}`} value={MaxSize} />
+					<input className={`form-control ${MaxSize == 0 ? 'is-invalid' : ''}`} value={MaxSize} readOnly/>
 				</td>
 				<td className="caret">
 					<CaretSize Size={MaxSize ?? 0} handleInput={this.HandleInput} Limit={QuantityLimit} OnFocusIn={this.HandleFocus} />
@@ -143,7 +146,8 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 	}
 
 	componentDidMount() {
-		const { Observer } = this.props;
+		const { GetObserver, ComponentId } = this.props;
+		const Observer = GetObserver(ComponentId);
 		Observer.SetComponent(this);
 	}
 }
