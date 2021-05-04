@@ -31,7 +31,7 @@ function RequestError() {
 
 function Error(props: { msg?: string }) {
 	const Message = props.msg ?? "An Error Occured While Requesting Data";
-	return <div className="d-flex flex-column justify-content-center align-items-center"><RequestError /><small className="text-center">{Message}</small></div>;
+	return <div className="d-flex flex-column justify-content-center align-items-center"><RequestError /><small className="text-center text-danger">{Message}</small></div>;
 }
 export default function Loader(props: LoaderProps) {
 	const { Size, Status } = props;

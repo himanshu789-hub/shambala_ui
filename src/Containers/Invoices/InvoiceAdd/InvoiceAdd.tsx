@@ -8,76 +8,50 @@ import { ShopInvoice, SoldItem } from '../../../Types/DTO';
 import './InvoiceAdd.css';
 
 interface IInvoiceProps {
-	Mediator: MediatorSubject;
 	SubscriptionId: number;
 	HandleDelete: (SubscriptionId: number) => void;
-	ProvideShopInvoiceInfo: (subscriptionId: number, ShopInvoice: ShopInvoice) => void;
-	GetCaretSizeByProductId:(productId:number)=>number;
+	GetCaretSizeByProductId: (productId: number) => number;
+	ShopInvoice: ShopInvoice;
+	AddASubscriberComponent(subscriptionId:number):void;
+	HandleComponentDelete(subscriptionId:number,componentId:number):void;
+	HandleShopOrSchemeChange(subscriptionId: number, name: string, value: any): void;
 }
 type InvoicesState = {
 	APIStatus: number;
-	ShopInvoice: ShopInvoice;
 };
 export default class InvoiceAdd extends React.Component<IInvoiceProps, InvoicesState> {
 	constructor(props: IInvoiceProps) {
 		super(props);
 		this.state = {
 			APIStatus: CallStatus.EMPTY,
-			ShopInvoice: { SchemeId: undefined, Invoices: [], ShopId: undefined },
 		};
 	}
-	handleSelection = (name: string, value: any) => {
-		const { ProvideShopInvoiceInfo, SubscriptionId } = this.props;
-		switch (name) {
-			case 'ShopId':
-				this.setState(
-					({ ShopInvoice }) => {
-						return { ShopInvoice: { ...ShopInvoice, ShopId: value } };
-					},
-					() => ProvideShopInvoiceInfo(SubscriptionId, this.state.ShopInvoice),
-				);
-				break;
-			case 'SchemeId':
-				this.setState(
-					({ ShopInvoice }) => {
-						return { ShopInvoice: { ...ShopInvoice, SchemeId: value } };
-					},
-					() => ProvideShopInvoiceInfo(SubscriptionId, this.state.ShopInvoice),
-				);
-				break;
-			default:
-				break;
-		}
-	};
-	HandleInvoiceItemAdded=(Invoices: SoldItem[])=> {
-		const { ProvideShopInvoiceInfo, SubscriptionId } = this.props;
-		const { ShopInvoice } = this.state;
-		this.setState(({ ShopInvoice }) => {
-			return { ShopInvoice: { ...ShopInvoice, Invoices: Invoices } };
-		});
-		ProvideShopInvoiceInfo(SubscriptionId, { ...ShopInvoice, Invoices: Invoices });
+
+	HandleSelection = (name: string, value: any) => {
+		const { HandleShopOrSchemeChange, SubscriptionId } = this.props;
+		HandleShopOrSchemeChange(SubscriptionId, name, value);
 	}
 	render() {
-		const {
-			ShopInvoice: { ShopId, SchemeId },
-		} = this.state;
-		const { Mediator, SubscriptionId, HandleDelete,GetCaretSizeByProductId } = this.props;
+
+		const { ShopInvoice: { SchemeId, ShopId,Invoices:SoldItems } } = this.props;
+
+		const { SubscriptionId, HandleDelete, GetCaretSizeByProductId ,AddASubscriberComponent,HandleComponentDelete} = this.props;
 		return (
 			<div className='card'>
 				<div className='card-head d-flex justify-content-between'>
-					<ShopSelector handleSelection={this.handleSelection} />
+					<ShopSelector handleSelection={this.HandleSelection} />
 					<button className='btn btn-danger'>
 						<i className='fa fa-times' onClick={() => HandleDelete(SubscriptionId)}></i>
 					</button>
 				</div>
 				<div className='card-body'>
-					{ShopId && <InvoiceScheme handleSchemeSelection={this.handleSelection} ShopId={this.state.ShopInvoice.ShopId} />}
-					{ShopId && SchemeId && (
-						<RowsWrapper mediator={Mediator} subscriptionId={SubscriptionId} GetCaretSizeByProductId={GetCaretSizeByProductId} ProvideShopItemToHOC={this.HandleInvoiceItemAdded} />
+					{ShopId && <InvoiceScheme handleSchemeSelection={this.HandleSelection} ShopId={ShopId} />}
+					{ShopId && SchemeId && (						
+						<RowsWrapper  subscriptionId={SubscriptionId} GetCaretSizeByProductId={GetCaretSizeByProductId} HandleComponentDelete={HandleComponentDelete} AddASubscriptionComponent={AddASubscriberComponent} SoldItems={SoldItems} />
 					)}
 				</div>
 			</div>
 		);
 	}
-	componentDidMount() {}
+	componentDidMount() { }
 }

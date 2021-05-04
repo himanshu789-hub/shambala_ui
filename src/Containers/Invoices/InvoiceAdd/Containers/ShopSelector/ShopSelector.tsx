@@ -9,17 +9,19 @@ type ShopSelectorProps = {
 	handleSelection(name: string, value: any): void;
 };
 export default function ShopSelector(props: ShopSelectorProps) {
-	const [shopId, selectShop] = useState<number>(-1);
+	const [shopId, setShopId] = useState<number>(-1);
 	const [shops, setShopList] = useState<Shop[]>([]);
 	const [name, setName] = useState<string>('');
 	const [showDropdown, setShouldDropdownDisplay] = useState<boolean>(false);
 	const [APIStatus, setAPIStatus] = useState<number>(CallStatus.EMPTY);
 	const ShopServiceHandler: IShopService = new ShopService();
-	const handleChange = (e: MouseEvent<HTMLLabelElement>) => {
+	const handleSelect = (e: MouseEvent<HTMLLabelElement>) => {
 		setShouldDropdownDisplay(false);
 		setAPIStatus(CallStatus.EMPTY);
 		setName(e.currentTarget.dataset.name ?? '');
-		props.handleSelection('ShopId', Number.parseInt(e.currentTarget.dataset.value as string));
+		const ShopId  =  Number.parseInt(e.currentTarget.dataset.value as string);
+		setShopId(ShopId);
+		props.handleSelection('ShopId',ShopId);
 	};
 
 	return (
@@ -32,17 +34,18 @@ export default function ShopSelector(props: ShopSelectorProps) {
 					const name = e.currentTarget.value;
 					setAPIStatus(CallStatus.LOADING);
 					setName(name);
+					setShouldDropdownDisplay(true);
+				
 					ShopServiceHandler.GetByName(name).then(res => {
 						setShopList(res.data);
 						setAPIStatus(CallStatus.LOADED);
 					}).catch(()=>setAPIStatus(CallStatus.ERROR));
-					setShouldDropdownDisplay(true);
 				}}
 			/>
 			<div className={`dropdown-menu ${showDropdown ? 'show' : ''}`}>
 				<Loader Status={APIStatus} >
 					<React.Fragment>{shops.map((value, index) => (
-						<label data-value={value.Id} data-name={value.Name} className='dropdown-item' onClick={handleChange}>
+						<label data-value={value.Id} data-name={value.Name} className='dropdown-item' onClick={handleSelect}>
 							{value.Name}
 						</label>
 					))}</React.Fragment>

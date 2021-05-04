@@ -8,6 +8,7 @@ import {AllMockScheme} from 'Mock/Scheme';
 const mock = new Mock(SchemeClient,{delayResponse:4000});
 mock.onGet(/\/api\/scheme\/getbyshopId/i).reply(200,AllMockScheme[2]);
 mock.onGet('api/scheme/getall').reply(200, AllMockScheme);
+
 export default class SchemeService implements ISchemeService {
 	GetByShopId(shopId: number): Promise<AxiosResponse<Scheme>> {
 		return SchemeClient.get('getbyshopId');

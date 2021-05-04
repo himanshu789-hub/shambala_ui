@@ -1,7 +1,7 @@
 import CaretSize from 'Components/CaretSize/CaretSize';
 import React, { ChangeEvent } from 'react';
 import { ProductInfo } from 'Types/Mediator';
-import { Flavour } from 'Types/DTO';
+import { Flavour, SoldItem } from 'Types/DTO';
 import Observer from 'Utilities/Observer';
 import './TableRow.css';
 
@@ -10,35 +10,34 @@ type ItemsHolderProps = {
 	CaretSize?: number;
 	ComponentId: number;
 	Observer: Observer;
-	HandleDelete:(componentId:number)=>void;
+	HandleDelete: (componentId: number) => void;
 };
 type ItemHolderState = {
 	ProductInfo: ProductInfo[];
-	ProductId: number;
 	QuantityLimit: number;
-	FlavourId: number;
 	Flavours: Flavour[];
+	Item: SoldItem;
 };
 export default class TableRow extends React.Component<ItemsHolderProps, ItemHolderState> {
 	constructor(props: ItemsHolderProps) {
 		super(props);
+		const { Observer } = this.props;
 		this.state = {
 			Flavours: [],
-			ProductId: -1,
-			FlavourId: -1,
 			QuantityLimit: -1,
 			ProductInfo: props.Observer.GetProduct(),
+			Item: { CaretSize: 0, FlavouId: -1, Id: Observer.GetObserverInfo().ComponentId, ProductId: -1, Quantity: 0 }
 		};
 	}
-	Delete=()=>{
-		const {Observer,ComponentId,HandleDelete} = this.props;
+	Delete = () => {
+		const { Observer, ComponentId, HandleDelete } = this.props;
 		Observer.Unubscribe();
 		HandleDelete(ComponentId);
 	}
-	HandleFocus = ()=>{
-		const {Observer} = this.props;
+	HandleFocus = () => {
+		const { Observer } = this.props;
 		Observer.UnsubscribeToQuantity();
-		this.setState({QuantityLimit:Observer.GetQuantityLimit()})
+		this.setState({ QuantityLimit: Observer.GetQuantityLimit() })
 	}
 	HandleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
 		const {
@@ -74,35 +73,36 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 		Observer.UnsubscribeToQuantity();
 		handleChange(ComponentId, 'Quantity', num);
 		Observer.SetQuantity(num);
-		
+
 	};
-	HandleClick=(e:React.FocusEvent<HTMLSelectElement>)=>{
-       const {Observer} = this.props;
-       const {  currentTarget : {name}} = e;
-	   console.log(name+' Click Event Triggers');
-	   switch(name){
-		   case 'FlavourId':
-		   this.setState({Flavours:Observer.GetFlavours()});
-		   break;
-		   case 'ProductId':
-		   this.setState({ProductInfo:Observer.GetProduct()});
-		   break;
-		   default: break;
-	   }            
+	HandleClick = (e: React.FocusEvent<HTMLSelectElement>) => {
+		const { Observer } = this.props;
+		const { currentTarget: { name } } = e;
+		console.log(name + ' Click Event Triggers');
+		switch (name) {
+			case 'FlavourId':
+				this.setState({ Flavours: Observer.GetFlavours() });
+				break;
+			case 'ProductId':
+				this.setState({ ProductInfo: Observer.GetProduct() });
+				break;
+			default: break;
+		}
 	}
+
 	render() {
-		const { ProductInfo, QuantityLimit,Flavours: Flavours, FlavourId: SelectedFlavour, ProductId: SelectedProduct } = this.state;
-		const { CaretSize: MaxSize,Observer } = this.props;
+		const { ProductInfo, QuantityLimit, Flavours: Flavours, Item:{ProductId,FlavouId}} = this.state;
+		const { CaretSize: MaxSize } = this.props;
 
 		return (
 			<tr>
 				<td>
 					<select
-						className={`form-control ${SelectedProduct == -1 ? 'is-invalid' : ''}`}
+						className={`form-control ${ProductId == -1 ? 'is-invalid' : ''}`}
 						name='ProductId'
-						value={SelectedProduct}
+						value={ProductId}
 						onChange={this.HandleChange}
-						 onFocus={this.HandleClick}>
+						onFocus={this.HandleClick}>
 						<option disabled selected value='-1'>
 							-- Select A Product --
 						</option>
@@ -115,9 +115,9 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 				</td>
 				<td>
 					<select
-						className={`form-control ${SelectedFlavour == -1 ? 'is-invalid' : ''}`}
+						className={`form-control ${FlavouId == -1 ? 'is-invalid' : ''}`}
 						name='FlavourId'
-						value={SelectedFlavour}
+						value={FlavouId}
 						onChange={this.HandleChange} onFocus={this.HandleClick}>
 						<option disabled selected value='-1'>
 							-- Select A Flavour --
@@ -133,7 +133,7 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 					<input className={`form-control ${MaxSize == 0 ? 'is-invalid' : ''}`} value={MaxSize} />
 				</td>
 				<td className="caret">
-					<CaretSize Size={MaxSize ?? 0} handleInput={this.HandleInput} Limit={QuantityLimit} OnFocusIn={this.HandleFocus}/>
+					<CaretSize Size={MaxSize ?? 0} handleInput={this.HandleInput} Limit={QuantityLimit} OnFocusIn={this.HandleFocus} />
 				</td>
 				<td>
 					<button onClick={this.Delete} className="btn btn-light w-100"><i className="fa fa-trash"></i></button>

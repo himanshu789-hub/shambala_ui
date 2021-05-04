@@ -17,6 +17,9 @@ export default class Observer {
 		this._componentId = componentId;
 		this._subject = subject;
 	}
+	GetObserverInfo() {
+		return { SubscriptionId: this._subscriptionId, ComponentId: this._componentId };
+	}
 	SetComponent(component: ReactComponent) {
 		this._component = component;
 	}
@@ -30,11 +33,11 @@ export default class Observer {
 		}
 		return this._subject.GetQuantity(this._productId as number, this._flavourId as number);
 	}
-	Unubscribe(){
-		if(!(this._componentId && this._subscriptionId)){
+	Unubscribe() {
+		if (!(this._componentId && this._subscriptionId)) {
 			return;
 		}
-		this._subject.UnsubscribeAComponent(this._subscriptionId,this._componentId);
+		this._subject.UnsubscribeAComponent(this._subscriptionId, this._componentId);
 	}
 	UnsubscribeToQuantity() {
 		if (!(this._subscriptionId && this._componentId)) {
@@ -43,7 +46,7 @@ export default class Observer {
 		}
 		this._subject.UnsubscribeToQuantity(this._subscriptionId as number, this._componentId as number);
 	}
-	
+
 	GetFlavours(): Flavour[] {
 		if (!this._productId) {
 			console.error('Product Id  no Set');
