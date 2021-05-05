@@ -26,13 +26,16 @@ type AlertMessageProps = {
 	mesage: string;
 	show: boolean;
 }
-interface IAlertMessageProperty extends CSSProperties {
-	'--msg': string;
-}
+
 function AlertMessage(props: AlertMessageProps) {
 	const { show } = props;
-	const Property: IAlertMessageProperty = { "--msg": props.mesage };
-		return <div className="d-flex"><div className="error">{props.children}</div><span className={`tool-tip ${show?"show":""}`}><i className="fa fa-exclamation-triangle p-1" aria-hidden="true"></i> {props.mesage}</span></div>;
+	return <div className={"d-flex"}>
+		<div className={`${show?"error":''}`}>{props.children}</div>
+		<span className={`tool-tip ${show ? "d-inline-block" : "d-none"}`}>
+			<i className="fa fa-exclamation-triangle p-1" aria-hidden="true"></i>
+			{props.mesage}
+		</span>
+	</div>;
 }
 export default class InvoiceAdd extends React.Component<IInvoiceProps, InvoicesState> {
 	constructor(props: IInvoiceProps) {
@@ -57,7 +60,7 @@ export default class InvoiceAdd extends React.Component<IInvoiceProps, InvoicesS
 		return (
 			<div className='card'>
 				<div className='card-head d-flex justify-content-between'>
-					<AlertMessage mesage={"Shop Already Selected"} show={IsShopAlreadySelected==undefined ? false : IsShopAlreadySelected}>
+					<AlertMessage mesage={"Shop Already Selected"} show={IsShopAlreadySelected == undefined ? false : IsShopAlreadySelected}>
 						<ShopSelector handleSelection={this.HandleSelection} />
 					</AlertMessage>
 					<button className='btn btn-danger' onClick={this.HandleDelete}>
@@ -73,7 +76,7 @@ export default class InvoiceAdd extends React.Component<IInvoiceProps, InvoicesS
 									<RowsWrapper
 										GetObserverBySubscriberAndComponentId={GetObserverBySubscriberAndComponentId}
 										HandleChange={HandleChange}
-										subscriptionId={SubscriptionId} GetCaretSizeByProductId={GetCaretSizeByProductId} HandleComponentDelete={HandleComponentDelete} AddASubscriptionComponent={AddASubscriberComponent} SoldItems={SoldItems} />
+										subscriptionId={SubscriptionId}  HandleComponentDelete={HandleComponentDelete} AddASubscriptionComponent={AddASubscriberComponent} SoldItems={SoldItems} />
 							}
 						</InvoiceContext.Consumer>
 					)}

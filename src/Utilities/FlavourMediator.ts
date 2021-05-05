@@ -185,16 +185,17 @@ export default class FlavourMediator  implements IFlavourMediator{
 		>;
 		if (SubscriptionComponentMapFlavour.has(componentId)) {
 			const FlavourWithProductKey = SubscriptionComponentMapFlavour.get(componentId) as FlavourWithProductKey;
+            const OldFlavour = {...FlavourWithProductKey};
 			let IsSubcribed = true;
 			if (FlavourWithProductKey.ProductId === productId) {
 				if (FlavourWithProductKey.Id === flavourId) IsSubcribed = false;
-				else FlavourWithProductKey.Id = flavourId;
+				 else FlavourWithProductKey.Id = flavourId;
 			} else {
 				FlavourWithProductKey.Id = flavourId;
 				FlavourWithProductKey.ProductId = productId;
 			}
 			if (IsSubcribed) {
-				this._restoreFlavour(subscriptionId, FlavourWithProductKey.ProductId, FlavourWithProductKey.Id);
+				this._restoreFlavour(subscriptionId, OldFlavour.ProductId, OldFlavour.Id);
 				this._deductFlavour(subscriptionId, productId, flavourId);
 			}
 			return IsSubcribed;

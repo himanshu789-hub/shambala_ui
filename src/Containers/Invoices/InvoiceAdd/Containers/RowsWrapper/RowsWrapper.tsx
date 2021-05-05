@@ -7,7 +7,6 @@ import TableRow from './Component/TableRow/TableRow';
 type RowsWrapperProps = {
 	subscriptionId: number;
 	AddASubscriptionComponent(subscription: number): void;
-	GetCaretSizeByProductId: (productId: number) => number;
 	HandleComponentDelete(subscriptionId: number, componentId: number): void;
 	HandleChange(subscriptionId: number, componentId: number, name: string, value: string): void;
 	GetObserverBySubscriberAndComponentId(subscriptionId: number, componentId: number): Observer;
@@ -29,7 +28,7 @@ export default class RowsWrapper extends React.Component<RowsWrapperProps, RowsW
 		HandleComponentDelete(subscriptionId, componentId);
 	};
 	HandeChange = (ComponentId: number, name: string, Value: any) => {
-		const { GetCaretSizeByProductId, HandleChange, subscriptionId } = this.props;
+		const {  HandleChange, subscriptionId } = this.props;
 		HandleChange(subscriptionId, ComponentId, name, Value);
 	};
 	GetObserverByComonentId = (componentId: number): Observer => {
