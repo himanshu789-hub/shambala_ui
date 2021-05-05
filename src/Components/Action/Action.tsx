@@ -1,10 +1,11 @@
+import { memo } from 'react';
 import './Action.css';
 
 type IActionProps = {
 	handleAdd: Function;
 	handleProcess: Function;
 };
-export default function Action(props: IActionProps) {
+export default   memo(function Action(props: IActionProps) {
 	return (
 		<div id='action' className='d-flex flex-row justify-content-around fixed-bottom'>
 			<button className='btn btn-primary rounded-circle' onClick={() => props.handleAdd()}>
@@ -15,4 +16,4 @@ export default function Action(props: IActionProps) {
 			</button>
 		</div>
 	);
-}
+});

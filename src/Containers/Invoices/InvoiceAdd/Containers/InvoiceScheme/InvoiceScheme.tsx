@@ -19,7 +19,7 @@ type InvoiceSchemeState = {
 	ChoosenSchemeType: number;
 };
 
-export default class InvoiceScheme extends React.Component<InvoiceSchemeProps, InvoiceSchemeState> {
+export default class InvoiceScheme extends React.PureComponent<InvoiceSchemeProps, InvoiceSchemeState> {
 	_schemeService: ISchemeService;
 	constructor(props: InvoiceSchemeProps) {
 		super(props);

@@ -5,21 +5,20 @@ import { Flavour, SoldItem } from 'Types/DTO';
 import Observer from 'Utilities/Observer';
 import './TableRow.css';
 
-type ItemsHolderProps = {
+type TableRowProps = {
 	handleChange: (componentId: number, name: string, value: any) => void;
-	CaretSize?: number;
 	ComponentId: number;
 	GetObserver(componentId: number): Observer;
 	HandleDelete: (componentId: number) => void;
 	Item: SoldItem;
 };
-type ItemHolderState = {
+type TableRowState = {
 	ProductInfo: ProductInfo[];
 	QuantityLimit: number;
 	Flavours: Flavour[];
 };
-export default class TableRow extends React.Component<ItemsHolderProps, ItemHolderState> {
-	constructor(props: ItemsHolderProps) {
+export default class TableRow extends React.Component<TableRowProps, TableRowState> {
+	constructor(props: TableRowProps) {
 		super(props);
 		const { GetObserver, ComponentId } = this.props;
 		const Observer = GetObserver(ComponentId);
@@ -28,6 +27,11 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 			QuantityLimit: -1,
 			ProductInfo: Observer.GetProduct(),
 		};
+	}
+	shouldComponentUpdate(nextProps: TableRowProps, nextState: TableRowState) {
+		const { Item } = this.props;
+		const { Item: OldItem } = this.props;
+		return Item.FlavourId != OldItem.FlavourId || Item.ProductId != OldItem.ProductId || OldItem.CaretSize != Item.CaretSize || OldItem.Quantity != Item.Quantity;
 	}
 	Delete = () => {
 		const { GetObserver, ComponentId, HandleDelete } = this.props;
@@ -94,7 +98,7 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 
 	render() {
 		const { ProductInfo, QuantityLimit, Flavours: Flavours } = this.state;
-		const { CaretSize: MaxSize, Item: { ProductId, FlavourId } } = this.props;
+		const { Item: { ProductId, FlavourId, CaretSize: MaxSize } } = this.props;
 
 		return (
 			<tr>
@@ -107,7 +111,7 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 						onChange={this.HandleChange}
 						onFocus={this.HandleClick}>
 
-						<option disabled  value='-1'>
+						<option disabled value='-1'>
 							-- Select A Product --
 						</option>
 						{ProductInfo.map(e => (
@@ -124,7 +128,7 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 						value={FlavourId}
 						defaultValue={'-1'}
 						onChange={this.HandleChange} onFocus={this.HandleClick}>
-						<option disabled  value='-1'>-- Select A Flavour -- </option>
+						<option disabled value='-1'>-- Select A Flavour -- </option>
 						{Flavours.map(e => (
 							<option key={e.Id} value={e.Id}>
 								{e.Title}
@@ -133,7 +137,7 @@ export default class TableRow extends React.Component<ItemsHolderProps, ItemHold
 					</select>
 				</td>
 				<td>
-					<input className={`form-control ${MaxSize == 0 ? 'is-invalid' : ''}`} value={MaxSize} readOnly/>
+					<input className={`form-control ${MaxSize == 0 ? 'is-invalid' : ''}`} value={MaxSize} readOnly />
 				</td>
 				<td className="caret">
 					<CaretSize Size={MaxSize ?? 0} handleInput={this.HandleInput} Limit={QuantityLimit} OnFocusIn={this.HandleFocus} />

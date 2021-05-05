@@ -18,9 +18,6 @@ type RowsWrapperState = {
 export default class RowsWrapper extends React.Component<RowsWrapperProps, RowsWrapperState> {
 	constructor(props: RowsWrapperProps) {
 		super(props);
-		this.state = {
-			Members: [],
-		};
 	}
 	AddARow = () => {
 		const { subscriptionId } = this.props;
@@ -40,7 +37,7 @@ export default class RowsWrapper extends React.Component<RowsWrapperProps, RowsW
 		return GetObserverBySubscriberAndComponentId(subscriptionId, componentId);
 	}
 	render() {
-		const { subscriptionId, SoldItems } = this.props;
+		const { SoldItems } = this.props;
 		return (
 			<div>
 				<table className='table'>
@@ -62,7 +59,6 @@ export default class RowsWrapper extends React.Component<RowsWrapperProps, RowsW
 									Item={e}
 									GetObserver={this.GetObserverByComonentId}
 									handleChange={this.HandeChange}
-									CaretSize={e.CaretSize}
 									HandleDelete={this.DeleteARow}
 								/>
 							)

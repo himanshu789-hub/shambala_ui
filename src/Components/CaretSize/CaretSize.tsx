@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, memo, useState } from 'react';
 import { provideValidNumber } from 'Utilities/Utilities';
 interface ICaretSizeProps {
 	Size: number;
@@ -7,7 +7,7 @@ interface ICaretSizeProps {
 	OnFocusIn?: () => void;
 	OnFocusOut?: () => void;
 }
-const CaretSize = function CaretSize(props: ICaretSizeProps) {
+const CaretSize =memo(function CaretSize(props: ICaretSizeProps) {
 	const [caret, setCart] = useState<number>(0);
 	const [pieces, setPieces] = useState<number>(0);
 	const [quantity, setQuantity] = useState<number>(0);
@@ -73,6 +73,6 @@ const CaretSize = function CaretSize(props: ICaretSizeProps) {
 			<div className='invalid-feedback pl-1'>Cannot Be Zero</div>
 		</div>
 	);
-};
+});
 
 export default CaretSize;

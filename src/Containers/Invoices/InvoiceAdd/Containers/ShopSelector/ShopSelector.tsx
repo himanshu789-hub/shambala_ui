@@ -8,7 +8,7 @@ import './ShopSelector.css';
 type ShopSelectorProps = {
 	handleSelection(name: string, value: any): void;
 };
-export default function ShopSelector(props: ShopSelectorProps) {
+ const ShopSelector  = function ShopSelector(props: ShopSelectorProps) {
 	const [shopId, setShopId] = useState<number>(-1);
 	const [shops, setShopList] = useState<Shop[]>([]);
 	const [name, setName] = useState<string>('');
@@ -18,6 +18,7 @@ export default function ShopSelector(props: ShopSelectorProps) {
 	const handleSelect = (e: MouseEvent<HTMLLabelElement>) => {
 		setShouldDropdownDisplay(false);
 		setAPIStatus(CallStatus.EMPTY);
+		
 		setName(e.currentTarget.dataset.name ?? '');
 		const ShopId  =  Number.parseInt(e.currentTarget.dataset.value as string);
 		setShopId(ShopId);
@@ -55,3 +56,4 @@ export default function ShopSelector(props: ShopSelectorProps) {
 		</div>
 	);
 }
+export default React.memo(ShopSelector);
