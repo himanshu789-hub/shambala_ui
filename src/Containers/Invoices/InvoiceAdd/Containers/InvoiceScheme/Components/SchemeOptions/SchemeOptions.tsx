@@ -6,20 +6,11 @@ type DisplaySchemeProps = {
 	ShouldDisabledFixed: boolean;
 	HandleChange: (name: string, value: any) => void;
 }
-const SchemeOptions = class SchemeOptions extends React.Component<DisplaySchemeProps, {}> {
-	constructor(props: DisplaySchemeProps) {
-		super(props);
-	}
-	componentWillMount() {
-		console.log("Mounted");
-	}
-	componentWillUnmount() {
-		console.log("Unmounted Scheme Options");
-	}
-	render() {
-		const { ChoosenSchemeEnumType, ShouldDisabledFixed } = this.props;
+const SchemeOptions = function SchemeOptions(props:DisplaySchemeProps) 
+	 {
+		const { ChoosenSchemeEnumType, ShouldDisabledFixed } = props;
 		const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-			const { HandleChange } = this.props;
+			const { HandleChange } = props;
 			const {  value } = e.currentTarget;
 			HandleChange('ChoosenSchemeType', Number.parseInt(value));
 		}
@@ -78,8 +69,6 @@ const SchemeOptions = class SchemeOptions extends React.Component<DisplaySchemeP
 
 		);
 	}
-
-}
 
 
 export default SchemeOptions;
