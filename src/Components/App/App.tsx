@@ -6,13 +6,14 @@ import { Route, Switch, RouteComponentProps, useRouteMatch } from 'react-router-
 import OutgoingShipment from 'Components/OutgoingShipment/OutgoingShipment';
 import Invoice from 'Components/Invoice/Invoice';
 import MessageModal from 'Components/MessageModal/MessageModal';
+import SearchProduct from 'Containers/SearchProduct/SearchProduct';
 
 
 function MessageRoute() {
 	const match = useRouteMatch();
 	return <Switch>
 		<Route path={match.path + '/pass'} children={({ match }) =>
-			<MessageModal IsSuccess={true} ShouldDisplay={true}  />} />
+			<MessageModal IsSuccess={true} ShouldDisplay={true} />} />
 		<Route path={match.path + '/fail'} children={({ match }) =>
 			<MessageModal IsSuccess={false} ShouldDisplay={true} />} />
 	</Switch>
@@ -37,7 +38,9 @@ export default class App extends React.Component {
 				<Route path="/message" >
 					<MessageRoute />
 				</Route>
-
+				<Route path="/productsearch">
+					<SearchProduct />
+				</Route>
 			</React.Fragment>
 		);
 	}

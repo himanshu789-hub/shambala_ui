@@ -2,23 +2,24 @@ import axios, { AxiosResponse } from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import IProductService from 'Contracts/services/IProductService';
 import { ProductAxiosClient as AxiosClient, ProductAxiosClient } from 'HttpClient/Axios';
-import { IShipmentElement, Product, ProductInfo } from 'Types/DTO';
-import {productsWithLimit,productsWithoutLimit} from 'Mock/Product';
+import { IShipmentElement,  ProductInfo , Product } from 'Types/DTO';
+import { productsWithLimit, productsWithoutLimit } from 'Mock/Product';
 
-const mock  = new MockAdapter(ProductAxiosClient);
-mock.onGet(/\/api\/product\/getallwithlimit/i).reply(200,productsWithLimit);
-mock.onGet(/\/api\/product\/getallwithoutlimit/i).reply(200,productsWithoutLimit);
-mock.onGet(/\/api\/product\/getproductbyid/i)
+const mock = new MockAdapter(ProductAxiosClient);
+mock.onGet(/\/api\/product\/getallwithlimit/i).reply(200, productsWithLimit);
+mock.onGet(/\/api\/product\/getallwithoutlimit/i).reply(200, productsWithoutLimit);
+const ProductInfoReply: ProductInfo = { Flavours: productsWithLimit[0].Flavours, Id: productsWithLimit[0].Id, Name: productsWithLimit[0].Name };
+mock.onGet(/\/api\/product\/getproductbyid/i).reply(200,ProductInfoReply);
 export default class ProductService implements IProductService {
-	GetProductById(ProductId:number): Promise<AxiosResponse<ProductInfo>> {
-		return ProductAxiosClient.get('/getproductbyid');
+	GetProductById(ProductId: number): Promise<AxiosResponse<Product>> {
+		return ProductAxiosClient.get('/getproductbyid', { data: { Id: ProductId } });
 	}
 	Add(shipment: IShipmentElement[]): Promise<AxiosResponse<void>> {
 		return ProductAxiosClient.post('/add', shipment);
 	}
-    GetProductWithLimit():Promise<AxiosResponse<Product[]>>{
-       return ProductAxiosClient.get('/GetAllWithLimit');
-	}           
+	GetProductWithLimit(): Promise<AxiosResponse<Product[]>> {
+		return ProductAxiosClient.get('/GetAllWithLimit');
+	}
 	GetProductWithoutLimit(): Promise<AxiosResponse<Product[]>> {
 		return AxiosClient.get('/GetAllWithoutLimit');
 	}

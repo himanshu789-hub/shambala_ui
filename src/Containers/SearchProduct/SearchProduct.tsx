@@ -33,7 +33,7 @@ type ViewAllState = {
     ProductInfosRequestInfo: ApiStatusInfo;
     ProductRequestInfo: ApiStatusInfo;
 }
-export default class ViewAll extends React.Component<ViewAllProps, ViewAllState>
+export default class SearchProduct extends React.Component<ViewAllProps, ViewAllState>
 {
     _productService: IProductService;
     constructor(props: ViewAllProps) {
