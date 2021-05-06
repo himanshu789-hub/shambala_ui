@@ -55,12 +55,15 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 		const { Mediator, InvoiceMappedObserver } = this.state;
 		const ComponentId = Math.random() * 10;
 		const Observer = Mediator.GetAObserver(subscriptionId, ComponentId);
-		const { ShopSubscribers: ShopSubscriber } = this.state;
+		let { ShopSubscribers } = this.state;
 		const Observers = InvoiceMappedObserver.get(subscriptionId) as Observer[];
 		Observers.push(Observer);
-		const ShopInvoice = ShopSubscriber.find(e => e.SubscriptionId == subscriptionId)?.ShopInvcoice as ShopInvoice;
-		ShopInvoice.Invoices.push({ CaretSize: 0, FlavourId: -1, ProductId: -1, Id: ComponentId, Quantity: 0 });
-		this.setState({ ShopSubscribers: ShopSubscriber });
+		const OldSubscriber = ShopSubscribers.find(e => e.SubscriptionId == subscriptionId) as ShopSubscriber;
+		const OldShopInvoice = OldSubscriber.ShopInvcoice as ShopInvoice;
+		OldShopInvoice.Invoices.push({ CaretSize: 0, FlavourId: -1, ProductId: -1, Id: ComponentId, Quantity: 0 });
+		let NewShopSubscriber = { ...OldSubscriber, ShopInvcoice: { ...OldShopInvoice, Invoices: [...OldShopInvoice.Invoices] } } as ShopSubscriber;
+		ShopSubscribers = ShopSubscribers.map(e => e.SubscriptionId == subscriptionId ? NewShopSubscriber : e);
+		this.setState({ ShopSubscribers: ShopSubscribers });
 	}
 	HandleDelete = (SubscriptionId: number) => {
 		const { Mediator } = this.state;
@@ -80,11 +83,8 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 		ShopInvoice.Invoices = ShopInvoice.Invoices.filter(e => e.Id !== componentId);
 		this.setState({ ShopSubscribers: ShopSubscriber });
 	}
-	componentWillUpdate() {
-		console.log('invoice Add Wrapper updating');
-	}
 	HandeShopInvoice = (SubscriptionId: number, ComponentId: number, name: string, value: any) => {
-		const { ShopSubscribers: ShopSubscriber } = this.state;
+		let { ShopSubscribers: ShopSubscriber } = this.state;
 		const ShopInvoice = ShopSubscriber.find(e => e.SubscriptionId == SubscriptionId)?.ShopInvcoice as ShopInvoice;
 		let SoldItem = ShopInvoice.Invoices.find(e => e.Id == ComponentId) as SoldItem;
 		// if (name == 'FlavourId') {
@@ -98,11 +98,17 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 		// }
 		if (name == "ProductId") {
 			SoldItem.CaretSize = this.GetCaretSizeByProductId(value);
+		SoldItem.FlavourId = -1;
 		}
 		if (Object.keys(SoldItem).includes(name)) {
 			ShopInvoice.Invoices = ShopInvoice.Invoices.map(e => {
 				if (e.Id == ComponentId)
 					return { ...SoldItem, [name]: value };
+				else return e;
+			})
+			ShopSubscriber = ShopSubscriber.map(e => {
+				if (e.SubscriptionId == SubscriptionId)
+					return { ...e,ShopInvcoice:{...e.ShopInvcoice} };
 				else return e;
 			})
 		}
@@ -111,21 +117,23 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 		console.log('Handle CHanged Out');
 	};
 	HandleShopOrSchemeChange = (subscriptionId: number, name: string, value: any) => {
-		const { ShopSubscribers: ShopSubscriber } = this.state;
-		const CurrentShupscriber = ShopSubscriber.find(e => e.SubscriptionId == subscriptionId) as ShopSubscriber;
+		let { ShopSubscribers } = this.state;
+		const CurrentShupscriber = ShopSubscribers.find(e => e.SubscriptionId == subscriptionId) as ShopSubscriber;
 
 		const ShopInvoice = CurrentShupscriber.ShopInvcoice as ShopInvoice;
 		if (Object.keys(ShopInvoice).includes(name)) {
 			if (name == "ShopId") {
-				const IsAlreadySelected = ShopSubscriber.find(e => e.ShopInvcoice.ShopId == value) != null;
-				if (IsAlreadySelected)
-					CurrentShupscriber.IsShopUnique = false;
-				else
-					CurrentShupscriber.IsShopUnique = true;
+				if (CurrentShupscriber) {
+					const IsAlreadySelected = ShopSubscribers.find(e => e.ShopInvcoice.ShopId == value) != null;
+					CurrentShupscriber.IsShopUnique = !IsAlreadySelected;
+				}
 			}
-			(ShopInvoice as any)[name] = value;
+			ShopSubscribers = ShopSubscribers.map(e =>
+				e.SubscriptionId == subscriptionId ? { ...CurrentShupscriber, ShopInvcoice: { ...ShopInvoice, [name]: value } } : e
+			);
+
 		}
-		this.setState({ ShopSubscribers: ShopSubscriber });
+		this.setState({ ShopSubscribers: ShopSubscribers });
 	}
 
 	GetCaretSizeByProductId = (productId: number): number => {

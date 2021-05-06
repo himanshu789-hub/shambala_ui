@@ -56,11 +56,12 @@ export default class TableRow extends React.PureComponent<TableRowProps, TableRo
 			const Observer = GetObserver(ComponentId);
 			switch (name) {
 				case 'ProductId':
+					Observer.Unubscribe();
 					Observer.SetProduct(val);
 					console.log('Going To Handle CHange Within TableRow');
-				
+
 					handleChange(ComponentId, name, val)
-				
+
 					break;
 				case 'FlavourId':
 					Observer.SetFlavour(val);
@@ -110,7 +111,7 @@ export default class TableRow extends React.PureComponent<TableRowProps, TableRo
 		// 	debugger;
 		// } else
 		// 	this._propsState = ComponentPropsChanged.No;
-	 }
+	}
 	// shouldComponentUpdate() {
 	// 	// const PropsState = this._propsState.toString();
 	// 	// this._propsState = ComponentPropsChanged.Reset;
@@ -119,8 +120,7 @@ export default class TableRow extends React.PureComponent<TableRowProps, TableRo
 	// 	// 	return false;
 	// 	return true;
 	// }
-	componentDidUpdate()
-	{
+	componentDidUpdate() {
 		console.log('Table Row Updating');
 	}
 	render() {

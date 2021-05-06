@@ -30,14 +30,14 @@ type AlertMessageProps = {
 function AlertMessage(props: AlertMessageProps) {
 	const { show } = props;
 	return <div className={"d-flex"}>
-		<div className={`${show?"error":''}`}>{props.children}</div>
+		<div className={`${show ? "error" : ''}`}>{props.children}</div>
 		<span className={`tool-tip ${show ? "d-inline-block" : "d-none"}`}>
 			<i className="fa fa-exclamation-triangle p-1" aria-hidden="true"></i>
 			{props.mesage}
 		</span>
 	</div>;
 }
-export default class InvoiceAdd extends React.Component<IInvoiceProps, InvoicesState> {
+export default class InvoiceAdd extends React.PureComponent<IInvoiceProps, InvoicesState> {
 	constructor(props: IInvoiceProps) {
 		super(props);
 		this.state = {
@@ -69,14 +69,14 @@ export default class InvoiceAdd extends React.Component<IInvoiceProps, InvoicesS
 				</div>
 				<div className='card-body'>
 					{ShopId && <InvoiceScheme handleSchemeSelection={this.HandleSelection} ShopId={ShopId} />}
-					{ShopId && SchemeId && (
+					{ShopId && SchemeId && !IsShopAlreadySelected && (
 						<InvoiceContext.Consumer>
 							{
 								({ GetObserverBySubscriberAndComponentId, HandleChange }) =>
 									<RowsWrapper
 										GetObserverBySubscriberAndComponentId={GetObserverBySubscriberAndComponentId}
 										HandleChange={HandleChange}
-										subscriptionId={SubscriptionId}  HandleComponentDelete={HandleComponentDelete} AddASubscriptionComponent={AddASubscriberComponent} SoldItems={SoldItems} />
+										subscriptionId={SubscriptionId} HandleComponentDelete={HandleComponentDelete} AddASubscriptionComponent={AddASubscriberComponent} SoldItems={SoldItems} />
 							}
 						</InvoiceContext.Consumer>
 					)}

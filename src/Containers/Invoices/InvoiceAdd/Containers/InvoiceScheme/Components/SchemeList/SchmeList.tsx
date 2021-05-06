@@ -6,7 +6,7 @@ type VariableSectionProps = {
 	SchemeList: Scheme[];
 };
 const SchemeList = function (props: VariableSectionProps) {
-	const [schemeSelected, setSchemeSelected] = useState<number>(0);
+	const [schemeSelected, setSchemeSelected] = useState<number>(-1);
 	const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
 		const selectedScheme = Number.parseInt(e.currentTarget.value);
 		setSchemeSelected(selectedScheme);
@@ -15,8 +15,8 @@ const SchemeList = function (props: VariableSectionProps) {
 	return (
 		<div className='variable-scheme-section form-group'>
 			<small>Please Select a Scheme : </small>
-			<select name='schemes' className="form-control-sm" onChange={handleChange} value={schemeSelected}>
-				<option selected disabled>
+			<select name='SchemeId' className="form-control-sm" onChange={handleChange} value={schemeSelected}>
+				<option disabled value="-1">
 					-- Select A Scheme Type --
 				</option>
 				{props.SchemeList.map((value, index) => (

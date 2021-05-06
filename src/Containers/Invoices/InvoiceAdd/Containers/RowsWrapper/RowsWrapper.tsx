@@ -14,7 +14,7 @@ type RowsWrapperProps = {
 };
 type RowsWrapperState = {
 };
-export default class RowsWrapper extends React.Component<RowsWrapperProps, RowsWrapperState> {
+export default class RowsWrapper extends React.PureComponent<RowsWrapperProps, RowsWrapperState> {
 	constructor(props: RowsWrapperProps) {
 		super(props);
 	}
