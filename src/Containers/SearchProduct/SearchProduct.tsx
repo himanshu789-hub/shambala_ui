@@ -2,30 +2,34 @@ import Loader, { ApiStatusInfo, CallStatus } from "Components/Loader/Loader";
 import IProductService from "Contracts/services/IProductService";
 import React from "react";
 import ProductService from "Services/ProductService";
-import { Flavour, Product, ProductInfo } from "Types/DTO";
-
-function FlavourTable(props: { Flavours: Flavour[] }) {
-    return (<table className="table-wrapper">
-        <thead>
-            <th>S.No.</th>
-            <th>Flavour Name</th>
-            <th>Quantity</th>
-        </thead>
-        <tbody>
-            {props.Flavours.map((e, index) => <tr key={index}>
-                <td>{index + 1}</td>
-                <td>{e.Title}</td>
-                <td>{e.Quantity}</td>
-            </tr>)}
-        </tbody>
-    </table>);
+import { FlavourInfo, Product, ProductInfo } from "Types/DTO";
+import {caretInfo} from 'Utilities/Utilities';
+function FlavourTable(props: { Flavours: FlavourInfo[],CaretSize:number }) {
+    return (
+        <div className="table-wrapper">
+            <table >
+                <thead>
+                    <th>S.No.</th>
+                    <th>Flavour Name</th>
+                    <th>Quantity In Stock</th>
+                    <th>Quantity In Procrument</th>
+                </thead>
+                <tbody>
+                    {props.Flavours.map((e, index) => <tr key={index}>
+                        <td>{index + 1}</td>
+                        <td>{e.Title}</td>
+                        <td>{caretInfo(e.QuantityInStock,props.CaretSize)}</td>
+                        <td>{e.QuantityInProcrument}</td>
+                    </tr>)}
+                </tbody>
+            </table></div>);
 }
 
-type ViewAllProps = {
+type ProductSearchProps = {
 
 }
 type ErrorMessgae = { ProductError: string, FlavourError: string };
-type ViewAllState = {
+type ProductSearchState = {
     Products: Product[];
     SelectedProductId: number;
     ErrorMessage: ErrorMessgae;
@@ -33,20 +37,20 @@ type ViewAllState = {
     ProductInfosRequestInfo: ApiStatusInfo;
     ProductRequestInfo: ApiStatusInfo;
 }
-export default class SearchProduct extends React.Component<ViewAllProps, ViewAllState>
+export default class SearchProduct extends React.Component<ProductSearchProps, ProductSearchState>
 {
     _productService: IProductService;
-    constructor(props: ViewAllProps) {
+    constructor(props: ProductSearchProps) {
         super(props);
         this.state = {
-            Products: [], SelectedProductId: -1, ErrorMessage: { FlavourError: '', ProductError: '' },ProductInfosRequestInfo: { Status: CallStatus.EMPTY, Message: '' }, ProductRequestInfo: { Status: CallStatus.EMPTY, Message: '' }
+            Products: [], SelectedProductId: -1, ErrorMessage: { FlavourError: '', ProductError: '' }, ProductInfosRequestInfo: { Status: CallStatus.EMPTY, Message: '' }, ProductRequestInfo: { Status: CallStatus.EMPTY, Message: '' }
         }
         this._productService = new ProductService();
     }
     handleSubmit = () => {
         if (this.IsAllValid()) {
             this.setState({ ProductInfosRequestInfo: { Status: CallStatus.LOADING, Message: "Fetching Result . . ." } });
-            const {SelectedProductId} = this.state;
+            const { SelectedProductId } = this.state;
             this._productService.GetProductById(SelectedProductId)
                 .then(res => this.setState({ ProductInfos: res.data, ProductInfosRequestInfo: { Status: CallStatus.LOADED, Message: undefined } }))
                 .catch(() => this.setState({ ProductInfosRequestInfo: { Status: CallStatus.ERROR, Message: undefined } }));
@@ -80,27 +84,27 @@ export default class SearchProduct extends React.Component<ViewAllProps, ViewAll
         return (<div className="view-all">
             <h5 className="app-head">Search Product</h5>
             <Loader Message={ProductRequestInfo.Message} Status={ProductRequestInfo.Status}>
-                <div className="form-inline justify-content-center">
+                <div className="form-inline justify-content-center align-items-center">
                     <div className='d-flex flex-column'>
-                        <div className='input-group mr-5'>
+                        <div className={`input-group mr-5 ${ErrorMessage.ProductError.length>0 && 'is-invalid'}`}>
                             <div className='input-group-prepend'>
                                 <div className='input-group-text'>Product Name</div>
                             </div>
                             <select name="SelectedProductId" onChange={this.handleChange} className="form-control" value={SelectedProductId}>
-                                <option value="-1">-- Please Select A Product --</option>
+                                <option value="-1" disabled>-- Please Select A Product --</option>
                                 {Products.map(e => <option value={e.Id}>{e.Name}</option>)}
                             </select>
                         </div>
                         <small className='form-text  text-danger'>{ErrorMessage.ProductError}</small>
                     </div>
-                    
-					<button type='submit' className='btn btn-success' onClick={this.handleSubmit}>
-						Go
+
+                    <button type='submit' className='btn btn-success' onClick={this.handleSubmit}>
+                        Go
 					</button>
                 </div>
             </Loader>
             <Loader Message={ProductInfosRequestInfo.Message} Status={ProductInfosRequestInfo.Status}>
-                {ProductInfos && <FlavourTable Flavours={ProductInfos.Flavours} />}
+                {ProductInfos && <div className="mt-2"><FlavourTable Flavours={ProductInfos.Flavours} CaretSize={ProductInfos.CaretSize} /></div>}
             </Loader>
         </div>);
     }

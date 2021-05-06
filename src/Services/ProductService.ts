@@ -5,13 +5,13 @@ import { ProductAxiosClient as AxiosClient, ProductAxiosClient } from 'HttpClien
 import { IShipmentElement,  ProductInfo , Product } from 'Types/DTO';
 import { productsWithLimit, productsWithoutLimit } from 'Mock/Product';
 
-const mock = new MockAdapter(ProductAxiosClient);
+const mock = new MockAdapter(ProductAxiosClient,{delayResponse:1000});
 mock.onGet(/\/api\/product\/getallwithlimit/i).reply(200, productsWithLimit);
 mock.onGet(/\/api\/product\/getallwithoutlimit/i).reply(200, productsWithoutLimit);
-const ProductInfoReply: ProductInfo = { Flavours: productsWithLimit[0].Flavours, Id: productsWithLimit[0].Id, Name: productsWithLimit[0].Name };
+const ProductInfoReply: ProductInfo = { Flavours: [{Id:1,QuantityInProcrument:100,QuantityInStock:2232,Title:"Orange"}], Id: productsWithLimit[0].Id, Name: productsWithLimit[0].Name,CaretSize:30 };
 mock.onGet(/\/api\/product\/getproductbyid/i).reply(200,ProductInfoReply);
 export default class ProductService implements IProductService {
-	GetProductById(ProductId: number): Promise<AxiosResponse<Product>> {
+	GetProductById(ProductId: number): Promise<AxiosResponse<ProductInfo>> {
 		return ProductAxiosClient.get('/getproductbyid', { data: { Id: ProductId } });
 	}
 	Add(shipment: IShipmentElement[]): Promise<AxiosResponse<void>> {

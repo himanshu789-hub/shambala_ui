@@ -109,7 +109,7 @@ const Nav = React.memo(function Nav() {
 				<li className='nav-item parent'>
 					<NavLink className='nav-link' activeClassName="active" to="/productsearch">
 						<span className='d-inline-flex flex-column justify-content-center align-items-center'>
-							<i className='fa fa-shopping-bag fa-2x'></i>
+							<i className='fa fa-pinterest fa-2x'></i>
 							<label>Search Prdouct</label>
 						</span>
 					</NavLink>

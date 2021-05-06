@@ -36,6 +36,13 @@ export type Flavour = {
 	Title: string;
 	Quantity?: number;
 };
+export type FlavourInfo =
+{
+	Id: number;
+	Title: string;
+	QuantityInStock: number;
+	QuantityInProcrument:number;
+}
 export type Product = {
 	Id: number;
 	Name: string;
@@ -68,7 +75,8 @@ export type ProductInfo  =
 {
 	Id:number;
 	Name:string;
-	Flavours:Flavour[];
+	CaretSize:number;
+	Flavours:FlavourInfo[];
 }
 export type Shop = {
 	Id: number;

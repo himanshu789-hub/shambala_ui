@@ -23,3 +23,8 @@ export function deepCloneProducts(products:Product[])
 	}
 	return CloneProducts;
 }
+
+export function caretInfo(quantity:number,caretSize:number){
+	const pieces = quantity%caretSize;
+return `${Math.floor(quantity/caretSize)} Caret ${pieces} Piece${pieces<=1?'':'s'}`;
+}
