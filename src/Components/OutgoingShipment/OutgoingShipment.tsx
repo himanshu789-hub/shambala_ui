@@ -1,7 +1,7 @@
 import { Route, RouteComponentProps, Switch, useRouteMatch } from 'react-router';
-import OutgoingShipmentAdd from '../../Containers/OutgoingShipment/Containers/Add/Add';
-import OutgoingShipmentSearch from 'Containers/OutgoingShipment/Containers/Search/Search';
-import OutgoingShipmentReturn from 'Containers/OutgoingShipment/Containers/Return/Return';
+import OutgoingShipmentAdd from '../../Containers/OutgoingShipment/Add/Add';
+import OutgoingShipmentSearch from 'Containers/OutgoingShipment/Search/Search';
+import OutgoingShipmentReturn from 'Containers/OutgoingShipment/Return/Return';
 
 export default function OutgoingShipment() {
 	const match = useRouteMatch();

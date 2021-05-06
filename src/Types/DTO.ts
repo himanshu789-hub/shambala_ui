@@ -64,6 +64,12 @@ export type ShopInvoice = {
 	SchemeId: number | undefined;
 	Invoices: SoldItem[];
 };
+export type ProductInfo  =
+{
+	Id:number;
+	Name:string;
+	Flavours:Flavour[];
+}
 export type Shop = {
 	Id: number;
 	Name: string;
