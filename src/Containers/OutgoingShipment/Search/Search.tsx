@@ -2,14 +2,13 @@ import Loader, { CallStatus, ApiStatusInfo } from 'Components/Loader/Loader';
 import React, { SyntheticEvent } from 'react';
 import { OutgoingShipment, SalesmanProperties } from 'Types/Types';
 import './Search.css';
-import { OutgoingStatus } from 'Enums/Enum';
-import { Link } from 'react-router-dom';
 import IOUtgoingShipmentService from 'Contracts/services/IOutgoingShipmentService';
 import OutgoingService from 'Services/OutgoingShipmentService';
 import ISalesmanService from 'Contracts/services/ISalesmanService';
 import { SalesmanService } from 'Services/SalesmanService';
 import { SalesmanDTO } from 'Types/DTO';
 import SalesmanList from 'Components/SalesmanList/SalesmanList';
+import TableWrapper from './Components/TableWrapper/TableWrapper';
 type OutgoingShipmentSearchProps = {};
 type Search = {
 	SalesmanId: string;
@@ -102,45 +101,8 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 			OutgoingShipments,
 			ErrorMessage, OutgoingShipmentRequestInfo, SalemansRequestInfo
 		} = this.state;
-		const LoaderChildren: JSX.Element = (
-			<div className='table-wrapper'>
-				<table>
-					<thead>
-						<tr>
-							<th>S.No</th>
-							<th>Salesman Name</th>
-							<th>Date</th>
-							<th>Status</th>
-						</tr>
-					</thead>
-					<tbody>
-						{OutgoingShipments &&
-							OutgoingShipments.map((value, index) => {
-								const IsPending = value.Status === OutgoingStatus.PENDING ? true : false;
-								return (
-									<tr key={index}>
-										<td>{index + 1}</td>
-										<td>{value.Salesman.FullName}</td>
-										<td>{value.DateCreated}</td>
-										<td>
-											{IsPending ? (
-												<span className='form-group'>
-													<Link to={`/outgoing/return/${value.Id}`} className='action bg-warning text-white'>
-														Pending
-													</Link>
-													<small className='form-text text-muted'>Click To Proceed To Return</small>
-												</span>
-											) : (
-												<label className='badge badge-success'>Completed</label>
-											)}
-										</td>
-									</tr>
-								);
-							})}
-					</tbody>
-				</table>
-			</div>
-		);
+
+		
 		return (
 			<div className='search'>
 				<h5 className="app-head">Search Outgoing Shipments</h5>
@@ -167,7 +129,9 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 					</button>
 				</div>
 				<div className='outgoing-table'>
-					<Loader children={LoaderChildren} Status={OutgoingShipmentRequestInfo.Status} Message={OutgoingShipmentRequestInfo.Message} />
+					<Loader children={<TableWrapper OutgoingShipments={OutgoingShipments}/>} 
+					Status={OutgoingShipmentRequestInfo.Status} 
+					Message={OutgoingShipmentRequestInfo.Message} />
 				</div>
 			</div>
 		);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link,NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 
 import './Nav.css';
 const Nav = React.memo(function Nav() {
@@ -87,24 +87,24 @@ const Nav = React.memo(function Nav() {
 					</ul>
 				</li>
 				<li className='nav-item parent'>
-					<NavLink className='nav-link' activeClassName="active" to="/invoice">
+					<NavLink className='nav-link' activeClassName="active" to="/invoice" >
 						<span className='d-inline-flex flex-column justify-content-center align-items-center'>
 							<i className='fa fa-shopping-bag fa-2x'></i>
 							<label>Invoices</label>
 						</span>
 					</NavLink>
 					<ul className='child dropdown-menu'>
-						<li className='dropdown-item'>
+						{/* <li className='dropdown-item'>
 							<Link to='/invoice/add' className='nav-link'>
 								<i className='fa fa-plus'></i> Add
 							</Link>
-						</li>
-						{/* <li className='dropdown-item'>
+						</li> */}
+					          <li className='dropdown-item'>
 							<Link to='/invoice/search' className='nav-link' >
 							<i className='fa fa-list-alt'></i> Search
                             </Link>
-						</li> */}
-					</ul>
+						</li> 
+					</ul> 
 				</li>
 				<li className='nav-item parent'>
 					<NavLink className='nav-link' activeClassName="active" to="/productsearch">

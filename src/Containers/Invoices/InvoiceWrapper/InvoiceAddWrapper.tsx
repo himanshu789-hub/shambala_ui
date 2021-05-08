@@ -2,14 +2,18 @@ import React, { ReactNode } from 'react';
 import InvoiceAdd from '../InvoiceAdd/InvoiceAdd';
 import { RouteComponentProps } from 'react-router-dom';
 import MediatorSubject from 'Utilities/MediatorSubject';
-import ProductService from 'Services/ProductService';
-import IProductService from 'Contracts/services/IProductService';
 import Action from 'Components/Action/Action';
 import { ShopInvoice, Product, SoldItem } from 'Types/DTO';
 import { InvoiceContext } from './Context';
 import Observer from 'Utilities/Observer';
 import Loader, { ApiStatusInfo, CallStatus } from 'Components/Loader/Loader';
-interface IInvoiceAddWrapperProps extends RouteComponentProps { }
+import IOutgoingService from 'Contracts/services/IOutgoingShipmentService';
+import OutgoingService from 'Services/OutgoingShipmentService';
+
+
+interface IInvoiceAddWrapperProps extends RouteComponentProps<{ id: string }> {
+
+}
 
 
 type InvoiceAddWrapperState = {
@@ -26,7 +30,8 @@ type ShopSubscriber = {
 };
 
 export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrapperProps, InvoiceAddWrapperState> {
-	_productService: IProductService;
+
+	_outgoingShipment:IOutgoingService;
 	constructor(props: IInvoiceAddWrapperProps) {
 		super(props);
 		this.state = {
@@ -36,7 +41,7 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 			ApiStatus: { Status: CallStatus.EMPTY, Message: '' },
 			InvoiceMappedObserver: new Map()
 		};
-		this._productService = new ProductService();
+		this._outgoingShipment = new OutgoingService();
 	}
 	GetObserverBySubscriptionAndComponentId = (subscriptionId: number, componentId: number): Observer => {
 		const { InvoiceMappedObserver } = this.state;
@@ -98,7 +103,7 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 		// }
 		if (name == "ProductId") {
 			SoldItem.CaretSize = this.GetCaretSizeByProductId(value);
-		SoldItem.FlavourId = -1;
+			SoldItem.FlavourId = -1;
 		}
 		if (Object.keys(SoldItem).includes(name)) {
 			ShopInvoice.Invoices = ShopInvoice.Invoices.map(e => {
@@ -108,7 +113,7 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 			})
 			ShopSubscriber = ShopSubscriber.map(e => {
 				if (e.SubscriptionId == SubscriptionId)
-					return { ...e,ShopInvcoice:{...e.ShopInvcoice} };
+					return { ...e, ShopInvcoice: { ...e.ShopInvcoice } };
 				else return e;
 			})
 		}
@@ -181,9 +186,13 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 		);
 	}
 	componentDidMount() {
-		this.setState({ ApiStatus: { Status: CallStatus.LOADING, Message: 'Gathering Shipment Product Info' } });
-		this._productService
-			.GetProductWithLimit()
-			.then(res => this.setState({ Mediator: new MediatorSubject(res.data), Products: res.data, ApiStatus: { Status: CallStatus.LOADED, Message: '' } })).catch(() => this.setState({ ApiStatus: { Status: CallStatus.LOADED, Message: undefined } }));
+		const { params: { id } } = this.props.match;
+		const Id = Number.parseInt(id);
+		if (Id) {
+			this.setState({ ApiStatus: { Status: CallStatus.LOADING, Message: 'Gathering Shipment Product Info' } });
+			this._outgoingShipment.GetShipmentProductDetailsById(Id)
+				.then(res => this.setState({ Mediator: new MediatorSubject(res.data.Products), Products: res.data.Products, ApiStatus: { Status: CallStatus.LOADED, Message: '' } })).catch(() => this.setState({ ApiStatus: { Status: CallStatus.LOADED, Message: undefined } }));
+		}
+
 	}
 }
