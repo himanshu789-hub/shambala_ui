@@ -183,3 +183,17 @@ a.action:active:before {
 	color: white;
 	padding: 7px;
 }
+.fadeOut
+{
+	opacity: 0 !important;
+	z-index: -1 !important;
+transition:opacity 1s linear;
+}
+.fadeOut>*
+{
+}
+@keyframes fadeOut {
+	0% {opacity: 1;}
+	100% {opacity: 0;display:none;;} 
+
+ }

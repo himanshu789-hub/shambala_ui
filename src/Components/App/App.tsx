@@ -44,4 +44,11 @@ export default class App extends React.Component {
 			</React.Fragment>
 		);
 	}
+	componentDidMount() {
+		const LoadingElementId = "loading";
+		document.getElementById("loading")?.classList.add("fadeOut");
+		setTimeout(function () {
+			document.getElementById(LoadingElementId)?.remove();
+		}, 2000)
+	}
 }
