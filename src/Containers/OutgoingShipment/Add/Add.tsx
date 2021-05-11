@@ -38,7 +38,8 @@ export default class OutgoingShipmentAdd extends React.Component<OutgoingShipmen
 		const { OutgoingShipment } = this.state;
 		if (this.IsAllValid()) {
 			OutgoingShipment.DateCreated = new Date();
-			this._outgoingShipmentService.PostOutgoingShipmentWithProductList(OutgoingShipment).then(res => {
+			this._outgoingShipmentService.PostOutgoingShipmentWithProductList(OutgoingShipment)
+			.then(() => {
 				const { history } = this.props;
 				history.push("/message/pass", { message: "Added Sucessfully" });
 			}).catch(() => {

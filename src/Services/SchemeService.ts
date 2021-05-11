@@ -11,9 +11,9 @@ mock.onGet('api/scheme/getall').reply(200, AllMockScheme);
 
 export default class SchemeService implements ISchemeService {
 	GetByShopId(shopId: number): Promise<AxiosResponse<Scheme>> {
-		return SchemeClient.get('getbyshopId');
+		return SchemeClient.get(`/getbyshopId/${shopId}`);
 	}
 	GetAll(): Promise<AxiosResponse<Scheme[]>> {
-		return SchemeClient.get('getall');
+		return SchemeClient.get('/getall');
 	}
 }

@@ -28,9 +28,6 @@ export type SalesmanDTO =
   
 }
 
-
-
-
 export type Flavour = {
 	Id: number;
 	Title: string;

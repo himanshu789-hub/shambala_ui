@@ -40,7 +40,7 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 		this.IsValid = this.IsValid.bind(this);
 		this.OutgoingShipmentService = new OutgoingService();
 		this.handleChange = this.handleChange.bind(this);
-		this.handleClick = this.handleClick.bind(this);
+		this.handleSubmit = this.handleSubmit.bind(this);
 	}
 	handleSelection = (Id: number) => {
 		this.setState(({ Search }) => { return { Search: { ...Search, SalesmanId: Id + '' } } });
@@ -79,14 +79,14 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 
 		return IsValid;
 	}
-	handleClick(e: SyntheticEvent) {
+	handleSubmit() {
 		const {
 			Search: { DateCreated, SalesmanId },
 		} = this.state;
 
 		if (this.IsValid()) {
 			this.setState({ OutgoingShipmentRequestInfo: { Status: CallStatus.LOADING, Message: 'Gathering Shipments Info' } });
-			this.OutgoingShipmentService.GetShipmentByDateAndSalesmanId(Number.parseInt(SalesmanId), DateCreated).then(res =>
+			this.OutgoingShipmentService.GetShipmentByDateAndSalesmanId(Number.parseInt(SalesmanId), new Date(DateCreated)).then(res =>
 				this.setState({ OutgoingShipments: res.data, OutgoingShipmentRequestInfo: { Status: CallStatus.LOADED } }),
 			).catch(() => this.setState({ OutgoingShipmentRequestInfo: { Status: CallStatus.ERROR, Message: "Error Gathering Shipments Info" } }));
 		} else {
@@ -124,7 +124,7 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 						</div>
 						<small className='form-text  text-danger'>{ShouldValidate && ErrorMessage['DateCreated']}</small>
 					</div>
-					<button type='submit' className='btn btn-success' onClick={this.handleClick}>
+					<button type='submit' className='btn btn-success' onClick={this.handleSubmit}>
 						Submit
 					</button>
 				</div>

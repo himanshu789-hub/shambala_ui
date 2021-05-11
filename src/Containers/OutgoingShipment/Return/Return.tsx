@@ -15,6 +15,7 @@ type OutgoingShipmentReturnState = {
 	ApiStatus: number;
 	Products: Product[];
 	OutgoingShipmentStatus: OutgoingStatus;
+	OutgoingShipmentId?: number;
 };
 
 function OutgoingStatusDisplay(props: { Status: OutgoingStatus }) {
@@ -23,7 +24,7 @@ function OutgoingStatusDisplay(props: { Status: OutgoingStatus }) {
 	if (Status == OutgoingStatus.RETURNED)
 		message = "The Shipment Has Been Succesfully Returned";
 	else if (Status == OutgoingStatus.COMPLETED)
-		message = "The Shipment Has Been Complted";
+		message = "The Shipment Has Been Completed";
 	return <div className="alert alert-danger">{message}</div>;
 }
 export default class OutgoingShipmentReturn extends React.Component<IOutgoingShipmentReturnProps, OutgoingShipmentReturnState> {
@@ -37,21 +38,34 @@ export default class OutgoingShipmentReturn extends React.Component<IOutgoingShi
 		};
 		this._outgoingService = new OutgoingService();
 	}
-	handleSubmit = (shipments: IShipmentElement[]) => { };
+	handleSubmit = (shipments: IShipmentElement[]) => {
+		const { OutgoingShipmentId } = this.state;
+		if (OutgoingShipmentId) {
+			this._outgoingService.Return(OutgoingShipmentId, shipments)
+				.then(() => {
+					const { history } = this.props;
+					history.push("/message/pass", { message: "Return Posted Sucessfully" });
+				})
+				.catch(() => {
+					const { history } = this.props;
+					history.push("/message/fail", { message: "Some Error Ocurred" });
+				});
+		}
+	};
 	render() {
 		const { ApiStatus, Products, OutgoingShipmentStatus } = this.state;
-		let DisplayCOmponent = <React.Fragment></React.Fragment>;
+		let DisplayComponent = <React.Fragment></React.Fragment>;
 		if (OutgoingStatus.PENDING)
-			DisplayCOmponent = <ShipmentList Products={Products} ShouldLimitQuantity={true} handleSubmit={this.handleSubmit} />;
+			DisplayComponent = <ShipmentList Products={Products} ShouldLimitQuantity={true} handleSubmit={this.handleSubmit} />;
 		else
-			DisplayCOmponent = <OutgoingStatusDisplay Status={OutgoingShipmentStatus} />
+			DisplayComponent = <OutgoingStatusDisplay Status={OutgoingShipmentStatus} />
 
 		return (
 			<div className='returns'>
 				<h5 className="app-head">Outgoing Shipment Return</h5>
 				{
 					<Loader Status={ApiStatus} Message={'Gathering Shipment Info'}>
-						{DisplayCOmponent}
+						{DisplayComponent}
 					</Loader>
 				}
 			</div>
@@ -64,7 +78,7 @@ export default class OutgoingShipmentReturn extends React.Component<IOutgoingShi
 		const Id = Number.parseInt(id);
 		if (Id) {
 			this._outgoingService.GetShipmentProductDetailsById(Id)
-				.then(res => this.setState({ Products: res.data.Products, ApiStatus: CallStatus.LOADED, OutgoingShipmentStatus: res.data.Status }))
+				.then(res => this.setState({ Products: res.data.Products, ApiStatus: CallStatus.LOADED, OutgoingShipmentStatus: res.data.Status, OutgoingShipmentId: Id }))
 				.catch(error => this.setState({ ApiStatus: CallStatus.ERROR }));
 		}
 		else

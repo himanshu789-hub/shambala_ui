@@ -12,7 +12,6 @@ import OutgoingService from 'Services/OutgoingShipmentService';
 
 
 interface IInvoiceAddWrapperProps extends RouteComponentProps<{ id: string }> {
-
 }
 
 
@@ -22,6 +21,7 @@ type InvoiceAddWrapperState = {
 	Products: Product[];
 	InvoiceMappedObserver: Map<number, Observer[]>;
 	ApiStatus: ApiStatusInfo;
+	OutgoingShipmentId?: number;
 };
 type ShopSubscriber = {
 	SubscriptionId: number;
@@ -31,7 +31,7 @@ type ShopSubscriber = {
 
 export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrapperProps, InvoiceAddWrapperState> {
 
-	_outgoingShipment:IOutgoingService;
+	_outgoingService: IOutgoingService;
 	constructor(props: IInvoiceAddWrapperProps) {
 		super(props);
 		this.state = {
@@ -41,7 +41,7 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 			ApiStatus: { Status: CallStatus.EMPTY, Message: '' },
 			InvoiceMappedObserver: new Map()
 		};
-		this._outgoingShipment = new OutgoingService();
+		this._outgoingService = new OutgoingService();
 	}
 	GetObserverBySubscriptionAndComponentId = (subscriptionId: number, componentId: number): Observer => {
 		const { InvoiceMappedObserver } = this.state;
@@ -145,7 +145,6 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 		const { Products } = this.state;
 		return Products.find(e => e.Id == productId)?.CaretSize ?? 0;
 	};
-	HandleSubmit = () => { };
 	render() {
 		const { ApiStatus: { Status, Message } } = this.state;
 		return (
@@ -189,10 +188,24 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 		const { params: { id } } = this.props.match;
 		const Id = Number.parseInt(id);
 		if (Id) {
-			this.setState({ ApiStatus: { Status: CallStatus.LOADING, Message: 'Gathering Shipment Product Info' } });
-			this._outgoingShipment.GetShipmentProductDetailsById(Id)
+			this.setState({ ApiStatus: { Status: CallStatus.LOADING, Message: 'Gathering Shipment Product Info' }, OutgoingShipmentId: Id });
+			this._outgoingService.GetShipmentProductDetailsById(Id)
 				.then(res => this.setState({ Mediator: new MediatorSubject(res.data.Products), Products: res.data.Products, ApiStatus: { Status: CallStatus.LOADED, Message: '' } })).catch(() => this.setState({ ApiStatus: { Status: CallStatus.LOADED, Message: undefined } }));
 		}
-
 	}
+
+	HandleSubmit = () => {
+		const { ShopSubscribers, OutgoingShipmentId } = this.state;
+		if (OutgoingShipmentId) {
+			this._outgoingService.Complete(OutgoingShipmentId,ShopSubscribers.map(e=>e.ShopInvcoice))
+			.then(() => {
+				const { history } = this.props;
+				history.push("/message/pass", { message: "Completed Sucessfully" });
+			}).catch(() => {
+				const { history } = this.props;
+				history.push("/message/fail", { message: "Some Error Ocurred" });
+			});
+
+		}
+	};
 }

@@ -4,7 +4,7 @@ import { SalesmanDTO } from "Types/DTO";
 import { SalesmanClient } from 'HttpClient/Axios';
 export class SalesmanService implements ISalesmanService {
     GetAll(): Promise<AxiosResponse<SalesmanDTO[]>> {
-        return SalesmanClient.get('getall');
+        return SalesmanClient.get('/getall');
     }
 
 }
