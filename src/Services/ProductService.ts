@@ -19,10 +19,7 @@ export default class ProductService implements IProductService {
 	Add(shipment: ShipmentDTO[]): Promise<AxiosResponse<void>> {
 		return ProductAxiosClient.post('/add', shipment);
 	}
-	GetProductWithLimit(): Promise<AxiosResponse<Product[]>> {
-		return ProductAxiosClient.get('/GetAllWithLimit');
-	}
-	GetProductWithoutLimit(): Promise<AxiosResponse<Product[]>> {
-		return AxiosClient.get('/GetAllWithoutLimit');
+	GetAll(): Promise<AxiosResponse<Product[]>> {
+		return ProductAxiosClient.get('/GetAll');
 	}
 }

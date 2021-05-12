@@ -113,7 +113,7 @@ export default class SearchProduct extends React.Component<ProductSearchProps, P
     }
     componentDidMount() {
         this.setState({ ProductRequestInfo: { Status: CallStatus.LOADING, Message: "Fetching Products" } });
-        this._productService.GetProductWithoutLimit()
+        this._productService.GetAll()
             .then(res => this.setState({ Products: res.data, ProductRequestInfo: { Status: CallStatus.LOADED } }))
             .catch(() => this.setState({ ProductRequestInfo: { Status: CallStatus.ERROR, Message: undefined } }));
     }

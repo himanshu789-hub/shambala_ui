@@ -79,7 +79,7 @@ export default class OutgoingShipmentAdd extends React.Component<OutgoingShipmen
 	}
 	componentDidMount() {
 		this.setState({ APIStatus: CallStatus.LOADING });
-		this._productService.GetProductWithLimit().then(res => {
+		this._productService.GetAll().then(res => {
 			this.setState({ Products: res.data });
 			return this._salesmanService.GetAll()
 		}).then(res => this.setState({ SalesmanList: res.data }))

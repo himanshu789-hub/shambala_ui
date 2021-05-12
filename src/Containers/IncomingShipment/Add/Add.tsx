@@ -48,7 +48,7 @@ export default class IncomingAdd extends React.Component<IIncomingAddProps, IInc
 
 	componentDidMount() {
 		this.setState({ApiStatus:CallStatus.LOADING});
-		this._productService.GetProductWithoutLimit().then(res => {
+		this._productService.GetAll().then(res => {
 			debugger;
 			if (res.data.length > 0) {
 				this.setState({ Products: res.data ?? [],ApiStatus:CallStatus.LOADED });
