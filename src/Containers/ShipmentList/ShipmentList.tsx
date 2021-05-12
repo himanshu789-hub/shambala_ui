@@ -3,15 +3,15 @@ import Action from 'Components/Action/Action';
 import { CaretDetails } from 'Types/Types';
 import ShipmentElement from 'Components/ShipmentElement/ShipmentElement';
 import ComponentProductListProvider from 'Utilities/ComponentProductListProvider';
-import { Product,Flavour,IShipmentElement } from 'Types/DTO';
+import { Product,Flavour,ShipmentDTO } from 'Types/DTO';
 type IShipmentListProps = {
-	handleSubmit: (Shipments: IShipmentElement[]) => void;
+	handleSubmit: (Shipments: ShipmentDTO[]) => void;
 	Products: Product[];
 	ShouldLimitQuantity: boolean;
 };
 type IShipmentListState = {
 	Products: Map<string, Product>;
-	Shipments: Array<IShipmentElement>;
+	Shipments: Array<ShipmentDTO>;
 };
 
 export default class ShipmentList extends React.Component<IShipmentListProps, IShipmentListState> {
@@ -118,12 +118,12 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				Shipments: [
 					...IncomingShipments,
 					{
-						Id: Math.random(),
+						Id: Math.floor(Math.random()*1000),
 						ProductId: 0,
 						TotalDefectedPieces: 0,
 						FlavourId: -1,
 						CaretSize: 0,
-						TotalRecivedPieces: 0,
+						TotalRecievedPieces: 0,
 					},
 				],
 			});
@@ -134,7 +134,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		return 0;
 	};
 	setQuantity = (Id: number, quantity: number) => {
-		this.handleChange({ Id, Name: 'TotalReceivedPieces', Value: quantity });
+		this.handleChange({ Id, Name: 'TotalRecievedPieces', Value: quantity });
 	};
 	handleRemove = (Id: number) => {
 		const { Shipments: IncomingShipments } = this.state;

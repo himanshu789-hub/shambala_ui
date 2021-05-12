@@ -5,10 +5,10 @@ import { provideValidNumber } from 'Utilities/Utilities';
 import './ShipmentElement.css';
 import { ShipmentProperty } from 'Types/Types';
 import { ProductKeyWithName } from 'Types/Types';
-import { Flavour, IShipmentElement } from 'Types/DTO';
+import { Flavour, ShipmentDTO } from 'Types/DTO';
 
 type IShipmentElementProps = {
-	ShipmentEntity: IShipmentElement;
+	ShipmentEntity: ShipmentDTO;
 	handleChange: (property: ShipmentProperty) => void;
 	ProductList: ProductKeyWithName[];
 	SetQuantity: Function;
@@ -55,7 +55,7 @@ export default class ShipmentElement extends React.Component<IShipmentElementPro
 						data-src={ShipmentEntity.Id}
 						name='ProductId'
 						onChange={this.handleChange}>
-						<option value='0' disabled>
+						<option value='0' disabled key={-1}>
 							-- Select Your Option --
 						</option>
 						{Array.from(ProductList).map(value => (
@@ -74,10 +74,10 @@ export default class ShipmentElement extends React.Component<IShipmentElementPro
 						className='form-control'
 						onChange={this.handleChange}
 						value={ShipmentEntity.FlavourId}>
-						<option disabled value='-1'>
+						<option disabled value='-1' key={-1}>
 							-- Select Your Option --
 						</option>
-						{flavourList && flavourList.length > 0 && flavourList.map(e => <option value={e.Id}>{e.Title}</option>)}
+						{flavourList && flavourList.length > 0 && flavourList.map(e => <option value={e.Id} key={e.Id}>{e.Title}</option>)}
 					</select>
 				</div>
 				<div className={`form-group ${ShipmentEntity.CaretSize == 0 ? 'is-invalid' : ''}`}>

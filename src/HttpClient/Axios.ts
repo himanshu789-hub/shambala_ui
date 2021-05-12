@@ -3,14 +3,20 @@ import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 const BaseUrl = 'https://localhost:5001/api';
 const AxiosConfig: AxiosRequestConfig = { headers: { 'Content-Type': 'application/json' } };
 
-axios.interceptors.response.use((response) => response, (error: AxiosError) => {
-    console.error(error.toJSON());
-    return error;
-});
+const createAxiosInstance = (baseUrl: string): AxiosInstance=>{
+    const instance = axios.create({ baseURL: baseUrl, ...AxiosConfig });
+    instance.interceptors.response.use((response) => response, (error: AxiosError) => {
+        console.error("Axios Error Requesting : ", error.response);
+        return Promise.reject(error);
+    });
+    return instance;
+}
 
-const ProductAxiosClient = axios.create({ baseURL: BaseUrl + '/product', ...AxiosConfig });
-const OutgoingShipmentClient = axios.create({ baseURL: BaseUrl + '/shipment', ...AxiosConfig });
-const SchemeClient = axios.create({ baseURL: BaseUrl + '/scheme', ...AxiosConfig });
-const ShopClient = axios.create({ baseURL:   BaseUrl+'/shop', ...AxiosConfig });
-const SalesmanClient = axios.create({baseURL:BaseUrl+'/salesman',...AxiosConfig});
-export { ProductAxiosClient, OutgoingShipmentClient, SchemeClient, ShopClient,SalesmanClient };
+
+const ProductAxiosClient = createAxiosInstance(BaseUrl + '/product');
+
+const OutgoingShipmentClient = createAxiosInstance(BaseUrl + '/shipment');
+const SchemeClient = createAxiosInstance(BaseUrl + '/scheme');
+const ShopClient = createAxiosInstance(BaseUrl + '/shop');
+const SalesmanClient = createAxiosInstance(BaseUrl + '/salesman');
+export { ProductAxiosClient, OutgoingShipmentClient, SchemeClient, ShopClient, SalesmanClient };

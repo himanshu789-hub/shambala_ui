@@ -3,8 +3,8 @@ import IProductService from "Contracts/services/IProductService";
 import React from "react";
 import ProductService from "Services/ProductService";
 import { FlavourInfo, Product, ProductInfo } from "Types/DTO";
-import {caretInfo} from 'Utilities/Utilities';
-function FlavourTable(props: { Flavours: FlavourInfo[],CaretSize:number }) {
+import { caretInfo } from 'Utilities/Utilities';
+function FlavourTable(props: { Flavours: FlavourInfo[], CaretSize: number }) {
     return (
         <div className="table-wrapper">
             <table >
@@ -12,14 +12,14 @@ function FlavourTable(props: { Flavours: FlavourInfo[],CaretSize:number }) {
                     <th>S.No.</th>
                     <th>Flavour Name</th>
                     <th>Quantity In Stock</th>
-                    <th>Quantity In Procrument</th>
+                    <th>Quantity In Dispatch</th>
                 </thead>
                 <tbody>
                     {props.Flavours.map((e, index) => <tr key={index}>
                         <td>{index + 1}</td>
                         <td>{e.Title}</td>
-                        <td>{caretInfo(e.QuantityInStock,props.CaretSize)}</td>
-                        <td>{e.QuantityInProcrument}</td>
+                        <td>{caretInfo(e.QuantityInStock, props.CaretSize)}</td>
+                        <td>{caretInfo(e.QuantityInDispatch,props.CaretSize)}</td>
                     </tr>)}
                 </tbody>
             </table></div>);
@@ -52,7 +52,10 @@ export default class SearchProduct extends React.Component<ProductSearchProps, P
             this.setState({ ProductInfosRequestInfo: { Status: CallStatus.LOADING, Message: "Fetching Result . . ." } });
             const { SelectedProductId } = this.state;
             this._productService.GetProductById(SelectedProductId)
-                .then(res => this.setState({ ProductInfos: res.data, ProductInfosRequestInfo: { Status: CallStatus.LOADED, Message: undefined } }))
+                .then(res => {
+                    debugger;
+                    this.setState({ ProductInfos: res.data, ProductInfosRequestInfo: { Status: CallStatus.LOADED, Message: undefined } });
+                })
                 .catch(() => this.setState({ ProductInfosRequestInfo: { Status: CallStatus.ERROR, Message: undefined } }));
         }
     }
@@ -86,7 +89,7 @@ export default class SearchProduct extends React.Component<ProductSearchProps, P
             <Loader Message={ProductRequestInfo.Message} Status={ProductRequestInfo.Status}>
                 <div className="form-inline justify-content-center align-items-center">
                     <div className='d-flex flex-column'>
-                        <div className={`input-group mr-5 ${ErrorMessage.ProductError.length>0 && 'is-invalid'}`}>
+                        <div className={`input-group mr-5 ${ErrorMessage.ProductError.length > 0 && 'is-invalid'}`}>
                             <div className='input-group-prepend'>
                                 <div className='input-group-text'>Product Name</div>
                             </div>
@@ -104,7 +107,7 @@ export default class SearchProduct extends React.Component<ProductSearchProps, P
                 </div>
             </Loader>
             <Loader Message={ProductInfosRequestInfo.Message} Status={ProductInfosRequestInfo.Status}>
-                {ProductInfos && <div className="mt-2"><FlavourTable Flavours={ProductInfos.Flavours} CaretSize={ProductInfos.CaretSize} /></div>}
+                {ProductInfos && <div className="mt-2"><FlavourTable Flavours={ProductInfos.FlavourInfos} CaretSize={ProductInfos.CaretSize} /></div>}
             </Loader>
         </div>);
     }

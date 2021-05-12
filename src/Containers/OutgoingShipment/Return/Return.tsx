@@ -5,7 +5,7 @@ import { OutgoingStatus } from 'Enums/Enum';
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import OutgoingService from 'Services/OutgoingShipmentService';
-import { IShipmentElement, Product } from 'Types/DTO';
+import { ShipmentDTO, Product } from 'Types/DTO';
 
 interface MatchParams {
 	id: string
@@ -38,7 +38,7 @@ export default class OutgoingShipmentReturn extends React.Component<IOutgoingShi
 		};
 		this._outgoingService = new OutgoingService();
 	}
-	handleSubmit = (shipments: IShipmentElement[]) => {
+	handleSubmit = (shipments: ShipmentDTO[]) => {
 		const { OutgoingShipmentId } = this.state;
 		if (OutgoingShipmentId) {
 			this._outgoingService.Return(OutgoingShipmentId, shipments)

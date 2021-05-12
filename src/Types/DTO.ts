@@ -10,13 +10,13 @@ export type OutgoingShipmentDetails = {
 };
 export type PostOutgoingShipment = {
 	DateCreated:Date,
-    OutgoingShipmentDetails:IShipmentElement[];
+    OutgoingShipmentDetails:ShipmentDTO[];
 	SalesmanId:number;
 }
-export type IShipmentElement = {
+export type ShipmentDTO = {
 	Id: number;
 	ProductId: number;
-	TotalRecivedPieces: number;
+	TotalRecievedPieces: number;
 	CaretSize: number;
 	TotalDefectedPieces: number;
 	FlavourId: number;
@@ -38,7 +38,7 @@ export type FlavourInfo =
 	Id: number;
 	Title: string;
 	QuantityInStock: number;
-	QuantityInProcrument:number;
+	QuantityInDispatch:number;
 }
 export type Product = {
 	Id: number;
@@ -73,7 +73,7 @@ export type ProductInfo  =
 	Id:number;
 	Name:string;
 	CaretSize:number;
-	Flavours:FlavourInfo[];
+	FlavourInfos:FlavourInfo[];
 }
 export type Shop = {
 	Id: number;

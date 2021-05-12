@@ -2,7 +2,7 @@ import React from 'react';
 import ShipmentList from 'Containers/ShipmentList/ShipmentList';
 import IProductService from 'Contracts/services/IProductService';
 import ProductService from 'Services/ProductService';
-import { IShipmentElement, PostOutgoingShipment, Product, SalesmanDTO } from 'Types/DTO';
+import { ShipmentDTO, PostOutgoingShipment, Product, SalesmanDTO } from 'Types/DTO';
 import Loader, { CallStatus } from 'Components/Loader/Loader';
 import IOutgoingService from 'Contracts/services/IOutgoingShipmentService';
 import OutgoingService from 'Services/OutgoingShipmentService';
@@ -34,7 +34,7 @@ export default class OutgoingShipmentAdd extends React.Component<OutgoingShipmen
 		this._salesmanService = new SalesmanService();
 		this._outgoingShipmentService = new OutgoingService();
 	}
-	handleSubmit(Shipments: IShipmentElement[]) {
+	handleSubmit(Shipments: ShipmentDTO[]) {
 		const { OutgoingShipment } = this.state;
 		if (this.IsAllValid()) {
 			OutgoingShipment.DateCreated = new Date();
