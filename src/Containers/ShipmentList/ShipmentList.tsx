@@ -74,7 +74,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 					ShipmentInfos: [
 						...IncomingShipments.map(e => {
 							if (e.Shipment.Id == Id) {
-								return { ...e, FlavourId: Number.parseInt(Value) };
+								return { ...e, Shipment: { ...e.Shipment, FlavourId: Value } };
 							}
 							return { ...e };
 						}),
@@ -86,7 +86,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				return {
 					ShipmentInfos: [
 						...IncomingShipments.map(value => {
-							if (value.Shipment.Id == Id) return { ...value, [Name]: Value };
+							if (value.Shipment.Id == Id) return { ...value, Shipment: { ...value.Shipment, [Name]: Value } };
 							else return value;
 						}),
 					],
@@ -106,18 +106,18 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		}
 	}
 	addAShipment = () => {
-		const { ShipmentInfos: IncomingShipments, Products,SubscriptionId } = this.state;
+		const { ShipmentInfos, Products, SubscriptionId } = this.state;
 		const componentId = Math.floor(Math.random() * 1000);
-		const Observer = this.componentListMediator.GetAObserver(SubscriptionId,componentId);
-		if (Products.size!=0)
+		const Observer = this.componentListMediator.GetAObserver(SubscriptionId, componentId);
+		if (Products.size != 0)
 			this.setState({
 				ShipmentInfos: [
-					...IncomingShipments,
+					...ShipmentInfos,
 					{
 						Observer,
 						Shipment: {
 							Id: componentId,
-							ProductId: 0,
+							ProductId: -1,
 							TotalDefectedPieces: 0,
 							FlavourId: -1,
 							CaretSize: 0,
@@ -133,26 +133,25 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		return 0;
 	};
 	setQuantity = (Id: number, quantity: number) => {
-
 		this.handleChange({ Id, Name: 'TotalRecievedPieces', Value: quantity });
 	};
 	handleRemove = (Id: number) => {
-		const { ShipmentInfos,SubscriptionId } = this.state;
+		const { ShipmentInfos, SubscriptionId } = this.state;
 		const currentShipmentElement = ShipmentInfos.find(e => e.Shipment.Id == Id);
 		if (currentShipmentElement) {
-			this.componentListMediator?.UnsubscribeAComponent(SubscriptionId,Id);
+			this.componentListMediator?.UnsubscribeAComponent(SubscriptionId, Id);
 		}
 		this.setState(({ ShipmentInfos: IncomingShipments }) => {
-			return { ShipmentInfos: IncomingShipments.filter(e => e.Shipment.Id != Id)};
+			return { ShipmentInfos: IncomingShipments.filter(e => e.Shipment.Id != Id) };
 		});
 	};
 	render() {
 		const { ShipmentInfos: IncomingShipments } = this.state;
-
+		const { ShouldLimitQuantity } = this.props;
 		return (
 			<div className='add p-3'>
 				<div className='d-flex justify-content-start flex-column'>
-					{IncomingShipments  &&
+					{IncomingShipments &&
 						IncomingShipments.map((value, index) => {
 							return (
 								<ShipmentElement
@@ -162,7 +161,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 									SetQuantity={this.setQuantity}
 									handleRemove={this.handleRemove}
 									Observer={value.Observer}
-									shouldUseLimit={false}
+									shouldUseLimit={ShouldLimitQuantity}
 								/>
 							);
 						})}

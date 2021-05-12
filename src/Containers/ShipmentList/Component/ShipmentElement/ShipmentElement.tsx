@@ -8,7 +8,7 @@ import { Flavour, ShipmentDTO } from 'Types/DTO';
 import Observer from 'Utilities/Observer';
 import { ProductInfo } from 'Types/Mediator';
 
-type IShipmentElementProps = {
+type ShipmentElementProps = {
 	ShipmentEntity: ShipmentDTO;
 	handleChange: (property: ShipmentProperty) => void;
 	Observer: Observer;
@@ -16,22 +16,26 @@ type IShipmentElementProps = {
 	handleRemove: Function;
 	shouldUseLimit: boolean;
 };
-type IShipmentElementState = {
+type ShipmentElementState = {
 	ProductList: ProductInfo[];
 	flavourList: Flavour[];
 	Limit?: number;
 };
-export default class ShipmentElement extends React.Component<IShipmentElementProps, IShipmentElementState> {
-	constructor(props: IShipmentElementProps) {
+export default class ShipmentElement extends React.PureComponent<ShipmentElementProps, ShipmentElementState> {
+	constructor(props: ShipmentElementProps) {
 		super(props);
+		this.state = {
+			ProductList: [], flavourList: []
+		}
 		this.handleChange = this.handleChange.bind(this);
 	}
 	setQuantity = (totalQuantity: number) => {
 		const {
 			SetQuantity,
+			Observer,shouldUseLimit,
 			ShipmentEntity: { Id },
 		} = this.props;
-
+       shouldUseLimit && Observer.SetQuantity(totalQuantity);
 		SetQuantity(Id, totalQuantity);
 	};
 	handleChange(e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
@@ -42,7 +46,8 @@ export default class ShipmentElement extends React.Component<IShipmentElementPro
 
 		if (Name && Value != undefined) {
 			const { handleChange, } = this.props;
-			if (Name == 'TotalDefectedPieces') Value = provideValidNumber(Value);
+			if (Name == 'TotalDefectedPieces')
+				Value = provideValidNumber(Value);
 			else if (Name == "ProductId" || Name == "FlavourId") {
 				Value = Number.parseInt(Value);
 				if (Name == "ProductId") {
@@ -55,9 +60,8 @@ export default class ShipmentElement extends React.Component<IShipmentElementPro
 			}
 			handleChange({ Id, Name, Value });
 		}
-
 	}
-	handleClick(e: React.FocusEvent<HTMLSelectElement>) {
+	handleClick = (e: React.FocusEvent<HTMLSelectElement>) => {
 		const { currentTarget: { name, value } } = e;
 		const { Observer } = this.props;
 		if (name == "ProductId")
@@ -78,8 +82,9 @@ export default class ShipmentElement extends React.Component<IShipmentElementPro
 						value={ShipmentEntity.ProductId}
 						data-src={ShipmentEntity.Id}
 						name='ProductId'
+						onFocus={this.handleClick}
 						onChange={this.handleChange}>
-						<option value='0' disabled key={-1}>
+						<option value='-1' disabled key={-1}>
 							-- Select Your Option --
 						</option>
 						{Array.from(ProductList).map(value => (
@@ -97,6 +102,7 @@ export default class ShipmentElement extends React.Component<IShipmentElementPro
 						id='flavour'
 						className='form-control'
 						onChange={this.handleChange}
+						onFocus={this.handleClick}
 						value={ShipmentEntity.FlavourId}>
 						<option disabled value='-1' key={-1}>
 							-- Select Your Option --
