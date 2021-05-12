@@ -8,7 +8,7 @@ export default class ComponentProductListMediator {
 	private _deletedProductIds: Set<number>;
 	private _componentMappedProduct: Map<number, number>;
 	private _componentMappedFlavour: Map<number, number>;
-
+	private _componentMappedQuantity: Map<number, number>;
 	constructor(productList: Product[]) {
 		if (!productList) {
 			throw new Error('ArgumentNullException');
@@ -28,6 +28,7 @@ export default class ComponentProductListMediator {
 		this._flavourNames = new Map(this._cloneProductFlavours);
 		this._componentMappedFlavour = new Map<number, number>();
 		this._componentMappedProduct = new Map<number, number>();
+		this._componentMappedQuantity = new Map<number, number>();
 		this._deletedProductIds = new Set();
 	}
 
@@ -170,6 +171,18 @@ export default class ComponentProductListMediator {
 			this._deductProductFlavourByFlavourId(productId, flavourId);
 		}
 	}
+	SubscribeToQuantity(componentId: number,quantity:number) {
+		if (this._componentMappedProduct.has(componentId)) {
+			if (this._componentMappedFlavour.has(componentId)) {
+				const productId = this._componentMappedProduct.get(componentId) as number;
+				const flavourId = this._componentMappedFlavour.get(componentId) as number;
+				const flavours = this._flavourNames.get(productId) as Flavour[];
+				const flavour = flavours.find(e => e.Id == flavourId) as Flavour;
+				(flavour.Quantity as number) -= quantity;
+			}
+		}
+		return undefined;
+	}
 	GetFlavourLimit(productId: number, flavourId: number) {
 		const Products = this._cloneProductFlavours;
 		if (!productId || !flavourId) return undefined;
@@ -194,4 +207,5 @@ export default class ComponentProductListMediator {
 		}
 		return [this.getFlavourOfProductFlavourId(productId, subscribedFlavourId) as Flavour];
 	}
+
 }

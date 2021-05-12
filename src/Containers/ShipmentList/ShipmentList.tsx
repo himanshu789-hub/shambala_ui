@@ -1,29 +1,37 @@
 import React, { ChangeEvent, SyntheticEvent } from 'react';
 import Action from 'Components/Action/Action';
 import { CaretDetails } from 'Types/Types';
-import ShipmentElement from 'Components/ShipmentElement/ShipmentElement';
+import ShipmentElement from 'Containers/ShipmentList/Component/ShipmentElement/ShipmentElement';
 import ComponentProductListProvider from 'Utilities/ComponentProductListProvider';
-import { Product,Flavour,ShipmentDTO } from 'Types/DTO';
+import { Product, Flavour, ShipmentDTO } from 'Types/DTO';
+import MediatorSubject from 'Utilities/MediatorSubject';
+import Observer from 'Utilities/Observer';
 type IShipmentListProps = {
 	handleSubmit: (Shipments: ShipmentDTO[]) => void;
 	Products: Product[];
 	ShouldLimitQuantity: boolean;
 };
+type ShipmentInfo = {
+	Shipment: ShipmentDTO;
+	Observer: Observer;
+}
 type IShipmentListState = {
 	Products: Map<string, Product>;
-	Shipments: Array<ShipmentDTO>;
+	ShipmentInfos: Array<ShipmentInfo>;
+	SubscriptionId: number;
 };
 
 export default class ShipmentList extends React.Component<IShipmentListProps, IShipmentListState> {
-	_products: Map<string, Product>;
-	_componentListProvider?: ComponentProductListProvider;
+	products: Map<string, Product>;
+	componentListMediator: MediatorSubject;
 	constructor(props: IShipmentListProps) {
 		super(props);
 		this.state = {
-			Shipments: [],
-			Products: new Map([]),
+			ShipmentInfos: [],
+			Products: new Map([]), SubscriptionId: Math.random() * 10
 		};
-		this._products = new Map([]);
+		this.products = new Map([]);
+		this.componentListMediator = new MediatorSubject([]);
 		this.handleChange = this.handleChange.bind(this);
 		this.addAShipment = this.addAShipment.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
@@ -36,50 +44,36 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				Products.forEach(function (value, index) {
 					products.set(value.Id + '', value);
 				});
-				this._products = new Map(products);
-				this._componentListProvider = new ComponentProductListProvider([
-					...Products.map(e => {
-						return { ...e };
-					}),
-				]);
+				this.products = new Map(products);
+				this.componentListMediator = new MediatorSubject(Products.map(e => { return { ...e } }));
 				this.setState({ Products: products });
 			}
 		}
 	}
 	handleChange(propertyValue: { Id: number; Name: string; Value: any }) {
-		const { Shipments: IncomingShipments } = this.state;
+		const { ShipmentInfos, SubscriptionId } = this.state;
 		const { Id, Name, Value } = propertyValue;
 
 		if (Name == 'ProductId') {
-			const componentMediator = this._componentListProvider as ComponentProductListProvider;
 			const ProductId = Number.parseInt(Value);
-			componentMediator.SetASubscription(Id, ProductId);
-			this.setState(({ Shipments: IncomingShipments }) => {
+			this.setState(({ ShipmentInfos }) => {
 				return {
-					Shipments: [
-						...IncomingShipments.map(e => {
-							if (e.Id == Id) {
-								const FlavourId = e.ProductId != ProductId ? -1 : e.FlavourId;
-								return {
-									...e,
-									ProductId: ProductId,
-									FlavourId,
-									CaretSize: this.selectProductCaretDetails(ProductId),
-								};
-							}
-							return { ...e };
+					ShipmentInfos:
+						ShipmentInfos.map(e => {
+							if (e.Shipment.Id == Id)
+								return { ...e, Shipment: { ...e.Shipment, ProductId: ProductId, CaretSize: this.selectProductCaretDetails(ProductId) } };
+							return e;
 						}),
-					],
+
 				};
 			});
 		} else if (Name == 'FlavourId') {
-			const ProductId = IncomingShipments.find(e => e.Id == Id)?.ProductId as number;
-			(this._componentListProvider as ComponentProductListProvider).SubscribedToFlavourId(Id, ProductId, Number.parseInt(Value));
-			this.setState(({ Shipments: IncomingShipments }) => {
+			const ShipmentInfo = ShipmentInfos.find(e => e.Shipment.Id == Id) as ShipmentInfo;
+			this.setState(({ ShipmentInfos: IncomingShipments }) => {
 				return {
-					Shipments: [
+					ShipmentInfos: [
 						...IncomingShipments.map(e => {
-							if (e.Id == Id) {
+							if (e.Shipment.Id == Id) {
 								return { ...e, FlavourId: Number.parseInt(Value) };
 							}
 							return { ...e };
@@ -88,11 +82,11 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				};
 			});
 		} else {
-			this.setState(({ Shipments: IncomingShipments }) => {
+			this.setState(({ ShipmentInfos: IncomingShipments }) => {
 				return {
-					Shipments: [
+					ShipmentInfos: [
 						...IncomingShipments.map(value => {
-							if (value.Id == Id) return { ...value, [Name]: Value };
+							if (value.Shipment.Id == Id) return { ...value, [Name]: Value };
 							else return value;
 						}),
 					],
@@ -106,69 +100,69 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			console.log('InValid Form');
 		} else {
 			const { handleSubmit } = this.props;
-			const { Shipments } = this.state;
-			handleSubmit(Shipments);
+			const { ShipmentInfos: Shipments } = this.state;
+			handleSubmit(Shipments.map(e => e.Shipment));
 			console.log('Valid Form');
 		}
 	}
 	addAShipment = () => {
-		const { Shipments: IncomingShipments, Products } = this.state;
-		if (Products.size)
+		const { ShipmentInfos: IncomingShipments, Products,SubscriptionId } = this.state;
+		const componentId = Math.floor(Math.random() * 1000);
+		const Observer = this.componentListMediator.GetAObserver(SubscriptionId,componentId);
+		if (Products.size!=0)
 			this.setState({
-				Shipments: [
+				ShipmentInfos: [
 					...IncomingShipments,
 					{
-						Id: Math.floor(Math.random()*1000),
-						ProductId: 0,
-						TotalDefectedPieces: 0,
-						FlavourId: -1,
-						CaretSize: 0,
-						TotalRecievedPieces: 0,
+						Observer,
+						Shipment: {
+							Id: componentId,
+							ProductId: 0,
+							TotalDefectedPieces: 0,
+							FlavourId: -1,
+							CaretSize: 0,
+							TotalRecievedPieces: 0,
+						}
 					},
 				],
 			});
 	};
 	selectProductCaretDetails = (Id: number): number => {
-		let product = this._products.get(Id+'');
+		let product = this.products.get(Id + '');
 		if (product) return product.CaretSize;
 		return 0;
 	};
 	setQuantity = (Id: number, quantity: number) => {
+
 		this.handleChange({ Id, Name: 'TotalRecievedPieces', Value: quantity });
 	};
 	handleRemove = (Id: number) => {
-		const { Shipments: IncomingShipments } = this.state;
-		const currentShipmentElement = IncomingShipments.find(e => e.Id == Id);
+		const { ShipmentInfos,SubscriptionId } = this.state;
+		const currentShipmentElement = ShipmentInfos.find(e => e.Shipment.Id == Id);
 		if (currentShipmentElement) {
-			this._componentListProvider?.unsubscribeSubscription(currentShipmentElement.Id);
+			this.componentListMediator?.UnsubscribeAComponent(SubscriptionId,Id);
 		}
-		this.setState(({ Shipments: IncomingShipments }) => {
-			return { Shipments: [...IncomingShipments.filter(e => e.Id != Id)] };
+		this.setState(({ ShipmentInfos: IncomingShipments }) => {
+			return { ShipmentInfos: IncomingShipments.filter(e => e.Shipment.Id != Id)};
 		});
 	};
 	render() {
-		const { Shipments: IncomingShipments } = this.state;
+		const { ShipmentInfos: IncomingShipments } = this.state;
 
 		return (
 			<div className='add p-3'>
 				<div className='d-flex justify-content-start flex-column'>
-					{IncomingShipments &&
-						this._componentListProvider &&
+					{IncomingShipments  &&
 						IncomingShipments.map((value, index) => {
-							const mediator = this._componentListProvider as ComponentProductListProvider;
-							const componentList = mediator.provideProductListBySubscriptionId(value.Id);
-							const flavourList = this._componentListProvider?.GetFlavours(value.Id) ?? [];
-							let limit = mediator.GetFlavourLimit(value.ProductId, value.FlavourId);
 							return (
 								<ShipmentElement
-									key={value.Id}
-									ProductList={componentList}
+									key={value.Shipment.Id}
 									handleChange={this.handleChange}
-									flavourList={flavourList}
-									ShipmentEntity={value}
-									limit={limit}
+									ShipmentEntity={value.Shipment}
 									SetQuantity={this.setQuantity}
 									handleRemove={this.handleRemove}
+									Observer={value.Observer}
+									shouldUseLimit={false}
 								/>
 							);
 						})}
@@ -186,12 +180,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				Products.forEach(function (value, index) {
 					products.set(value.Id + '', value);
 				});
-				this._products = new Map(products);
-				this._componentListProvider = new ComponentProductListProvider([
-					...Products.map(e => {
-						return { ...e };
-					}),
-				]);
+				this.products = new Map(products);
+				this.componentListMediator = new MediatorSubject(Products.map(e => { return { ...e }; }));
 				this.setState({ Products: products });
 			}
 		}

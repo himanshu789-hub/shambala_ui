@@ -4,19 +4,23 @@ import CaretSizeInput from 'Components/CaretSize/CaretSize';
 import { provideValidNumber } from 'Utilities/Utilities';
 import './ShipmentElement.css';
 import { ShipmentProperty } from 'Types/Types';
-import { ProductKeyWithName } from 'Types/Types';
 import { Flavour, ShipmentDTO } from 'Types/DTO';
+import Observer from 'Utilities/Observer';
+import { ProductInfo } from 'Types/Mediator';
 
 type IShipmentElementProps = {
 	ShipmentEntity: ShipmentDTO;
 	handleChange: (property: ShipmentProperty) => void;
-	ProductList: ProductKeyWithName[];
+	Observer: Observer;
 	SetQuantity: Function;
 	handleRemove: Function;
-	flavourList: Flavour[];
-	limit?: number;
+	shouldUseLimit: boolean;
 };
-type IShipmentElementState = {};
+type IShipmentElementState = {
+	ProductList: ProductInfo[];
+	flavourList: Flavour[];
+	Limit?: number;
+};
 export default class ShipmentElement extends React.Component<IShipmentElementProps, IShipmentElementState> {
 	constructor(props: IShipmentElementProps) {
 		super(props);
@@ -32,18 +36,38 @@ export default class ShipmentElement extends React.Component<IShipmentElementPro
 	};
 	handleChange(e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
 		const Id = this.props.ShipmentEntity.Id;
+		const { Observer } = this.props;
 		const Name = e.currentTarget.name;
 		let Value: any = e.currentTarget.value;
 
 		if (Name && Value != undefined) {
-			const { handleChange } = this.props;
+			const { handleChange, } = this.props;
 			if (Name == 'TotalDefectedPieces') Value = provideValidNumber(Value);
-
+			else if (Name == "ProductId" || Name == "FlavourId") {
+				Value = Number.parseInt(Value);
+				if (Name == "ProductId") {
+					Observer.SetProduct(Value);
+				}
+				else {
+					Observer.SetFlavour(Value);
+					this.setState({ Limit: Observer.GetQuantityLimit() });
+				}
+			}
 			handleChange({ Id, Name, Value });
 		}
+
+	}
+	handleClick(e: React.FocusEvent<HTMLSelectElement>) {
+		const { currentTarget: { name, value } } = e;
+		const { Observer } = this.props;
+		if (name == "ProductId")
+			this.setState({ ProductList: Observer.GetProduct() });
+		else if (name == "FlavourId")
+			this.setState({ flavourList: Observer.GetFlavours() });
 	}
 	render() {
-		const { ProductList, ShipmentEntity, handleRemove, flavourList } = this.props;
+		const { ShipmentEntity, handleRemove, shouldUseLimit } = this.props;
+		const { ProductList, flavourList, Limit } = this.state;
 		const caretSize = ShipmentEntity.CaretSize;
 		return (
 			<div className='incoming-shipment-element-add d-flex  justify-content-around flex-nowrap'>
@@ -60,7 +84,7 @@ export default class ShipmentElement extends React.Component<IShipmentElementPro
 						</option>
 						{Array.from(ProductList).map(value => (
 							<option value={value.Id} key={value.Id}>
-								{value.Name}
+								{value.Title}
 							</option>
 						))}
 					</select>
@@ -82,11 +106,11 @@ export default class ShipmentElement extends React.Component<IShipmentElementPro
 				</div>
 				<div className={`form-group ${ShipmentEntity.CaretSize == 0 ? 'is-invalid' : ''}`}>
 					<label htmlFor='caretSize'>CaretSize</label>
-					<input className="form-control" disabled value={ShipmentEntity.CaretSize}/>
+					<input className="form-control" disabled value={ShipmentEntity.CaretSize} />
 					<div className='invalid-feedback'>Product Not Selected!</div>
 				</div>
 
-				<CaretSizeInput Size={caretSize} handleInput={this.setQuantity} Limit={this.props.limit} />
+				<CaretSizeInput Size={caretSize} handleInput={this.setQuantity} Limit={!shouldUseLimit ? undefined : Limit} />
 				<div className='form-group'>
 					<label>Defected Pieces</label>
 					<input

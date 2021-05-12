@@ -17,9 +17,6 @@ type TableRowState = {
 	QuantityLimit: number;
 	Flavours: Flavour[];
 };
-enum ComponentPropsChanged {
-	No, Yes, Reset
-}
 export default class TableRow extends React.PureComponent<TableRowProps, TableRowState> {
 	constructor(props: TableRowProps) {
 		super(props);
@@ -99,7 +96,6 @@ export default class TableRow extends React.PureComponent<TableRowProps, TableRo
 			default: break;
 		}
 	}
-	private _propsState: ComponentPropsChanged = ComponentPropsChanged.Reset;
 	componentWillReceiveProps(nextProps: TableRowProps) {
 		// console.log("Recieve Some Props");
 		// console.log('Is Item Reference Same : ',nextProps.Item==this.props.Item);
