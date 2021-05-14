@@ -121,7 +121,7 @@ export default class TableRow extends React.PureComponent<TableRowProps, TableRo
 	}
 	render() {
 		const { ProductInfo, QuantityLimit, Flavours: Flavours } = this.state;
-		const { Item: { ProductId, FlavourId, CaretSize: MaxSize } } = this.props;
+		const { Item: { ProductId, FlavourId, CaretSize: MaxSize,Quantity } } = this.props;
 
 		return (
 			<tr>
@@ -161,7 +161,7 @@ export default class TableRow extends React.PureComponent<TableRowProps, TableRo
 					<input className={`form-control ${MaxSize == 0 ? 'is-invalid' : ''}`} value={MaxSize} readOnly />
 				</td>
 				<td className="caret">
-					<CaretSize Size={MaxSize ?? 0} handleInput={this.HandleInput} Limit={QuantityLimit} OnFocusIn={this.HandleFocus} />
+					<CaretSize Size={MaxSize ?? 0} handleInput={this.HandleInput} Limit={QuantityLimit} OnFocusIn={this.HandleFocus} Quantity={Quantity}/>
 				</td>
 				<td>
 					<button onClick={this.Delete} className="btn btn-light w-100"><i className="fa fa-trash"></i></button>
