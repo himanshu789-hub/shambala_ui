@@ -49,7 +49,7 @@ export default function MessageModal(props: MessageModalProps) {
                         {props.IsSuccess ? <SucessSvg /> : <FailureSvg />}
                     </div>
                     <div className="modal-footer">
-                        <label className="font-weight-bold text-center" style={{flexGrow:1}}>{values?.message}</label>
+                        <label className="font-weight-bold text-center" style={{flexGrow:1}}>{values?.message ?? (!props.IsSuccess && "Some Error Occurred")}</label>
                         <Link className="btn btn-info" to={values?.redirect?.toString()??'/'} >OK</Link> 
                     </div>
                 </div>

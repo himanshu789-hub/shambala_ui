@@ -1,4 +1,4 @@
-import { ChangeEvent, memo, useState } from 'react';
+import { ChangeEvent, memo, useEffect, useState } from 'react';
 import { provideValidNumber } from 'Utilities/Utilities';
 interface ICaretSizeProps {
 	Size: number;
@@ -6,8 +6,9 @@ interface ICaretSizeProps {
 	Limit?: number;
 	OnFocusIn?: () => void;
 	OnFocusOut?: () => void;
+	Quantity: number;
 }
-const CaretSize =memo(function CaretSize(props: ICaretSizeProps) {
+const CaretSize = memo(function CaretSize(props: ICaretSizeProps) {
 	const [caret, setCart] = useState<number>(0);
 	const [pieces, setPieces] = useState<number>(0);
 	const [quantity, setQuantity] = useState<number>(0);
@@ -48,6 +49,23 @@ const CaretSize =memo(function CaretSize(props: ICaretSizeProps) {
 	const handleBlurEvent = () => {
 		handleInput(quantity);
 	}
+	useEffect(() => {
+		const Quantity = props.Quantity;
+		if (Quantity == quantity)
+			return;
+		try {
+			const caret = quantity / props.Size;
+			const pieces = quantity % props.Size;
+			setPieces(pieces);
+			setCart(caret);
+			setQuantity(quantity);
+		}
+		catch (e) {
+			setCart(0);
+			setPieces(0);
+			setQuantity(0);
+		}
+	}, [props.Quantity]);
 	return (
 		<div className={!quantity ? 'border border-danger is-invalid rounded' : ''}>
 			<div
@@ -62,8 +80,8 @@ const CaretSize =memo(function CaretSize(props: ICaretSizeProps) {
 					</div>
 					<label className='pl-2 pr-2 font-weight-bold'>:</label>
 					<div className={`form-group ${pieces > props.Size ? 'is-invalid' : ''}`}>
-						<input className='form-control' value={pieces} onChange={handlePiecesChange} 
-						disabled={(props.Limit != undefined && props.Limit < 0)} onFocus={handleFocusEvent} onBlur={handleBlurEvent}/>
+						<input className='form-control' value={pieces} onChange={handlePiecesChange}
+							disabled={(props.Limit != undefined && props.Limit < 0)} onFocus={handleFocusEvent} onBlur={handleBlurEvent} />
 						<small className='form-text text-muted'>Pieces</small>
 						<small className='invalid-feedback'>Atmost {props.Size}</small>
 					</div>

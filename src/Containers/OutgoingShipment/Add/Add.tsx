@@ -2,7 +2,7 @@ import React from 'react';
 import ShipmentList from 'Containers/ShipmentList/ShipmentList';
 import IProductService from 'Contracts/services/IProductService';
 import ProductService from 'Services/ProductService';
-import { ShipmentDTO, PostOutgoingShipment, Product, SalesmanDTO } from 'Types/DTO';
+import { ShipmentDTO, PostOutgoingShipment, Product, SalesmanDTO, BadRequestError, OutOfStock } from 'Types/DTO';
 import Loader, { CallStatus } from 'Components/Loader/Loader';
 import IOutgoingService from 'Contracts/services/IOutgoingShipmentService';
 import OutgoingService from 'Services/OutgoingShipmentService';
@@ -10,6 +10,7 @@ import ISalesmanService from 'Contracts/services/ISalesmanService';
 import { SalesmanService } from 'Services/SalesmanService';
 import SalesmanList from 'Components/SalesmanList/SalesmanList';
 import { RouteChildrenProps } from 'react-router';
+import { AxiosError } from 'axios';
 
 interface OutgoingShipmentAddProps extends RouteChildrenProps { };
 type OutgoingShipmentAddState = {
@@ -28,24 +29,46 @@ export default class OutgoingShipmentAdd extends React.Component<OutgoingShipmen
 		this._productService = new ProductService();
 		this.state = {
 			Products: [], APIStatus: CallStatus.EMPTY, SalesmanList: [],
-			OutgoingShipment: { DateCreated: new Date(), OutgoingShipmentDetails: [], SalesmanId: -1 },
+			OutgoingShipment: { DateCreated: new Date(), Shipments: [], SalesmanId: -1 },
 			SalesmanSelectionErrorMessage: ""
 		};
 		this._salesmanService = new SalesmanService();
 		this._outgoingShipmentService = new OutgoingService();
 	}
-	handleSubmit(Shipments: ShipmentDTO[]) {
+	handleOutOfStock = (model: OutOfStock[]) => {
+		const { OutgoingShipment } = this.state;
+		let Shipments = [...OutgoingShipment.Shipments];
+		Shipments = Shipments.map((e) => {
+			const entity = model.find(m => m.FlavourId == e.FlavourId && m.ProductId == e.ProductId);
+			if (entity) {
+				return { ...e, TotalDefectedPieces: 0, TotalRecievedPieces: 0 }
+			}
+			return e;
+		});
+		this.setState(({ OutgoingShipment }) => { return { OutgoingShipment: { ...OutgoingShipment, Shipments } } });
+	}
+	handleSubmit = (Shipments: ShipmentDTO[]) => {
 		const { OutgoingShipment } = this.state;
 		if (this.IsAllValid()) {
 			OutgoingShipment.DateCreated = new Date();
+			OutgoingShipment.Shipments = Shipments;
 			this._outgoingShipmentService.PostOutgoingShipmentWithProductList(OutgoingShipment)
-			.then(() => {
-				const { history } = this.props;
-				history.push("/message/pass", { message: "Added Sucessfully" });
-			}).catch(() => {
-				const { history } = this.props;
-				history.push("/message/fail", { message: "Some Error Ocurred" });
-			});
+				.then(() => {
+					const { history } = this.props;
+					history.push({ pathname: "/message/pass", search: "?message=Added Sucessfully&redirect=/outgoing/search" });
+				}).catch((error: AxiosError) => {
+					if (error.code === 400 + '') {
+						const data = error.response?.data as BadRequestError;
+						if (data.Code == 102) {
+							const model = data.Model as { ProductId: number, FlavourId: number }[];
+							this.handleOutOfStock(model);
+							return;
+						}
+					}
+					const { history } = this.props;
+					history.push({ pathname: "/message/fail" });
+
+				});
 		}
 	}
 	IsAllValid = (): boolean => {
@@ -82,7 +105,7 @@ export default class OutgoingShipmentAdd extends React.Component<OutgoingShipmen
 		this._productService.GetAll().then(res => {
 			this.setState({ Products: res.data });
 			return this._salesmanService.GetAll()
-		}).then(res => this.setState({ SalesmanList: res.data }))
-		.catch(error => this.setState({ APIStatus: CallStatus.ERROR }));
+		}).then(res => this.setState({ SalesmanList: res.data, APIStatus: CallStatus.LOADED }))
+			.catch(error => this.setState({ APIStatus: CallStatus.ERROR }));
 	}
 }

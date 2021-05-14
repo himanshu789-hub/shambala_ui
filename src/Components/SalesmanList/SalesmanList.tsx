@@ -21,7 +21,7 @@ export default function SalesmanList(props: SalesmanListProps) {
             <div className='input-group-text'>Salesman</div>
         </div>
         <select className='form-control' name='SalesmanId' onChange={handleChange} value={salesmanId}>
-            <option disabled selected value='-1'>
+            <option disabled value='-1'>
                 --Select A Salesman--
         </option>
             {Salesmans.map(e => (

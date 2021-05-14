@@ -32,10 +32,10 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 	setQuantity = (totalQuantity: number) => {
 		const {
 			SetQuantity,
-			Observer,shouldUseLimit,
+			Observer, shouldUseLimit,
 			ShipmentEntity: { Id },
 		} = this.props;
-       shouldUseLimit && Observer.SetQuantity(totalQuantity);
+		shouldUseLimit && Observer.SetQuantity(totalQuantity);
 		SetQuantity(Id, totalQuantity);
 	};
 	handleChange(e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
@@ -116,8 +116,8 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 					<div className='invalid-feedback'>Product Not Selected!</div>
 				</div>
 
-				<CaretSizeInput Size={caretSize} handleInput={this.setQuantity} Limit={!shouldUseLimit ? undefined : Limit} />
-				<div className='form-group'>
+				<CaretSizeInput Size={caretSize} handleInput={this.setQuantity} Limit={!shouldUseLimit ? undefined : Limit} Quantity={ShipmentEntity.TotalRecievedPieces} />
+				<div className={`form-group ${ShipmentEntity.TotalDefectedPieces >= ShipmentEntity.TotalRecievedPieces && "is-invalid"}`}>
 					<label>Defected Pieces</label>
 					<input
 						name='TotalDefectedPieces'
@@ -125,6 +125,7 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 						value={ShipmentEntity.TotalDefectedPieces}
 						onChange={this.handleChange}
 					/>
+					<small className="invalid-feedback">Cannot Be Greater Than Quantity</small>
 				</div>
 				<div className='form-group'>
 					<i className='fa fa-minus-square text-danger' onClick={() => handleRemove(ShipmentEntity.Id)}></i>

@@ -1,17 +1,17 @@
 
 import { OutgoingStatus } from 'Enums/Enum';
-import {  OutgoingShipment} from './Types';
+import { OutgoingShipment } from './Types';
 
 export type OutgoingShipmentDetails = {
 	Id: number;
 	OutgoingShipmentDetail: OutgoingShipment;
 	Products: Product[];
-	Status:OutgoingStatus;
+	Status: OutgoingStatus;
 };
 export type PostOutgoingShipment = {
-	DateCreated:Date,
-    OutgoingShipmentDetails:ShipmentDTO[];
-	SalesmanId:number;
+	DateCreated: Date,
+	Shipments: ShipmentDTO[];
+	SalesmanId: number;
 }
 export type ShipmentDTO = {
 	Id: number;
@@ -21,25 +21,30 @@ export type ShipmentDTO = {
 	TotalDefectedPieces: number;
 	FlavourId: number;
 };
-export type SalesmanDTO = 
-{
-  Id:number;
-  FullName:string;
-  
-}
+export type SalesmanDTO =
+	{
+		Id: number;
+		FullName: string;
 
+	}
+export type OutOfStock = { ProductId: number, FlavourId: number }
+export type BadRequestError =
+	{
+		Code: number;
+		Model: any;
+	}
 export type Flavour = {
 	Id: number;
 	Title: string;
 	Quantity?: number;
 };
 export type FlavourInfo =
-{
-	Id: number;
-	Title: string;
-	QuantityInStock: number;
-	QuantityInDispatch:number;
-}
+	{
+		Id: number;
+		Title: string;
+		QuantityInStock: number;
+		QuantityInDispatch: number;
+	}
 export type Product = {
 	Id: number;
 	Name: string;
@@ -68,13 +73,13 @@ export type ShopInvoice = {
 	SchemeId: number | undefined;
 	Invoices: SoldItem[];
 };
-export type ProductInfo  =
-{
-	Id:number;
-	Name:string;
-	CaretSize:number;
-	FlavourInfos:FlavourInfo[];
-}
+export type ProductInfo =
+	{
+		Id: number;
+		Name: string;
+		CaretSize: number;
+		FlavourInfos: FlavourInfo[];
+	}
 export type Shop = {
 	Id: number;
 	Name: string;
