@@ -1,12 +1,11 @@
 import Loader, { CallStatus, ApiStatusInfo } from 'Components/Loader/Loader';
 import React, { SyntheticEvent } from 'react';
-import { OutgoingShipment, SalesmanProperties } from 'Types/Types';
+import { OutgoingShipment } from 'Types/Types';
 import './Search.css';
 import IOUtgoingShipmentService from 'Contracts/services/IOutgoingShipmentService';
 import OutgoingService from 'Services/OutgoingShipmentService';
 import ISalesmanService from 'Contracts/services/ISalesmanService';
 import { SalesmanService } from 'Services/SalesmanService';
-import { SalesmanDTO } from 'Types/DTO';
 import SalesmanList from 'Components/SalesmanList/SalesmanList';
 import TableWrapper from './Components/TableWrapper/TableWrapper';
 type OutgoingShipmentSearchProps = {};
@@ -19,7 +18,6 @@ type OutgoingShipmentSearchState = {
 	OutgoingShipments: OutgoingShipment[];
 	ShouldValidate: boolean;
 	ErrorMessage: { [key: string]: string };
-	SalemansRequestInfo: ApiStatusInfo;
 	OutgoingShipmentRequestInfo: ApiStatusInfo;
 };
 export default class OutgoingShipmentSearch extends React.Component<OutgoingShipmentSearchProps, OutgoingShipmentSearchState> {
@@ -28,7 +26,7 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 	constructor(props: OutgoingShipmentSearchProps) {
 		super(props);
 		this.state = {
-			OutgoingShipmentRequestInfo: { Status: CallStatus.EMPTY }, SalemansRequestInfo: { Status: CallStatus.EMPTY },
+			OutgoingShipmentRequestInfo: { Status: CallStatus.EMPTY },
 			ErrorMessage: {},
 			ShouldValidate: false,
 			OutgoingShipments: [],
@@ -41,7 +39,7 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 		this.handleSubmit = this.handleSubmit.bind(this);
 	}
 	handleSelection = (Id: number) => {
-		this.setState(({ Search }) => { return { Search: { ...Search, SalesmanId: Id  } } });
+		this.setState(({ Search }) => { return { Search: { ...Search, SalesmanId: Id } } });
 	}
 	handleChange(e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) {
 		const {
@@ -96,21 +94,17 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 			Search: { DateCreated: Date, SalesmanId },
 			ShouldValidate,
 			OutgoingShipments,
-			ErrorMessage, OutgoingShipmentRequestInfo, SalemansRequestInfo
+			ErrorMessage, OutgoingShipmentRequestInfo 
 		} = this.state;
 
-		
+
 		return (
 			<div className='search'>
 				<h5 className="app-head">Search Outgoing Shipments</h5>
 				<div className='form-inline justify-content-center'>
 					<div className='d-flex flex-column'>
-						<Loader Status={SalemansRequestInfo.Status} Message={SalemansRequestInfo.Message} Size={50} >
-							<React.Fragment>
-								<SalesmanList SalemanId={SalesmanId} handleSelection={this.handleSelection} />
-								<small className='form-text  text-danger'>{ShouldValidate && ErrorMessage['SalesmanId']}</small>
-							</React.Fragment>
-						</Loader>
+							<SalesmanList SalemanId={SalesmanId} handleSelection={this.handleSelection} />
+							<small className='form-text  text-danger'>{ShouldValidate && ErrorMessage['SalesmanId']}</small>
 					</div>
 					<div className='d-flex flex-column'>
 						<div className='input-group mr-5'>
@@ -126,9 +120,9 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 					</button>
 				</div>
 				<div className='outgoing-table'>
-					<Loader children={<TableWrapper OutgoingShipments={OutgoingShipments}/>} 
-					Status={OutgoingShipmentRequestInfo.Status} 
-					Message={OutgoingShipmentRequestInfo.Message} />
+					<Loader children={<TableWrapper OutgoingShipments={OutgoingShipments} />}
+						Status={OutgoingShipmentRequestInfo.Status}
+						Message={OutgoingShipmentRequestInfo.Message} />
 				</div>
 			</div>
 		);

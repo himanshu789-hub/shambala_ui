@@ -6,8 +6,6 @@ import { ShipmentDTO, PostOutgoingShipment, Product, SalesmanDTO, BadRequestErro
 import Loader, { CallStatus } from 'Components/Loader/Loader';
 import IOutgoingService from 'Contracts/services/IOutgoingShipmentService';
 import OutgoingService from 'Services/OutgoingShipmentService';
-import ISalesmanService from 'Contracts/services/ISalesmanService';
-import { SalesmanService } from 'Services/SalesmanService';
 import SalesmanList from 'Components/SalesmanList/SalesmanList';
 import { RouteChildrenProps } from 'react-router';
 import { AxiosError } from 'axios';
@@ -72,23 +70,24 @@ export default class OutgoingShipmentAdd extends React.Component<OutgoingShipmen
 		return (
 			<div className='outgoing-add'>
 				<h5 className="app-head">Add Outgoing Shipment</h5>
-				<Loader Status={APIStatus}>
-					<React.Fragment>
-						<div className="d-flex flex-column">
-							<SalesmanList handleSelection={this.handleSelection} SalemanId={SalesmanId} />
-							<small className='form-text  text-danger'>{SalesmanSelectionErrorMessage}</small>
-						</div>
+				<React.Fragment>
+					<div className="d-flex flex-column">
+						<SalesmanList handleSelection={this.handleSelection} SalemanId={SalesmanId} />
+						<small className='form-text  text-danger'>{SalesmanSelectionErrorMessage}</small>
+					</div>
+					<Loader Status={APIStatus}>
 						<ShipmentList Products={this.state.Products} handleSubmit={this.handleSubmit} ShouldLimitQuantity={true} />
-					</React.Fragment>
-				</Loader>
+					</Loader>
+
+				</React.Fragment>
 			</div>
 		);
 	}
 	componentDidMount() {
 		this.setState({ APIStatus: CallStatus.LOADING });
 		this._productService.GetAll().then(res => {
-			this.setState({ Products: res.data,APIStatus:CallStatus.LOADED });
+			this.setState({ Products: res.data, APIStatus: CallStatus.LOADED });
 		})
-		.catch(error => this.setState({ APIStatus: CallStatus.ERROR }));
+			.catch(error => this.setState({ APIStatus: CallStatus.ERROR }));
 	}
 }

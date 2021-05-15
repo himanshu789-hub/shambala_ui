@@ -24,6 +24,6 @@ export default class OutgoingService implements IOutgoingShipment {
 		return OutgoingShipmentClient.get(`/GetProductListByOrderId/${Id}`);
 	}
 	GetShipmentByDateAndSalesmanId(SalesmanId: number, Date: Date): Promise<AxiosResponse<OutgoingShipment[]>> {
-		return OutgoingShipmentClient.get('/GetOutgoingBySalesmanIdAndDate',{data:{SalesmanId,Date:Date.toUTCString()}});
+		return OutgoingShipmentClient.get('/GetOutgoingBySalesmanIdAndDate',{params:{SalesmanId,Date:Date}});
 	}
 }

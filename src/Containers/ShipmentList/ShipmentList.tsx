@@ -39,83 +39,74 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		this.handleSubmit = this.handleSubmit.bind(this);
 	}
 	componentWillReceiveProps(nextProps: IShipmentListProps) {
-		if (nextProps != this.props) {
+		if (nextProps.Products != this.props.Products) {
 			const { Products } = nextProps;
 			let products = new Map<string, Product>();
-			if (Products.length > 0) {
+			if (Products != this.props.Products && Products.length > 0) {
 				Products.forEach(function (value, index) {
 					products.set(value.Id + '', value);
 				});
 				this.products = new Map(products);
+				this.componentListMediator.Unsubscribe(this.state.SubscriptionId);
 				this.componentListMediator = new MediatorSubject(Products.map(e => { return { ...e } }));
-				this.setState({ Products: products });
-			}
-			if (nextProps.ResetElement && nextProps.ResetElement != this.props.ResetElement) {
-				const { ShipmentInfos } = this.state;
-				this.componentListMediator.UnregisteredObserverWithQuantities(nextProps.ResetElement);
-				const Shipments = ShipmentInfos.flatMap(e => e.Shipment);
-				const Ids:number[] = [];
-				for (let index = 0; index < Shipments.length; index++) {
-					const element = Shipments[index];
-					if (nextProps.ResetElement.find(e => e.FlavourId == element.FlavourId && e.ProductId == element.ProductId))
-						Ids.push(element.Id);
-				}
-				this.setState(({ ShipmentInfos }) => {
-					return {
-						ShipmentInfos: ShipmentInfos.map(e => {
-							if (Ids.find(i => i == e.Shipment.Id))
-								return { ...e, Shipment: { ...e.Shipment, TotalRecievedPieces: 0, TotalDefectedPieces: 0 } };
-							return e;
-						})
-					}
-				});
+				this.setState({ Products: products, ShipmentInfos: [] });
 			}
 		}
+		if (nextProps.ResetElement && nextProps.ResetElement != this.props.ResetElement) {
+			const { ShipmentInfos } = this.state;
+			this.componentListMediator.UnregisteredObserverWithQuantities(nextProps.ResetElement);
+			const Shipments = ShipmentInfos.flatMap(e => e.Shipment);
+			const Ids: number[] = [];
+			for (let index = 0; index < Shipments.length; index++) {
+				const element = Shipments[index];
+				if (nextProps.ResetElement.find(e => e.FlavourId == element.FlavourId && e.ProductId == element.ProductId))
+					Ids.push(element.Id);
+			}
+			this.setState(({ ShipmentInfos }) => {
+				return {
+					ShipmentInfos: ShipmentInfos.map(e => {
+						if (Ids.find(i => i == e.Shipment.Id))
+							return { ...e, Shipment: { ...e.Shipment, TotalRecievedPieces: 0, TotalDefectedPieces: 0 } };
+						return e;
+					})
+				}
+			});
+		}
 	}
+
 	handleChange(propertyValue: { Id: number; Name: string; Value: any }) {
-		const { ShipmentInfos, SubscriptionId } = this.state;
 		const { Id, Name, Value } = propertyValue;
+		const { ShouldLimitQuantity } = this.props;
 
 		if (Name == 'ProductId') {
 			const ProductId = Number.parseInt(Value);
+
 			this.setState(({ ShipmentInfos }) => {
 				return {
 					ShipmentInfos:
 						ShipmentInfos.map(e => {
-							if (e.Shipment.Id == Id)
-								return { ...e, Shipment: { ...e.Shipment, ProductId: ProductId, CaretSize: this.selectProductCaretDetails(ProductId) } };
+							if (e.Shipment.Id == Id) {
+								e.Shipment.FlavourId && e.Observer.UnsubscribeToQuantity()
+								return { ...e, Shipment: { ...e.Shipment, ProductId: ProductId, FlavourId: -1, CaretSize: this.selectProductCaretDetails(ProductId) }, Limit: ShouldLimitQuantity ? 0 : undefined };
+							}
 							return e;
 						}),
 
 				};
 			});
 		} else if (Name == 'FlavourId') {
-			const ShipmentInfo = ShipmentInfos.find(e => e.Shipment.Id == Id) as ShipmentInfo;
-			this.setState(({ ShipmentInfos: IncomingShipments }) => {
+			this.setState(({ ShipmentInfos }) => {
 				return {
 					ShipmentInfos: [
-						...IncomingShipments.map(e => {
+						...ShipmentInfos.map(e => {
 							if (e.Shipment.Id == Id) {
-								return { ...e, Shipment: { ...e.Shipment, FlavourId: Value } };
+								return { ...e, Shipment: { ...e.Shipment, FlavourId: Value }, Limit: ShouldLimitQuantity ? e.Observer.GetQuantityLimit() : undefined };
 							}
 							return { ...e };
 						}),
 					],
 				};
 			});
-		}
-		else if (Name == 'TotalRecievedPieces') {
-			const { ShipmentInfos } = this.state;
-			const { ShouldLimitQuantity } = this.props;
-			this.setState(({ ShipmentInfos }) => {
-				return {
-					ShipmentInfos: ShipmentInfos.map(e => {
-						if (e.Observer.GetObserverInfo().ComponentId == Id)
-							return { ...e, Shipment: { ...e.Shipment, [Name]: Value }, Limit: ShouldLimitQuantity ? e.Observer.GetQuantityLimit() : undefined }
-						return e;
-					})
-				}
-			})
 		}
 		else {
 			this.setState(({ ShipmentInfos: IncomingShipments }) => {
@@ -163,6 +154,19 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				],
 			});
 	};
+	resetQuantityLimit = (Id: number) => {
+		this.setState(({ ShipmentInfos }) => {
+			return {
+				ShipmentInfos: ShipmentInfos.map(e => {
+					if (e.Shipment.Id == Id) {
+						e.Observer.UnsubscribeToQuantity();
+						return { ...e, Shipment: { ...e.Shipment }, Limit: e.Observer.GetQuantityLimit() };
+					}
+					return e;
+				})
+			}
+		})
+	}
 	selectProductCaretDetails = (Id: number): number => {
 		let product = this.products.get(Id + '');
 		if (product) return product.CaretSize;
@@ -197,6 +201,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 									handleRemove={this.handleRemove}
 									Observer={value.Observer}
 									Limit={value.Limit}
+									ResetQuantityLimit={this.resetQuantityLimit}
 								/>
 							);
 						})}

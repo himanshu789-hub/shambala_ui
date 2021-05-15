@@ -8,25 +8,25 @@ type SalesmanListProps = {
     SalemanId: number;
 }
 export default function SalesmanList(props: SalesmanListProps) {
-    const [Salesmans, SetSalesmans] = useState<SalesmanDTO[]>([]);
-    const [SalesmanStatus, SetSalemsnStatus] = useState<{ ApiStatus: CallStatus, Message?: string }>({ ApiStatus: CallStatus.EMPTY, Message: '' });
+    const [salesmans, setSalesmans] = useState<SalesmanDTO[]>([]);
+    const [salesmanRequestInfo, setSalesmanRequestInfo] = useState<{ ApiStatus: CallStatus, Message?: string }>({ ApiStatus: CallStatus.EMPTY, Message: '' });
     const { SalemanId } = props;
     useEffect(() => {
-        SetSalemsnStatus({ ApiStatus: CallStatus.LOADING, Message: 'Fetching Salesman List' });
+        setSalesmanRequestInfo({ ApiStatus: CallStatus.LOADING, Message: 'Fetching Salesman List' });
         new SalesmanService()
             .GetAll()
             .then(res => {
-                SetSalesmans(res.data);
-                SetSalemsnStatus({ ApiStatus: CallStatus.LOADED, Message: '' });
-            }).catch(res => SetSalemsnStatus({ Message: undefined, ApiStatus: CallStatus.ERROR }));
-    }, [])
+                setSalesmanRequestInfo({ ApiStatus: CallStatus.LOADED, Message: '' });
+                setSalesmans(res.data);
+            }).catch(() => setSalesmanRequestInfo({ Message: undefined, ApiStatus: CallStatus.ERROR }));
+    },[])
     const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
         const { handleSelection } = props;
         const { value } = e.currentTarget;
         const SalesmanSelected = Number.parseInt(value);
         handleSelection(SalesmanSelected);
     }
-    return (<Loader Status={SalesmanStatus.ApiStatus} Message={SalesmanStatus.Message}>
+    return (<Loader Status={salesmanRequestInfo.ApiStatus} Message={salesmanRequestInfo.Message}>
         <div className='input-group mr-2'>
             <div className='input-group-prepend'>
                 <div className='input-group-text'>Salesman</div>
@@ -36,7 +36,7 @@ export default function SalesmanList(props: SalesmanListProps) {
                 <option disabled value='-1'>
                     --Select A Salesman--
         </option>
-                {Salesmans.map(e => (
+                {salesmans.map(e => (
                     <option value={e.Id} key={e.Id}>{e.FullName}</option>
                 ))}
             </select>

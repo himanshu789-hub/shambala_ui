@@ -40,7 +40,7 @@ export default function TableWrapper(props: TableWrapperProps) {
                             <tr key={index}>
                                 <td>{index + 1}</td>
                                 <td>{value.Salesman.FullName}</td>
-                                <td>{value.DateCreated}</td>
+                                <td>{value.DateCreated.substring(0,10)}</td>
                                 <td>
                                     <OutgoingStatusButton Status={value.Status} Id={value.Id} />
                                 </td>

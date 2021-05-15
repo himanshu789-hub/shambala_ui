@@ -12,6 +12,7 @@ type ShipmentElementProps = {
 	ShipmentEntity: ShipmentDTO;
 	handleChange: (property: ShipmentProperty) => void;
 	Observer: Observer;
+	ResetQuantityLimit(Id:number):void;
 	SetQuantity: Function;
 	handleRemove: Function;
 	Limit?: number;
@@ -32,10 +33,10 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 	setQuantity = (totalQuantity: number) => {
 		const {
 			SetQuantity,
-			Observer,Limit,
+			Observer, Limit,
 			ShipmentEntity: { Id },
 		} = this.props;
-	      Limit &&  Observer.SetQuantity(totalQuantity);
+		Limit && Observer.SetQuantity(totalQuantity);
 		SetQuantity(Id, totalQuantity);
 	};
 	handleChange(e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
@@ -52,6 +53,7 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 				Value = Number.parseInt(Value);
 				if (Name == "ProductId") {
 					Observer.SetProduct(Value);
+					
 				}
 				else {
 					Observer.SetFlavour(Value);
@@ -68,9 +70,12 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 		else if (name == "FlavourId")
 			this.setState({ flavourList: Observer.GetFlavours() });
 	}
+	handleFocusIn=()=>{
+          
+	}
 	render() {
-		const { ShipmentEntity, handleRemove, Limit} = this.props;
-		const { ProductList, flavourList,  } = this.state;
+		const { ShipmentEntity, handleRemove, Limit } = this.props;
+		const { ProductList, flavourList, } = this.state;
 		const caretSize = ShipmentEntity.CaretSize;
 		return (
 			<div className='incoming-shipment-element-add d-flex  justify-content-around flex-nowrap'>
@@ -103,10 +108,10 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 						onChange={this.handleChange}
 						onFocus={this.handleClick}
 						value={ShipmentEntity.FlavourId}>
-						<option disabled value='-1' key={-1}>
+						<option disabled value='-1'>
 							-- Select Your Option --
 						</option>
-						{flavourList && flavourList.length > 0 && flavourList.map(e => <option value={e.Id} key={e.Id}>{e.Title}</option>)}
+						{flavourList  && flavourList.map(e => <option value={e.Id} key={e.Id}>{e.Title}</option>)}
 					</select>
 				</div>
 				<div className={`form-group ${ShipmentEntity.CaretSize == 0 ? 'is-invalid' : ''}`}>
@@ -115,7 +120,8 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 					<div className='invalid-feedback'>Product Not Selected!</div>
 				</div>
 
-				<CaretSizeInput Size={caretSize} handleInput={this.setQuantity} Limit={Limit} Quantity={ShipmentEntity.TotalRecievedPieces} />
+				<CaretSizeInput Size={caretSize} handleInput={this.setQuantity} Limit={Limit}
+				 Quantity={ShipmentEntity.TotalRecievedPieces} OnFocusIn={this.handleFocusIn}/>
 				<div className={`form-group ${ShipmentEntity.TotalDefectedPieces >= ShipmentEntity.TotalRecievedPieces && "is-invalid"}`}>
 					<label>Defected Pieces</label>
 					<input
