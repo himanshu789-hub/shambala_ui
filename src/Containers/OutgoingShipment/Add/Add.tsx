@@ -16,40 +16,25 @@ interface OutgoingShipmentAddProps extends RouteChildrenProps { };
 type OutgoingShipmentAddState = {
 	Products: Product[];
 	APIStatus: CallStatus;
-	SalesmanList: SalesmanDTO[];
-	OutgoingShipment: PostOutgoingShipment;
 	SalesmanSelectionErrorMessage: string;
+	SalesmanId: number;
+	OutOfStock?: OutOfStock[]
 };
 export default class OutgoingShipmentAdd extends React.Component<OutgoingShipmentAddProps, OutgoingShipmentAddState> {
 	_productService: IProductService;
 	_outgoingShipmentService: IOutgoingService;
-	_salesmanService: ISalesmanService;
 	constructor(props: OutgoingShipmentAddProps) {
 		super(props);
 		this._productService = new ProductService();
 		this.state = {
-			Products: [], APIStatus: CallStatus.EMPTY, SalesmanList: [],
-			OutgoingShipment: { DateCreated: new Date(), Shipments: [], SalesmanId: -1 },
-			SalesmanSelectionErrorMessage: ""
+			Products: [], APIStatus: CallStatus.EMPTY,
+			SalesmanSelectionErrorMessage: "", SalesmanId: -1
 		};
-		this._salesmanService = new SalesmanService();
 		this._outgoingShipmentService = new OutgoingService();
 	}
-	handleOutOfStock = (model: OutOfStock[]) => {
-		const { OutgoingShipment } = this.state;
-		let Shipments = [...OutgoingShipment.Shipments];
-		Shipments = Shipments.map((e) => {
-			const entity = model.find(m => m.FlavourId == e.FlavourId && m.ProductId == e.ProductId);
-			if (entity) {
-				return { ...e, TotalDefectedPieces: 0, TotalRecievedPieces: 0 }
-			}
-			return e;
-		});
-		this.setState(({ OutgoingShipment }) => { return { OutgoingShipment: { ...OutgoingShipment, Shipments } } });
-	}
 	handleSubmit = (Shipments: ShipmentDTO[]) => {
-		const { OutgoingShipment } = this.state;
 		if (this.IsAllValid()) {
+			const OutgoingShipment: PostOutgoingShipment = { SalesmanId: this.state.SalesmanId, DateCreated: new Date(), Shipments: Shipments };
 			OutgoingShipment.DateCreated = new Date();
 			OutgoingShipment.Shipments = Shipments;
 			this._outgoingShipmentService.PostOutgoingShipmentWithProductList(OutgoingShipment)
@@ -60,8 +45,7 @@ export default class OutgoingShipmentAdd extends React.Component<OutgoingShipmen
 					if (error.code === 400 + '') {
 						const data = error.response?.data as BadRequestError;
 						if (data.Code == 102) {
-							const model = data.Model as { ProductId: number, FlavourId: number }[];
-							this.handleOutOfStock(model);
+							this.setState({ OutOfStock: data.Model as OutOfStock[] });
 							return;
 						}
 					}
@@ -73,25 +57,25 @@ export default class OutgoingShipmentAdd extends React.Component<OutgoingShipmen
 	}
 	IsAllValid = (): boolean => {
 		let IsAllValid = true;
-		const { OutgoingShipment } = this.state;
-		if (OutgoingShipment.SalesmanId == -1) {
+		const { SalesmanId } = this.state;
+		if (SalesmanId == -1) {
 			this.setState({ SalesmanSelectionErrorMessage: 'Please Select A Salesman' });
 			IsAllValid = false;
 		}
 		return IsAllValid;
 	}
 	handleSelection = (Id: number) => {
-		this.setState(({ OutgoingShipment }) => { return { OutgoingShipment: { ...OutgoingShipment, SalesmanId: Id }, SalesmanSelectionErrorMessage: '' } });
+		this.setState({ SalesmanId: Id, SalesmanSelectionErrorMessage: '' });
 	}
 	render() {
-		const { APIStatus, SalesmanList: Salesmans, SalesmanSelectionErrorMessage } = this.state;
+		const { APIStatus, SalesmanSelectionErrorMessage, SalesmanId } = this.state;
 		return (
 			<div className='outgoing-add'>
 				<h5 className="app-head">Add Outgoing Shipment</h5>
 				<Loader Status={APIStatus}>
 					<React.Fragment>
 						<div className="d-flex flex-column">
-							<SalesmanList Salesmans={Salesmans} handleSelection={this.handleSelection} />
+							<SalesmanList handleSelection={this.handleSelection} SalemanId={SalesmanId} />
 							<small className='form-text  text-danger'>{SalesmanSelectionErrorMessage}</small>
 						</div>
 						<ShipmentList Products={this.state.Products} handleSubmit={this.handleSubmit} ShouldLimitQuantity={true} />
@@ -103,9 +87,8 @@ export default class OutgoingShipmentAdd extends React.Component<OutgoingShipmen
 	componentDidMount() {
 		this.setState({ APIStatus: CallStatus.LOADING });
 		this._productService.GetAll().then(res => {
-			this.setState({ Products: res.data });
-			return this._salesmanService.GetAll()
-		}).then(res => this.setState({ SalesmanList: res.data, APIStatus: CallStatus.LOADED }))
-			.catch(error => this.setState({ APIStatus: CallStatus.ERROR }));
+			this.setState({ Products: res.data,APIStatus:CallStatus.LOADED });
+		})
+		.catch(error => this.setState({ APIStatus: CallStatus.ERROR }));
 	}
 }

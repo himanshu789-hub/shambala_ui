@@ -14,12 +14,12 @@ type ShipmentElementProps = {
 	Observer: Observer;
 	SetQuantity: Function;
 	handleRemove: Function;
-	shouldUseLimit: boolean;
+	Limit?: number;
 };
 type ShipmentElementState = {
 	ProductList: ProductInfo[];
 	flavourList: Flavour[];
-	Limit?: number;
+
 };
 export default class ShipmentElement extends React.PureComponent<ShipmentElementProps, ShipmentElementState> {
 	constructor(props: ShipmentElementProps) {
@@ -32,10 +32,10 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 	setQuantity = (totalQuantity: number) => {
 		const {
 			SetQuantity,
-			Observer, shouldUseLimit,
+			Observer,Limit,
 			ShipmentEntity: { Id },
 		} = this.props;
-		shouldUseLimit && Observer.SetQuantity(totalQuantity);
+	      Limit &&  Observer.SetQuantity(totalQuantity);
 		SetQuantity(Id, totalQuantity);
 	};
 	handleChange(e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
@@ -55,7 +55,6 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 				}
 				else {
 					Observer.SetFlavour(Value);
-					this.setState({ Limit: Observer.GetQuantityLimit() });
 				}
 			}
 			handleChange({ Id, Name, Value });
@@ -70,8 +69,8 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 			this.setState({ flavourList: Observer.GetFlavours() });
 	}
 	render() {
-		const { ShipmentEntity, handleRemove, shouldUseLimit } = this.props;
-		const { ProductList, flavourList, Limit } = this.state;
+		const { ShipmentEntity, handleRemove, Limit} = this.props;
+		const { ProductList, flavourList,  } = this.state;
 		const caretSize = ShipmentEntity.CaretSize;
 		return (
 			<div className='incoming-shipment-element-add d-flex  justify-content-around flex-nowrap'>
@@ -116,7 +115,7 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 					<div className='invalid-feedback'>Product Not Selected!</div>
 				</div>
 
-				<CaretSizeInput Size={caretSize} handleInput={this.setQuantity} Limit={!shouldUseLimit ? undefined : Limit} Quantity={ShipmentEntity.TotalRecievedPieces} />
+				<CaretSizeInput Size={caretSize} handleInput={this.setQuantity} Limit={Limit} Quantity={ShipmentEntity.TotalRecievedPieces} />
 				<div className={`form-group ${ShipmentEntity.TotalDefectedPieces >= ShipmentEntity.TotalRecievedPieces && "is-invalid"}`}>
 					<label>Defected Pieces</label>
 					<input

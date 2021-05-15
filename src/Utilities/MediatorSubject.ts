@@ -1,5 +1,5 @@
 import { ProductInfo } from 'Types/Mediator';
-import { Flavour, Product } from 'Types/DTO';
+import { Flavour, OutOfStock, Product } from 'Types/DTO';
 import FlavourMediator, { IFlavourMediator } from './FlavourMediator';
 import QuantityMediator, { IQuantityMediator } from './QuantityMediator';
 import ComponentProductMediator, { IProductMediator } from './ProductMediator';
@@ -21,6 +21,15 @@ export default class MediatorSubject {
 		this._flavourMediator.Unsubscribe(subscriptionId, componentId);
 		this._productMediator.Unsubscribe(subscriptionId, componentId);
 		this._quantityMediator.Unsubscibe(subscriptionId, componentId);
+	}
+	UnregisteredObserverWithQuantities(OutofStocks: OutOfStock[]) {
+		for (var i = 0; i < this._observers.length; i++) {
+			const observer = this._observers[i];
+			if (OutofStocks.find(e => e.FlavourId == observer.FlavourId && e.ProductId == observer.ProductId)) {
+				observer.UnsubscribeToQuantity();
+			}
+
+		}
 	}
 	Unsubscribe(subscriptionId: number) {
 		this._flavourMediator.UnsubscribeASubscription(subscriptionId);

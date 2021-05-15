@@ -6,12 +6,12 @@ import MediatorSubject from './MediatorSubject';
 export type ReactComponent = Component<any, any>;
 
 export default class Observer {
-	private _productId?: number;
+	public ProductId?: number;
 	private _componentId: number;
 	private _subscriptionId: number;
 	private _subject: MediatorSubject;
 	private _component?: ReactComponent;
-	private _flavourId?: number;
+	public FlavourId?: number;
 	constructor(subscriptionId: number, componentId: number, subject: MediatorSubject) {
 		this._subscriptionId = subscriptionId;
 		this._componentId = componentId;
@@ -27,11 +27,11 @@ export default class Observer {
 		return this._subject.GetProducts(this._subscriptionId, this._componentId);
 	}
 	GetQuantityLimit(): number {
-		if (!(this._productId && this._flavourId)) {
+		if (!(this.ProductId && this.FlavourId)) {
 			console.error('Product or Flavour Not Set');
 			return -1;
 		}
-		return this._subject.GetQuantity(this._productId as number, this._flavourId as number);
+		return this._subject.GetQuantity(this.ProductId as number, this.FlavourId as number);
 	}
 	Unubscribe() {
 		if (!(this._componentId && this._subscriptionId)) {
@@ -48,29 +48,29 @@ export default class Observer {
 	}
 
 	GetFlavours(): Flavour[] {
-		if (!this._productId) {
+		if (!this.ProductId) {
 			console.error('Product Id  no Set');
 			return [];
 		}
-		return this._subject.GetFlavours(this._subscriptionId, this._componentId, this._productId as number);
+		return this._subject.GetFlavours(this._subscriptionId, this._componentId, this.ProductId as number);
 	}
 	SetProduct(Id: number): void {
 		this._subject.SetASubscription(this._subscriptionId, this._componentId, Id);
-		this._productId = Id;
+		this.ProductId = Id;
 	}
 	SetFlavour(Id: number) {
-		if (!this._productId) {
+		if (!this.ProductId) {
 			console.error('Product Not Set');
 			return;
 		}
-		this._subject.SetASubscription(this._subscriptionId, this._componentId, this._productId as number, Id);
-		this._flavourId = Id;
+		this._subject.SetASubscription(this._subscriptionId, this._componentId, this.ProductId as number, Id);
+		this.FlavourId = Id;
 	}
 	SetQuantity(quantity: number) {
-		if (!this._productId) {
+		if (!this.ProductId) {
 			console.error('Product Not Set');
 			return;
 		}
-		this._subject.SetASubscription(this._subscriptionId, this._componentId, this._productId, this._flavourId, quantity);
+		this._subject.SetASubscription(this._subscriptionId, this._componentId, this.ProductId, this.FlavourId, quantity);
 	}
 }

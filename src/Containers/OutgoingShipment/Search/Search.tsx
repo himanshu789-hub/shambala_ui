@@ -11,12 +11,11 @@ import SalesmanList from 'Components/SalesmanList/SalesmanList';
 import TableWrapper from './Components/TableWrapper/TableWrapper';
 type OutgoingShipmentSearchProps = {};
 type Search = {
-	SalesmanId: string;
+	SalesmanId: number;
 	DateCreated: string;
 };
 type OutgoingShipmentSearchState = {
 	Search: Search;
-	Salesmans: SalesmanDTO[];
 	OutgoingShipments: OutgoingShipment[];
 	ShouldValidate: boolean;
 	ErrorMessage: { [key: string]: string };
@@ -30,11 +29,10 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 		super(props);
 		this.state = {
 			OutgoingShipmentRequestInfo: { Status: CallStatus.EMPTY }, SalemansRequestInfo: { Status: CallStatus.EMPTY },
-			Salesmans: [],
 			ErrorMessage: {},
 			ShouldValidate: false,
 			OutgoingShipments: [],
-			Search: { DateCreated: '', SalesmanId: '-1' },
+			Search: { DateCreated: '', SalesmanId: -1 },
 		};
 		this.SalesmanService = new SalesmanService();
 		this.IsValid = this.IsValid.bind(this);
@@ -43,7 +41,7 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 		this.handleSubmit = this.handleSubmit.bind(this);
 	}
 	handleSelection = (Id: number) => {
-		this.setState(({ Search }) => { return { Search: { ...Search, SalesmanId: Id + '' } } });
+		this.setState(({ Search }) => { return { Search: { ...Search, SalesmanId: Id  } } });
 	}
 	handleChange(e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) {
 		const {
@@ -57,7 +55,7 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 	IsValid(): boolean {
 		const { SalesmanId, DateCreated } = this.state.Search;
 		let IsValid = true;
-		if (SalesmanId == '-1') {
+		if (SalesmanId == -1) {
 			this.setState(prevState => {
 				return { ErrorMessage: { ...prevState.ErrorMessage, SalesmanId: 'Please Select A Salesman' } };
 			});
@@ -86,7 +84,7 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 
 		if (this.IsValid()) {
 			this.setState({ OutgoingShipmentRequestInfo: { Status: CallStatus.LOADING, Message: 'Gathering Shipments Info' } });
-			this.OutgoingShipmentService.GetShipmentByDateAndSalesmanId(Number.parseInt(SalesmanId), new Date(DateCreated)).then(res =>
+			this.OutgoingShipmentService.GetShipmentByDateAndSalesmanId(SalesmanId, new Date(DateCreated)).then(res =>
 				this.setState({ OutgoingShipments: res.data, OutgoingShipmentRequestInfo: { Status: CallStatus.LOADED } }),
 			).catch(() => this.setState({ OutgoingShipmentRequestInfo: { Status: CallStatus.ERROR, Message: "Error Gathering Shipments Info" } }));
 		} else {
@@ -96,7 +94,6 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 	render() {
 		const {
 			Search: { DateCreated: Date, SalesmanId },
-			Salesmans,
 			ShouldValidate,
 			OutgoingShipments,
 			ErrorMessage, OutgoingShipmentRequestInfo, SalemansRequestInfo
@@ -110,7 +107,7 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 					<div className='d-flex flex-column'>
 						<Loader Status={SalemansRequestInfo.Status} Message={SalemansRequestInfo.Message} Size={50} >
 							<React.Fragment>
-								<SalesmanList Salesmans={Salesmans} handleSelection={this.handleSelection} />
+								<SalesmanList SalemanId={SalesmanId} handleSelection={this.handleSelection} />
 								<small className='form-text  text-danger'>{ShouldValidate && ErrorMessage['SalesmanId']}</small>
 							</React.Fragment>
 						</Loader>
@@ -135,11 +132,5 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 				</div>
 			</div>
 		);
-	}
-	componentDidMount() {
-		this.setState({ SalemansRequestInfo:{Status:CallStatus.LOADING,Message:'Gathering All Salesman'} });
-		this.SalesmanService.GetAll()
-			.then(response => this.setState({ SalemansRequestInfo:{Status:CallStatus.LOADED,Message:''}, Salesmans: response.data }))
-			.catch(() => this.setState({ SalemansRequestInfo:{Message:'Error Gathering Salesman',Status:CallStatus.ERROR}}));
 	}
 }
