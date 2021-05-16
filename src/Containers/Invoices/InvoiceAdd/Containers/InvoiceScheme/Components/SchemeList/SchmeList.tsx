@@ -20,7 +20,7 @@ const SchemeList = function (props: VariableSectionProps) {
 					-- Select A Scheme Type --
 				</option>
 				{props.SchemeList.map((value, index) => (
-					<option value={value.Id} key={index}>{value.Name}</option>
+					<option value={value.Id} key={index}>{value.Title}</option>
 				))}
 			</select>
 		</div>

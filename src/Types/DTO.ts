@@ -54,7 +54,7 @@ export type Product = {
 
 export type Scheme = {
 	Id: number;
-	Name: string;
+	Title: string;
 	Date: string;
 	IsUserDefinedScheme: boolean;
 	SchemeType: number;
@@ -72,6 +72,8 @@ export type ShopInvoice = {
 	ShopId: number | undefined;
 	SchemeId: number | undefined;
 	Invoices: SoldItem[];
+	DateCreated:Date;
+	OutgoingShipmentId:number;
 };
 export type ProductInfo =
 	{

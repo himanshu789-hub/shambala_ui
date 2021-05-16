@@ -56,7 +56,7 @@ export default class InvoiceAdd extends React.PureComponent<IInvoiceProps, Invoi
 
 		const { ShopInvoice: { SchemeId, ShopId, Invoices: SoldItems }, IsShopAlreadySelected } = this.props;
 
-		const { SubscriptionId, GetCaretSizeByProductId, AddASubscriberComponent, HandleComponentDelete } = this.props;
+		const { SubscriptionId,  AddASubscriberComponent, HandleComponentDelete } = this.props;
 		return (
 			<div className='card'>
 				<div className='card-head d-flex justify-content-between'>

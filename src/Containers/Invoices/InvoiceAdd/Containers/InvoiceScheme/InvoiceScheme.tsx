@@ -85,10 +85,10 @@ export default class InvoiceScheme extends React.PureComponent<InvoiceSchemeProp
 				.then(res => {
 					const choosenSchemeType = res.data ? SchemeType.FIXED : SchemeType.VARIABLE;
 					this.setState({ SelectedScheme: res.data, APIMessage: 'Gathering All Scheme', ChoosenSchemeEnumType: choosenSchemeType });
-					if (choosenSchemeType)
+					if (choosenSchemeType==SchemeType.FIXED)
 						this.props.handleSchemeSelection('SchemeId', res.data.Id);
 				})
-				.catch(e => this.setState({ APIStatus: CallStatus.ERROR }));
+				.catch(e => this.setState({ APIStatus: CallStatus.ERROR,APIMessage:undefined }));
 			this._schemeService
 				.GetAll()
 				.then(res => this.setState({

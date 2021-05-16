@@ -10,7 +10,8 @@ import { OutgoingShipment } from 'Types/Types';
 
 export default class OutgoingService implements IOutgoingShipment {
 	Complete(Id: number, invoices: ShopInvoice[]): Promise<AxiosResponse<void>> {
-		return OutgoingShipmentClient.put(`/complete/${Id}`,invoices);
+		var data = invoices.map(e=>{return {...e,DateCreated:new Date()}});
+		return OutgoingShipmentClient.post(`/complete/${Id}`,data);
 	}
 	Return(Id: number, shipments: ShipmentDTO[]): Promise<AxiosResponse<void>> {
        return OutgoingShipmentClient.put(`/Return/${Id}`,shipments);

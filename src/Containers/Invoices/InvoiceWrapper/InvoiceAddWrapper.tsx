@@ -49,9 +49,10 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 	}
 	AddASubscriber = () => {
 		const { InvoiceMappedObserver, Mediator } = this.state;
+		const { OutgoingShipmentId } = this.state;
 		const NewSubscriptionId = Math.random();
 		InvoiceMappedObserver.set(NewSubscriptionId, []);
-		const NewSubscriber: ShopInvoice = { Invoices: [], SchemeId: undefined, ShopId: undefined };
+		const NewSubscriber: ShopInvoice = { Invoices: [], SchemeId: undefined, ShopId: undefined, DateCreated: new Date(), OutgoingShipmentId: OutgoingShipmentId! };
 		this.setState(({ ShopSubscribers: ShopSubscriber }) => {
 			return { ShopSubscribers: [...ShopSubscriber, { ShopInvcoice: NewSubscriber, SubscriptionId: NewSubscriptionId }] };
 		});
@@ -197,14 +198,14 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 	HandleSubmit = () => {
 		const { ShopSubscribers, OutgoingShipmentId } = this.state;
 		if (OutgoingShipmentId) {
-			this._outgoingService.Complete(OutgoingShipmentId,ShopSubscribers.map(e=>e.ShopInvcoice))
-			.then(() => {
-				const { history } = this.props;
-				history.push("/message/pass", { message: "Completed Sucessfully" });
-			}).catch(() => {
-				const { history } = this.props;
-				history.push("/message/fail", { message: "Some Error Ocurred" });
-			});
+			this._outgoingService.Complete(OutgoingShipmentId, ShopSubscribers.map(e => e.ShopInvcoice))
+				.then(() => {
+					const { history } = this.props;
+					history.push("/message/pass", { message: "Completed Sucessfully" });
+				}).catch(() => {
+					const { history } = this.props;
+					history.push("/message/fail", { message: "Some Error Ocurred" });
+				});
 
 		}
 	};

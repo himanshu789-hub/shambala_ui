@@ -5,7 +5,7 @@ export const AllMockScheme: Scheme[] = [
 	{
 		Id: 1,
 		Date: new Date().toUTCString(),
-		Name: '20%_OFF',
+		Title: '20%_OFF',
 		SchemeType: SchemeKey.PERCENTAGE,
 		Value: 0.2,
 		IsUserDefinedScheme: false,
@@ -13,7 +13,7 @@ export const AllMockScheme: Scheme[] = [
 	{
 		Id: 2,
 		Date: new Date().toUTCString(),
-		Name: '1_CARET_FREE',
+		Title: '1_CARET_FREE',
 		SchemeType: SchemeKey.CARET,
 		Value: 1,
 		IsUserDefinedScheme: true,
@@ -21,7 +21,7 @@ export const AllMockScheme: Scheme[] = [
 	{
 		Id: 3,
 		Date: new Date().toUTCString(),
-		Name: '2_BOTTLE_FREE',
+		Title: '2_BOTTLE_FREE',
 		SchemeType: SchemeKey.BOTTLE,
 		Value: 2,
 		IsUserDefinedScheme: true,
@@ -29,7 +29,7 @@ export const AllMockScheme: Scheme[] = [
 	{
 		Id: 4,
 		Date: new Date().toUTCString(),
-		Name: '3_BOTTLE_FREE',
+		Title: '3_BOTTLE_FREE',
 		SchemeType: SchemeKey.BOTTLE,
 		Value: 3,
 		IsUserDefinedScheme: false,
