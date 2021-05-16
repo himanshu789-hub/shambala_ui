@@ -40,22 +40,22 @@ export default class OutgoingShipmentReturn extends React.Component<IOutgoingShi
 	}
 	handleSubmit = (shipments: ShipmentDTO[]) => {
 		const { OutgoingShipmentId } = this.state;
+	
+		const { history } = this.props;
 		if (OutgoingShipmentId) {
 			this._outgoingService.Return(OutgoingShipmentId, shipments)
 				.then(() => {
-					const { history } = this.props;
-					history.push("/message/pass", { message: "Return Posted Sucessfully" });
+					history.push({pathname:"/message/pass",search:"?message=Return Posted Successfully"});
 				})
 				.catch(() => {
-					const { history } = this.props;
-					history.push("/message/fail", { message: "Some Error Ocurred" });
+					history.push({pathname:"/message/fail", search: "?message=Some Error Ocurred" });
 				});
 		}
 	};
 	render() {
 		const { ApiStatus, Products, OutgoingShipmentStatus } = this.state;
 		let DisplayComponent = <React.Fragment></React.Fragment>;
-		if (OutgoingStatus.PENDING)
+		if (OutgoingShipmentStatus == OutgoingStatus.PENDING)
 			DisplayComponent = <ShipmentList Products={Products} ShouldLimitQuantity={true} handleSubmit={this.handleSubmit} />;
 		else
 			DisplayComponent = <OutgoingStatusDisplay Status={OutgoingShipmentStatus} />

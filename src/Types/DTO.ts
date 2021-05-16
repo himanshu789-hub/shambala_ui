@@ -2,10 +2,10 @@
 import { OutgoingStatus } from 'Enums/Enum';
 import { OutgoingShipment } from './Types';
 
-export type OutgoingShipmentDetails = {
+export type OutgoingShipmentInfo = {
 	Id: number;
-	OutgoingShipmentDetail: OutgoingShipment;
 	Products: Product[];
+	Salesman:SalesmanDTO;
 	Status: OutgoingStatus;
 };
 export type PostOutgoingShipment = {
@@ -82,7 +82,7 @@ export type ProductInfo =
 	}
 export type Shop = {
 	Id: number;
-	Name: string;
+	Title: string;
 	Address: string;
 	IsWithPredinedScheme: boolean;
 	Scheme: Scheme;

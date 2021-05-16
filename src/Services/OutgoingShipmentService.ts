@@ -1,9 +1,7 @@
 import { AxiosResponse } from 'axios';
 import IOutgoingShipment from 'Contracts/services/IOutgoingShipmentService';
-import { OutgoingShipmentValue, OutgoingShipmentProducts } from 'Mock/Shipment';
-import MockAdapter from 'axios-mock-adapter';
 import { OutgoingShipmentClient } from 'HttpClient/Axios';
-import { ShipmentDTO, OutgoingShipmentDetails, PostOutgoingShipment, ShopInvoice } from 'Types/DTO';
+import { ShipmentDTO, OutgoingShipmentInfo, PostOutgoingShipment, ShopInvoice } from 'Types/DTO';
 import { OutgoingShipment } from 'Types/Types';
 
 // const mock = new MockAdapter(OutgoingShipmentClient, { delayResponse: 1000 });
@@ -20,7 +18,7 @@ export default class OutgoingService implements IOutgoingShipment {
 	PostOutgoingShipmentWithProductList(OutgoingShipmentPost: PostOutgoingShipment): Promise<AxiosResponse<void>> {
 		return OutgoingShipmentClient.post('/add', OutgoingShipmentPost );
 	}
-	GetShipmentProductDetailsById(Id: number): Promise<AxiosResponse<OutgoingShipmentDetails>> {
+	GetShipmentProductDetailsById(Id: number): Promise<AxiosResponse<OutgoingShipmentInfo>> {
 		return OutgoingShipmentClient.get(`/GetProductListByOrderId/${Id}`);
 	}
 	GetShipmentByDateAndSalesmanId(SalesmanId: number, Date: Date): Promise<AxiosResponse<OutgoingShipment[]>> {

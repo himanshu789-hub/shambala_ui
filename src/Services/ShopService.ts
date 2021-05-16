@@ -10,6 +10,6 @@ import { Shops } from 'Mock/Shop';
 
 export default class ShopService implements IShopService {
 	GetByName(name: string): Promise<AxiosResponse<Shop[]>> {
-		return ShopClient.get('/getallbyname', { data: { name } });
+		return ShopClient.get('/getallbyname', { params: { name } });
 	}
 }
