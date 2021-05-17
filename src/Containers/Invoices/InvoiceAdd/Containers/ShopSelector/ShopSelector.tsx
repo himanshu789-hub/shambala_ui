@@ -2,7 +2,7 @@ import Loader, { CallStatus } from 'Components/Loader/Loader';
 import IShopService from 'Contracts/services/IShopService';
 import React, { ChangeEvent, MouseEvent, MouseEventHandler, useState } from 'react';
 import ShopService from 'Services/ShopService';
-import { Shop } from 'Types/DTO';
+import { IShopInfoDTO } from 'Types/DTO';
 import './ShopSelector.css';
 
 type ShopSelectorProps = {
@@ -10,7 +10,7 @@ type ShopSelectorProps = {
 };
  const ShopSelector  = function ShopSelector(props: ShopSelectorProps) {
 	const [shopId, setShopId] = useState<number>(-1);
-	const [shops, setShopList] = useState<Shop[]>([]);
+	const [shops, setShopList] = useState<IShopInfoDTO[]>([]);
 	const [name, setName] = useState<string>('');
 	const [showDropdown, setShouldDropdownDisplay] = useState<boolean>(false);
 	const [APIStatus, setAPIStatus] = useState<number>(CallStatus.EMPTY);

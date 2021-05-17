@@ -26,26 +26,27 @@ const Nav = React.memo(function Nav() {
 						</li> */}
 					</ul>
 				</li>
-				{/* <li className='nav-item parent'>
+				<li className='nav-item parent'>
 					<Link className='nav-link' to='#'>
 						<span className='d-inline-flex flex-column justify-content-center align-items-center'>
 							<i className='fa fa-cubes fa-2x'></i>
-							<label>Customer</label>
+							<label>Shops</label>
 						</span>
 					</Link>
 					<ul className='child dropdown-menu'>
 						<li className='dropdown-item'>
-							<Link to='/incoming/add' className='nav-link' >
+							<Link to='/shop/add' className='nav-link' >
 							<i className='fa fa-plus'></i> Add
                             </Link>
 						</li>
 						<li className='dropdown-item'>
-							<Link to='/incoming/search' className='nav-link' >
+							<Link to='/shop/search' className='nav-link' >
 							<i className='fa fa-list-alt'></i> Search
                             </Link>
 						</li>
 					</ul>
 				</li>
+				{/* 
 				<li className='nav-item parent'>
 					<a className='nav-link' href='#'>
 						<span className='d-inline-flex flex-column justify-content-center align-items-center'>

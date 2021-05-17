@@ -5,14 +5,13 @@ import { log } from 'node:console';
 import React, { ChangeEvent, Fragment, useEffect, useState } from 'react';
 import SchemeService from 'Services/SchemeService';
 import { Scheme } from 'Types/DTO';
-import SchemeList from './Components/SchemeList/SchmeList';
+import SchemeList from '../../../../../Components/SchemeList/SchmeList';
 import SchemeOptions from './Components/SchemeOptions/SchemeOptions';
 type InvoiceSchemeProps = {
 	ShopId: number | undefined;
 	handleSchemeSelection: (name: string, value: any) => void;
 };
 type InvoiceSchemeState = {
-	SchemeList: Scheme[];
 	SelectedScheme?: Scheme;
 	APIStatus: number;
 	APIMessage: string | undefined;
@@ -25,17 +24,12 @@ export default class InvoiceScheme extends React.PureComponent<InvoiceSchemeProp
 	constructor(props: InvoiceSchemeProps) {
 		super(props);
 		this.state = {
-			SchemeList: [],
 			APIStatus: CallStatus.LOADING,
 			ChoosenSchemeId: -1,
 			APIMessage: 'Gethering Selected Shop Scheme',
 			ChoosenSchemeEnumType: -1,
 		};
 		this._schemeService = new SchemeService();
-	}
-	componentWillUnmount()
-	{
-		console.log('Invoice Scheme Unmounted');
 	}
 	handleChange = (name: string, value: any) => {
 		switch (name) {
@@ -59,7 +53,7 @@ export default class InvoiceScheme extends React.PureComponent<InvoiceSchemeProp
 		this.props.handleSchemeSelection('SchemeId', Id);
 	};
 	render() {
-		const { APIStatus, APIMessage, SelectedScheme, SchemeList: Lists, ChoosenSchemeId: ChoosenScheme, ChoosenSchemeEnumType: ChoosenSchemeType } = this.state;
+		const { APIStatus, APIMessage, SelectedScheme, ChoosenSchemeId: ChoosenScheme, ChoosenSchemeEnumType: ChoosenSchemeType } = this.state;
 		if (this.props.ShopId == -1) return <small className='form-text text-danger'>Shop not Selected</small>;
 		return (
 			<Loader Status={APIStatus} Message={APIMessage}>
@@ -69,7 +63,7 @@ export default class InvoiceScheme extends React.PureComponent<InvoiceSchemeProp
 						ShouldDisabledFixed={!SelectedScheme} />
 					{
 						ChoosenSchemeType === SchemeType.VARIABLE && (
-							<SchemeList SchemeList={Lists} handleSelection={this.handleSelection} />
+							<SchemeList SchemeId={ChoosenScheme} handleSelection={this.handleSelection} />
 						)
 					}
 				</React.Fragment>
@@ -84,19 +78,11 @@ export default class InvoiceScheme extends React.PureComponent<InvoiceSchemeProp
 				.GetByShopId(ShopId)
 				.then(res => {
 					const choosenSchemeType = res.data ? SchemeType.FIXED : SchemeType.VARIABLE;
-					this.setState({ SelectedScheme: res.data, APIMessage: 'Gathering All Scheme', ChoosenSchemeEnumType: choosenSchemeType });
+					this.setState({ SelectedScheme: res.data,APIStatus:CallStatus.LOADED,ChoosenSchemeId:res.data.Id??-1, APIMessage: undefined, ChoosenSchemeEnumType: choosenSchemeType });
 					if (choosenSchemeType==SchemeType.FIXED)
 						this.props.handleSchemeSelection('SchemeId', res.data.Id);
 				})
 				.catch(e => this.setState({ APIStatus: CallStatus.ERROR,APIMessage:undefined }));
-			this._schemeService
-				.GetAll()
-				.then(res => this.setState({
-					SchemeList: res.data,
-					APIMessage: undefined, APIStatus: CallStatus.LOADED
-				}))
-				.catch(e => this.setState({ APIStatus: CallStatus.ERROR }));
-
 		}
 	}
 }

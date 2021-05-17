@@ -1,6 +1,6 @@
 import { AxiosResponse } from "axios";
-import { Shop } from "Types/DTO";
+import { IShopInfoDTO } from "Types/DTO";
 
 export default interface IShopService {
-    GetByName(name:string):Promise<AxiosResponse<Shop[]>>;
+    GetByName(name:string):Promise<AxiosResponse<IShopInfoDTO[]>>;
 }

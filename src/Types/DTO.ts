@@ -5,7 +5,7 @@ import { OutgoingShipment } from './Types';
 export type OutgoingShipmentInfo = {
 	Id: number;
 	Products: Product[];
-	Salesman:SalesmanDTO;
+	Salesman: SalesmanDTO;
 	Status: OutgoingStatus;
 };
 export type PostOutgoingShipment = {
@@ -72,8 +72,8 @@ export type ShopInvoice = {
 	ShopId: number | undefined;
 	SchemeId: number | undefined;
 	Invoices: SoldItem[];
-	DateCreated:Date;
-	OutgoingShipmentId:number;
+	DateCreated: Date;
+	OutgoingShipmentId: number;
 };
 export type ProductInfo =
 	{
@@ -82,10 +82,14 @@ export type ProductInfo =
 		CaretSize: number;
 		FlavourInfos: FlavourInfo[];
 	}
-export type Shop = {
+export interface IShopBaseDTO {
 	Id: number;
 	Title: string;
 	Address: string;
-	IsWithPredinedScheme: boolean;
+}
+export interface IShopDTO extends IShopBaseDTO {
+	SchemeId: number;
+}
+export interface IShopInfoDTO extends IShopBaseDTO {
 	Scheme: Scheme;
 };
