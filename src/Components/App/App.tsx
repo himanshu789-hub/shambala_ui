@@ -45,7 +45,6 @@ export default class App extends React.Component {
 				<Route path="/shop">
 					<Shop />
 				</Route>
-				
 			</React.Fragment>
 		);
 	}
