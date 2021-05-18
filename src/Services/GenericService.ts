@@ -6,6 +6,9 @@ export default abstract class GenericService<T> implements IGenericService<T> {
     constructor(axios: AxiosInstance) {
         this.Client = axios;
     }
+    Update(Shop:T): Promise<AxiosResponse<void>> {
+        return this.Client.put("/update",Shop);
+    }
     GetById(Id: Number): Promise<AxiosResponse<T>> {
         return this.Client.get(`/getbyid/${Id}`);
     }

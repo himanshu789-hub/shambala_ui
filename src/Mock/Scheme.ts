@@ -1,7 +1,7 @@
 import { SchemeKey } from 'Enums/Enum';
-import { Scheme } from 'Types/DTO';
+import { SchemeDTO } from 'Types/DTO';
 
-export const AllMockScheme: Scheme[] = [
+export const AllMockScheme: SchemeDTO[] = [
 	{
 		Id: 1,
 		Date: new Date().toUTCString(),

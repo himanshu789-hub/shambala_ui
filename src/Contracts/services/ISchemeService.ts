@@ -1,7 +1,8 @@
 import { AxiosResponse } from 'axios';
-import { Scheme } from 'Types/DTO';
+import { SchemeDTO } from 'Types/DTO';
+import IGenericService from './IGenericService';
 
-export default interface ISchemeService {
-   GetByShopId(shopId: number): Promise<AxiosResponse<Scheme>>;
-   GetAll(): Promise<AxiosResponse<Scheme[]>>;
+export default interface ISchemeService extends IGenericService<SchemeDTO>{
+   GetByShopId(shopId: number): Promise<AxiosResponse<SchemeDTO>>;
+   GetAll(): Promise<AxiosResponse<SchemeDTO[]>>;
 }

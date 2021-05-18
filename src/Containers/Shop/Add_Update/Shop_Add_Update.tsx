@@ -1,20 +1,20 @@
-import { Heading } from 'Components/Miscellaneous/Miscellaneous';
+import { Heading, Spinner } from 'Components/Miscellaneous/Miscellaneous';
 import SchemeList from 'Components/SchemeList/SchmeList';
 import React from 'react';
 import { IShopDTO } from 'Types/DTO';
 import { getARandomNumber } from 'Utilities/Utilities';
-import { RouteComponentProps, useRouteMatch } from 'react-router';
+import { RouteComponentProps, useParams, useRouteMatch } from 'react-router';
 import ShopService from 'Services/ShopService';
 import Loader, { ApiStatusInfo, CallStatus } from 'Components/Loader/Loader';
 
 
 export default function Shop_Add_Update(props: RouteComponentProps) {
-    const match = useRouteMatch<{ id?: string }>();
-    const { params: { id } } = match;
-    if (!id)
+    const params = useParams<{ id?: string }>();
+    if (!(params.id))
         return <Add_Update  {...props} />
-    if (Number.parseInt(id)) {
-        return <Add_Update  {...props} ShopId={Number.parseInt(id)} />
+    const Id = params.id!;
+    if (Number.parseInt(Id)) {
+        return <Add_Update  {...props} ShopId={Number.parseInt(Id)} />
     }
     else
         return <div className="alert alter-danger">Invalid Route</div>;
@@ -29,19 +29,22 @@ type ShopFormProps = {
     Shop: IShopDTO;
     IsOnUpdate: boolean;
     ErrorMessage: ErrorMessage;
+    ShouldDisableButton: boolean;
     handleChange(e: React.ChangeEvent<HTMLInputElement>): void;
     handleSelection(Id: number): void;
     handleSubmit(): void;
+    ShowSpinner: boolean;
 }
 function ShopForm(props: ShopFormProps) {
     const { Shop, IsOnUpdate, handleChange, ErrorMessage, handleSelection, handleSubmit } = props;
 
     return (<div className="shop">
         <Heading label={IsOnUpdate ? "Update A Shop" : "Add A Shop"} />
-        <div className="container row">
+        <div className="container d-flex justify-content-center">
             <div className="col-5">
                 <div className="form-group row">
-                    <label htmlFor="inputTitle" className="col-sm-2 col-form-label">Name</label>
+                    <label htmlFor="inputTitle" className="col-sm-2 col-form-label">Name <Spinner show={props.ShowSpinner} />
+                    </label>
                     <div className="col-sm-10">
                         <input type="text" className="form-control" value={Shop.Title}
                             onChange={handleChange}
@@ -58,15 +61,14 @@ function ShopForm(props: ShopFormProps) {
                     </div>
                 </div>
                 <div className="form-group row">
-                    <label htmlFor="inputScheme" className="col-sm-2 col-form-label">Scheme</label>
+                    <label htmlFor="inputScheme" className="col-sm-2 col-form-label"></label>
                     <div className="col-sm-10">
-                        <div className="small-load">
-                            <SchemeList SchemeId={Shop.SchemeId} handleSelection={handleSelection} />
-                        </div>
+                            <SchemeList SchemeId={Shop.SchemeId ?? -1} handleSelection={handleSelection} />
                     </div>
                 </div>
                 <div className="form-group row justify-content-center">
-                    <button type="button" disabled={Shop.SchemeId < -1} className="btn btn-outline-success col-10" onClick={handleSubmit}>Submit</button>
+                    <button type="button" disabled={Shop.SchemeId! < -1} className="btn btn-outline-success col-10"
+                        onClick={handleSubmit}>Submit</button>
                 </div>
             </div>
             <div className="col-7">
@@ -82,6 +84,8 @@ type AddState = {
     Shop: IShopDTO;
     ErrorMessage: ErrorMessage;
     RequestInfo: ApiStatusInfo;
+    ShowSpinner: boolean;
+    ShouldDisableButton: boolean;
 }
 
 class Add_Update extends React.Component<IAddProps, AddState>
@@ -92,7 +96,7 @@ class Add_Update extends React.Component<IAddProps, AddState>
         this.state = {
             Shop: { Address: '', Id: getARandomNumber(), SchemeId: -1, Title: '' },
             ErrorMessage: { Address: '', Name: '' },
-            RequestInfo: { Status: CallStatus.EMPTY, Message: '' }
+            RequestInfo: { Status: CallStatus.EMPTY, Message: '' }, ShowSpinner: false, ShouldDisableButton: false
         }
         this.shopService = new ShopService();
     }
@@ -101,15 +105,18 @@ class Add_Update extends React.Component<IAddProps, AddState>
         this.setState(({ Shop }) => { return { Shop: { ...Shop, [name]: value } } })
     }
     handleSelection = (Id: number) => {
-        this.setState(({ Shop }) => { return { Shop: { ...Shop, SchemeId: Id } } });
+        this.setState(({ Shop }) => { return { Shop: { ...Shop, SchemeId: Id<-1?null:Id }, ShouldDisableButton: Id < -1 } });
     }
     IsAllValid = (): boolean => {
         let IsAllValid = true;
         const { Shop } = this.state;
         const ErrorMessage: ErrorMessage = { Address: '', Name: '' };
-        if (Shop.Title.length == 0)
+        if (Shop.Title.length == 0) {
             ErrorMessage.Name = "Please Enter A Name";
-        else { ErrorMessage.Name = ''; IsAllValid = false; }
+
+            IsAllValid = false;
+        }
+        else { ErrorMessage.Name = ''; }
         if (Shop.Address.length == 0) {
             ErrorMessage.Address = "Please  Enter Address Detail";
             IsAllValid = false;
@@ -119,9 +126,32 @@ class Add_Update extends React.Component<IAddProps, AddState>
         this.setState({ ErrorMessage: ErrorMessage });
         return IsAllValid;
     }
+
     handleSubmit = () => {
         if (this.IsAllValid()) {
+            const { history } = this.props;
+            const { Shop } = this.state;
+                   
+            this.setState({ ShowSpinner: true })
+            const IsOnUpdate = this.props.ShopId != undefined;
+            
+            if(!IsOnUpdate)
+             this.shopService.IsNameAlreadyExists(Shop.Title).
+                then((res) => {
+                    this.setState({ ShowSpinner: false });
 
+                    if (!res.data)
+                        return this.shopService.Add(Shop)
+                            .then((res) => history.push({ pathname: "/message/pass", search: "?message=Shop Added" }));
+                    else {
+                        this.setState({ ErrorMessage: { Name: "Name Already Exists", Address: '' } });
+                    }
+                })
+                .catch(() => history.push({ pathname: "/message/fail" }));
+            else 
+             this.shopService.Update(Shop)
+             .then((res) => history.push({ pathname: "/message/pass", search: "?message=Shop Updated" }))
+             .catch(() => history.push({ pathname: "/message/fail" }));
         }
     }
 
@@ -130,15 +160,15 @@ class Add_Update extends React.Component<IAddProps, AddState>
         const { ShopId } = this.props;
         const IsOnUpdate = ShopId != undefined;
         // if DisplayShopForm is with a function invocation inside, it will be re-declared.Same in case of HOC evaluation
-        const DisplayShopForm = <ShopForm handleSubmit={this.handleSubmit}
+        const DisplayShopForm = <ShopForm ShowSpinner={this.state.ShowSpinner} handleSubmit={this.handleSubmit}
             handleSelection={this.handleSelection} handleChange={this.handleChange}
-            ErrorMessage={ErrorMessage} Shop={Shop} IsOnUpdate={IsOnUpdate} />
+            ErrorMessage={ErrorMessage} Shop={Shop} IsOnUpdate={IsOnUpdate} ShouldDisableButton={this.state.ShouldDisableButton} />
 
         if (IsOnUpdate)
-            return <Loader Status={RequestInfo.Status} Message={RequestInfo.Message}>
-                {DisplayShopForm}
-            </Loader>
-        return { DisplayShopForm };
+            return (<Loader Status={RequestInfo.Status} Message={RequestInfo.Message}>
+                <React.Fragment>{DisplayShopForm}</React.Fragment>
+            </Loader>);
+        return <React.Fragment>{DisplayShopForm}</React.Fragment>;
     }
     componentDidMount() {
         const { ShopId } = this.props;

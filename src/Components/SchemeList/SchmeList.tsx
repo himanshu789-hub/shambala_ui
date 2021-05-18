@@ -1,7 +1,7 @@
 import Loader, { ApiStatusInfo, CallStatus } from 'Components/Loader/Loader';
 import { ChangeEvent, useEffect, useState } from 'react';
 import SchemeService from 'Services/SchemeService';
-import { Scheme } from 'Types/DTO';
+import { SchemeDTO } from 'Types/DTO';
 
 type VariableSectionProps = {
 	handleSelection: (Id: number) => void;
@@ -9,7 +9,7 @@ type VariableSectionProps = {
 };
 const SchemeList = function (props: VariableSectionProps) {
 	const [schemeListRequestStatus, setSchemListRequestStatus] = useState<ApiStatusInfo>({ Status: CallStatus.EMPTY });
-	const [SchemeList, setSchemeList] = useState<Scheme[]>([]);
+	const [SchemeList, setSchemeList] = useState<SchemeDTO[]>([]);
 	const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
 		const selectedScheme = Number.parseInt(e.currentTarget.value);
 		props.handleSelection(selectedScheme);
@@ -27,10 +27,10 @@ const SchemeList = function (props: VariableSectionProps) {
 	return (
 		<Loader Status={schemeListRequestStatus.Status} Message={schemeListRequestStatus.Message}>
 			<div className='variable-scheme-section form-group'>
-				<small>Please Select a Scheme : </small>
+				<small>Select a Scheme : </small>
 				<select name='SchemeId' className="form-control-sm" onChange={handleChange} value={props.SchemeId ?? -1}>
-					<option disabled value="-1">
-						-- Select A Scheme Type --
+					<option value="-1">
+						No Scheme
 				</option>
 					{SchemeList.map((value, index) => (
 						<option value={value.Id} key={index}>{value.Title}</option>

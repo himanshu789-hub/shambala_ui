@@ -7,6 +7,9 @@ import GenericService from './GenericService';
 export default class ShopService extends GenericService<IShopDTO> implements IShopService {
 	constructor() {
 		super(ShopClient)
+	} 
+	IsNameAlreadyExists(name: string): Promise<AxiosResponse<boolean>> {
+		return ShopClient.get('/IsNameAlreadyExists', { params: { name } });
 	};
 
 	GetByName(name: string): Promise<AxiosResponse<IShopInfoDTO[]>> {

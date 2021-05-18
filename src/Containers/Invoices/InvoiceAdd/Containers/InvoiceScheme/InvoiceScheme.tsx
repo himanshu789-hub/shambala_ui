@@ -1,10 +1,9 @@
 import Loader, { CallStatus } from 'Components/Loader/Loader';
 import ISchemeService from 'Contracts/services/ISchemeService';
 import { SchemeType } from 'Enums/Enum';
-import { log } from 'node:console';
 import React, { ChangeEvent, Fragment, useEffect, useState } from 'react';
 import SchemeService from 'Services/SchemeService';
-import { Scheme } from 'Types/DTO';
+import { SchemeDTO } from 'Types/DTO';
 import SchemeList from '../../../../../Components/SchemeList/SchmeList';
 import SchemeOptions from './Components/SchemeOptions/SchemeOptions';
 type InvoiceSchemeProps = {
@@ -12,7 +11,7 @@ type InvoiceSchemeProps = {
 	handleSchemeSelection: (name: string, value: any) => void;
 };
 type InvoiceSchemeState = {
-	SelectedScheme?: Scheme;
+	SelectedScheme?: SchemeDTO;
 	APIStatus: number;
 	APIMessage: string | undefined;
 	ChoosenSchemeId: number;
@@ -37,7 +36,7 @@ export default class InvoiceScheme extends React.PureComponent<InvoiceSchemeProp
 				const schemeenumtype = value;
 
 				if (schemeenumtype === SchemeType.FIXED) {
-					this.handleSelection((this.state.SelectedScheme as Scheme).Id);
+					this.handleSelection((this.state.SelectedScheme as SchemeDTO).Id);
 				}
 				else {
 					this.handleSelection(-1);

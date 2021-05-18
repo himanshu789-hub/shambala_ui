@@ -1,5 +1,5 @@
 
-import { OutgoingStatus } from 'Enums/Enum';
+import { OutgoingStatus, SchemeKey } from 'Enums/Enum';
 import { OutgoingShipment } from './Types';
 
 export type OutgoingShipmentInfo = {
@@ -52,12 +52,12 @@ export type Product = {
 	Flavours: Flavour[];
 };
 
-export type Scheme = {
+export type SchemeDTO = {
 	Id: number;
 	Title: string;
 	Date: string;
 	IsUserDefinedScheme: boolean;
-	SchemeType: number;
+	SchemeType: SchemeKey;
 	Value: number;
 };
 
@@ -88,8 +88,8 @@ export interface IShopBaseDTO {
 	Address: string;
 }
 export interface IShopDTO extends IShopBaseDTO {
-	SchemeId: number;
+	SchemeId: number|null;
 }
 export interface IShopInfoDTO extends IShopBaseDTO {
-	Scheme: Scheme;
+	Scheme: SchemeDTO;
 };
