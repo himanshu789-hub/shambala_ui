@@ -1,8 +1,9 @@
 import { Heading, Spinner } from 'Components/Miscellaneous/Miscellaneous';
 import { SchemeKey, SchemeType } from 'Enums/Enum';
 import React from 'react';
+import { RouteComponentProps } from 'react-router';
+import SchemeService from 'Services/SchemeService';
 import { SchemeDTO } from 'Types/DTO';
-
 
 type ErrorMessage = {
     Name: string;
@@ -79,13 +80,15 @@ function ShowForm(props: IShowFormProps) {
         </div>
     </div>);
 }
-interface ISchemeAddProps {
+interface ISchemeAddProps extends RouteComponentProps {
 
 }
 interface ISchemeState extends IProps {
 
 }
 export default class SchemeAdd extends React.Component<ISchemeAddProps, ISchemeState>{
+
+    schemeService: SchemeService;
     constructor(props: ISchemeAddProps) {
         super(props);
         this.state = {
@@ -93,17 +96,62 @@ export default class SchemeAdd extends React.Component<ISchemeAddProps, ISchemeS
             Scheme: { Date: new Date().toJSON(), Id: 782, IsUserDefinedScheme: true, SchemeType: SchemeKey.PERCENTAGE, Title: '', Value: 0 },
             ShowSpinner: false
         }
+        this.schemeService = new SchemeService();
+    }
+    provideValidValue = (name: string, input: string): any => {
+        const { Scheme: { Value, SchemeType } } = this.state;
+        let Result: any = input;
+        if (name == "Value") {
+            if ((SchemeType === SchemeKey.PERCENTAGE && input.search(/[A-Za-z ]/) != -1) || (input.search(/[A-Za-z \.]/) != -1)) {
+                Result = Value;
+            }
+            else Result = Number.parseInt(Result);
+        }
+        return Result;
     }
     handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { currentTarget: { name, value } } = e
-        let Value = value;
-        if (name == "Value" && value.search(/[A-Za-z ]/)!=-1) {
-            Value = this.state.Scheme.Value+'';
-        }
+        let Value: any = this.provideValidValue(name, value);
         this.setState(({ Scheme }) => { return { Scheme: { ...Scheme, [name]: Value } } });
     }
+
+    IsValueValid = (): { result: boolean, msg: string } => {
+        const { Scheme: { Value, SchemeType } } = this.state;
+        let IsValueValid = true;
+        let msg = '';
+        if (SchemeType == SchemeKey.PERCENTAGE) {
+            if (Value > 100) {
+                msg = "Value Must Be Less Than 100";
+                IsValueValid = false;
+            }
+        }
+        return { result: IsValueValid, msg };
+    }
+    IsAllValid = (): boolean => {
+        const { Scheme } = this.state;
+        let IsAllValid = true;
+        const Error: ErrorMessage = this.state.ErrorMessage;
+        if (Scheme.Title.length == 0) {
+            IsAllValid = false;
+            Error.Name = "Please Enter A Scheme Name";
+        }
+        else Error.Name = '';
+        const ValueIsValidResult = this.IsValueValid();
+        if (!ValueIsValidResult.result)
+            IsAllValid = false;
+        Error.Value = ValueIsValidResult.msg;
+
+        this.setState({ ErrorMessage: Error });
+        return IsAllValid;
+    }
     handleSubmit = () => {
-          
+        if (this.IsAllValid()) {
+            const { Scheme } = this.state;
+            const { history } = this.props;
+            this.schemeService.Add(Scheme)
+                .then(res => history.push({ pathname: "/message/pass", search: "?message=Added Sucesffuly" }))
+                .catch(() => history.push({ pathname: "/message/fail" }));
+        }
     }
     render() {
         const { ErrorMessage, ShowSpinner, Scheme } = this.state;
