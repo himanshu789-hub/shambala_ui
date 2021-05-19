@@ -46,7 +46,7 @@ const Nav = React.memo(function Nav() {
 						</li>
 					</ul>
 				</li>
-				{/* 
+				
 				<li className='nav-item parent'>
 					<a className='nav-link' href='#'>
 						<span className='d-inline-flex flex-column justify-content-center align-items-center'>
@@ -56,17 +56,38 @@ const Nav = React.memo(function Nav() {
 					</a>
 					<ul className='child dropdown-menu'>
 						<li className='dropdown-item'>
-							<Link to='/incoming/add' className='nav-link' >
+							<Link to='/salesman/add' className='nav-link' >
 							<i className='fa fa-plus'></i> Add
                             </Link>
 						</li>
 						<li className='dropdown-item'>
-							<Link to='/incoming/search' className='nav-link' >
+							<Link to='/salesman/search' className='nav-link' >
 							<i className='fa fa-list-alt'></i> Search
                             </Link>
 						</li>
 					</ul>
-				</li> */}
+				</li>
+				<li className='nav-item parent'>
+					<a className='nav-link' href='#'>
+						<span className='d-inline-flex flex-column justify-content-center align-items-center'>
+							<i className='fa fa-percent fa-2x'></i>
+							<label>Scheme</label>
+						</span>
+					</a>
+					<ul className='child dropdown-menu'>
+						<li className='dropdown-item'>
+							<Link to='/scheme/add' className='nav-link' >
+							<i className='fa fa-plus'></i> Add
+                            </Link>
+						</li>
+						<li className='dropdown-item'>
+							<Link to='/scheme/search' className='nav-link' >
+							<i className='fa fa-list-alt'></i> Search
+                            </Link>
+						</li>
+					</ul>
+				</li>
+				
 				<li className='nav-item parent'>
 					<NavLink className='nav-link' activeClassName="active" to="/outgoing">
 						<span className='d-inline-flex flex-column justify-content-center align-items-center'>

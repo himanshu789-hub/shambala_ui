@@ -1,11 +1,12 @@
 import { Route, RouteChildrenProps, RouteComponentProps, Switch, useRouteMatch } from "react-router";
 import Shop_Add_Update from "Containers/Shop/Add_Update/Shop_Add_Update";
+import {Add_Update_Wrapper} from '../Miscellaneous/Miscellaneous';
 export default function Shop() {
     const match = useRouteMatch();
     return (<div className='shop-add'>
         <Switch>
-        <Route path={match.path + '/add'} children={(props:RouteComponentProps) => <Shop_Add_Update {...props} />} />
-        <Route path={match.path + '/update/:id'} children={(props:RouteComponentProps<{id:string}>) => <Shop_Add_Update {...props} />} />
+        <Route path={match.path + '/add'} children={(props:RouteComponentProps) => Add_Update_Wrapper(props,Shop_Add_Update)} />
+        <Route path={match.path + '/update/:id'} children={(props:RouteComponentProps<{id:string}>) => Add_Update_Wrapper(props,Shop_Add_Update)}  />
         <Route path={match.path + '/search'} >
         </Route>
         </Switch>

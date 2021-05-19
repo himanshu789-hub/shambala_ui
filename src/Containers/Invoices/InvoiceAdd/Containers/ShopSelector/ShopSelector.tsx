@@ -2,7 +2,7 @@ import Loader, { CallStatus } from 'Components/Loader/Loader';
 import IShopService from 'Contracts/services/IShopService';
 import React, { ChangeEvent, MouseEvent, MouseEventHandler, useState } from 'react';
 import ShopService from 'Services/ShopService';
-import { IShopInfoDTO } from 'Types/DTO';
+import { IShopDTO } from 'Types/DTO';
 import './ShopSelector.css';
 
 type ShopSelectorProps = {
@@ -10,7 +10,7 @@ type ShopSelectorProps = {
 };
  const ShopSelector  = function ShopSelector(props: ShopSelectorProps) {
 	const [shopId, setShopId] = useState<number>(-1);
-	const [shops, setShopList] = useState<IShopInfoDTO[]>([]);
+	const [shops, setShopList] = useState<IShopDTO[]>([]);
 	const [name, setName] = useState<string>('');
 	const [showDropdown, setShouldDropdownDisplay] = useState<boolean>(false);
 	const [APIStatus, setAPIStatus] = useState<number>(CallStatus.EMPTY);
@@ -37,7 +37,7 @@ type ShopSelectorProps = {
 					setName(name);
 					setShouldDropdownDisplay(true);
 				
-					ShopServiceHandler.GetByName(name).then(res => {
+					ShopServiceHandler.GetAllByName(name).then(res => {
 						setShopList(res.data);
 						setAPIStatus(CallStatus.LOADED);
 					}).catch(()=>setAPIStatus(CallStatus.ERROR));

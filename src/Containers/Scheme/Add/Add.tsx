@@ -39,22 +39,22 @@ function ShowForm(props: IShowFormProps) {
                     </label>
                     <div className="col-sm-10">
                         <select name="SchemeType" className="form-control" value={Scheme.SchemeType} onChange={handleChange} id="inputSchemeType">
-                            {Object.entries(SchemeType).map(({ "0": name, "1": value }) => <option value={value} key={name}>{name}</option>)}
+                            {Object.entries(SchemeKey).map(({ "0": name, "1": value }) => <option value={value} key={name}>{name}</option>).splice(Object.keys(SchemeKey).length / 2)}
                         </select>
                     </div>
                 </div>
                 <div className="form-group row">
                     <label className="col-sm-2 col-form-label">Defined By
                     </label>
-                    <div className="col-sm-10 d-inline-flex justify-content-center" >
+                    <div className="col-sm-10 d-inline-flex justify-content-around" >
                         <div className="form-check">
-                            <input className="form-check-input" type="radio" name="" checked={!Scheme.IsUserDefinedScheme} value="0" id="defaultCheck1" />
+                            <input className="form-check-input" onChange={handleChange} type="radio" name="IsUserDefinedScheme" checked={!Scheme.IsUserDefinedScheme} value="0" id="defaultCheck1" />
                             <label className="form-check-label" htmlFor="defaultCheck1">
                                 Company
                             </label>
                         </div>
                         <div className="form-check">
-                            <input className="form-check-input" type="radio" value="1" checked={Scheme.IsUserDefinedScheme} id="defaultCheck2" />
+                            <input className="form-check-input" onChange={handleChange} type="radio" value="1" name="IsUserDefinedScheme" checked={Scheme.IsUserDefinedScheme} id="defaultCheck2" />
                             <label className="form-check-label" htmlFor="defaultCheck2" >
                                 Our Firm
                             </label>
@@ -64,7 +64,7 @@ function ShowForm(props: IShowFormProps) {
                 <div className="form-group row">
                     <label htmlFor="inputValue" className="col-sm-2 col-form-label">Quota</label>
                     <div className="col-sm-10">
-                        <input type="text" className="form-control" onChange={handleChange} id="inputAddress" name="Value" value={Scheme.Value}
+                        <input type="text" className="form-control"  onChange={handleChange} id="inputAddress" name="Value" value={Scheme.Value}
                             placeholder="Scheme Quota" />
                         <small className="text-danger">{ErrorMessage.Value}</small>
                     </div>
@@ -75,7 +75,7 @@ function ShowForm(props: IShowFormProps) {
                 </div>
             </div>
             <div className="col-7">
-                <img src="/scheme.svg" width="100%" />
+                <img src="/discount.svg" width="100%" />
             </div>
         </div>
     </div>);
@@ -102,11 +102,13 @@ export default class SchemeAdd extends React.Component<ISchemeAddProps, ISchemeS
         const { Scheme: { Value, SchemeType } } = this.state;
         let Result: any = input;
         if (name == "Value") {
-            if ((SchemeType === SchemeKey.PERCENTAGE && input.search(/[A-Za-z ]/) != -1) || (input.search(/[A-Za-z \.]/) != -1)) {
+            if ((SchemeType === SchemeKey.PERCENTAGE && input.search(/[\D ]/) != -1) || (input.search(/[\D ]/) != -1)) {
                 Result = Value;
             }
             else Result = Number.parseInt(Result);
         }
+        else if (name === "IsUserDefinedScheme")
+            Result = input == "1";
         return Result;
     }
     handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

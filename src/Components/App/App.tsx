@@ -8,6 +8,8 @@ import Invoice from 'Components/Invoice/Invoice';
 import MessageModal from 'Components/MessageModal/MessageModal';
 import SearchProduct from 'Containers/SearchProduct/SearchProduct';
 import Shop from 'Components/Shop/Shop';
+import Scheme from 'Components/Scheme/Scheme';
+import Salesman from 'Components/Salesman/Salesman';
 
 
 function MessageRoute() {
@@ -45,6 +47,14 @@ export default class App extends React.Component {
 				<Route path="/shop">
 					<Shop />
 				</Route>
+				<Route path="/scheme">
+					<Scheme />
+				</Route>
+				<Route path="/salesman">
+					<Salesman />
+				</Route>
+				
+				
 			</React.Fragment>
 		);
 	}
