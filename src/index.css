@@ -96,3 +96,15 @@ transition:opacity 1s linear;
 	100% {opacity: 0;display:none;;} 
 
  }
+ .empty-table-body{
+   width: 100%;
+   height:540px;
+ }
+ .text-danger-grad
+ {
+	background:red;
+	background-image: linear-gradient(to right, #FF4B2B, #FF416C);
+	-webkit-background-clip:text;
+	-webkit-text-fill-color:transparent;
+	background-clip: text;
+ }

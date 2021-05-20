@@ -89,15 +89,20 @@ export default class Salesman_Add_Update extends React.Component<Add_Update_Prop
                 this.salesmanService.IsNameExists(FullName, Id)
                     .then(res => {
                         if (res.data)
-                            this.setState(({ ErrorMessage }) => { return { ErrorMessage: { Name: "Name Already Exists" } } });
+                            this.setState({ ErrorMessage: { Name: "Name Already Exists" } });
                         else
-                            return this.salesmanService.Add(Salesman);
+                            return this.salesmanService.Update(Salesman);
                     })
                     .then(() => history.push({ pathname: "/message/pass", search: "?message=Salesman Updated Successfully" }))
                     .catch(() => history.push({ pathname: "/message/fail" }));
             }
             else {
-                this.salesmanService.Add(Salesman)
+                this.salesmanService.IsNameExists(FullName).then(res => {
+                    if (res.data)
+                        this.setState({ ErrorMessage: { Name: "Name Already Exists" } });
+                    else
+                        return this.salesmanService.Add(Salesman);
+                })
                     .then(() => history.push({ pathname: "/message/pass", search: "?message=Salesman Added Successfully" }))
                     .catch(() => history.push({ pathname: "/message/fail" }));
             }
@@ -111,6 +116,6 @@ export default class Salesman_Add_Update extends React.Component<Add_Update_Prop
         if (Id != undefined)
             this.salesmanService.GetById(Id)
                 .then(res => this.setState({ Salesman: res.data }))
-                .catch(()=>this.props.history.push({pathname:"/message/fail"}));
+                .catch(() => this.props.history.push({ pathname: "/message/fail" }));
     }
 }

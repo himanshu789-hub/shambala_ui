@@ -1,10 +1,11 @@
+import React from "react";
 import { RouteComponentProps } from "react-router";
 
 export function Heading(props: { label: string }) {
     return <h4 className="app-head">{props.label}</h4>;
 }
-export function Spinner(props: { show: boolean }) { 
-    return <i className={props.show ? 'fa fa-spinner fa-spin' : ''} ></i >; 
+export function Spinner(props: { show: boolean }) {
+    return <i className={props.show ? 'fa fa-spinner fa-spin' : ''} ></i >;
 }
 
 
@@ -21,4 +22,8 @@ export function Add_Update_Wrapper(props: RouteComponentProps<{ id?: string }>, 
     }
     else
         return <div className="alert alter-danger">Invalid Route</div>;
+}
+const EmptyIcon = () => <i className="fa fa-ban fa-4x"></i>;
+export function EmptyTableBody(props: { numberOfColumns: number }) {
+    return <React.Fragment><tr><td colSpan={props.numberOfColumns} rowSpan={3}  ><span className="d-inline-flex flex-column text-danger-grad"><EmptyIcon/><span>Not Found</span></span></td></tr></React.Fragment>
 }

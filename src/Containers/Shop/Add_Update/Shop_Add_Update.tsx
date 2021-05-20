@@ -65,7 +65,7 @@ function ShopForm(props: ShopFormProps) {
         </div>
     </div>);
 }
-interface IAddProps extends IIdComponent{
+interface IAddProps extends IIdComponent {
 
 }
 type AddState = {
@@ -82,7 +82,7 @@ export default class Add_Update extends React.Component<IAddProps, AddState>
     constructor(props: IAddProps) {
         super(props);
         this.state = {
-            Shop: { Address: '', Id: getARandomNumber(), SchemeId: -1, Title: '' },
+            Shop: { Address: '', Id: getARandomNumber(), SchemeId: null, Title: '' },
             ErrorMessage: { Address: '', Name: '' },
             RequestInfo: { Status: CallStatus.EMPTY, Message: '' }, ShowSpinner: false, ShouldDisableButton: false
         }
@@ -93,7 +93,7 @@ export default class Add_Update extends React.Component<IAddProps, AddState>
         this.setState(({ Shop }) => { return { Shop: { ...Shop, [name]: value } } })
     }
     handleSelection = (Id: number) => {
-        this.setState(({ Shop }) => { return { Shop: { ...Shop, SchemeId: Id < -1 ? null : Id }, ShouldDisableButton: Id < -1 } });
+        this.setState(({ Shop }) => { return { Shop: { ...Shop, SchemeId: Id <= -1 ? null : Id }, ShouldDisableButton: Id < -1 } });
     }
     IsAllValid = (): boolean => {
         let IsAllValid = true;
@@ -123,21 +123,26 @@ export default class Add_Update extends React.Component<IAddProps, AddState>
             this.setState({ ShowSpinner: true })
             const IsOnUpdate = this.props.Id != undefined;
 
-            if (!IsOnUpdate)
-                this.shopService.IsNameAlreadyExists(Shop.Title).
+            if (IsOnUpdate)
+                this.shopService.IsNameExists(Shop.Title,Shop.Id).
                     then((res) => {
                         this.setState({ ShowSpinner: false });
-
                         if (!res.data)
-                            return this.shopService.Add(Shop)
-                                .then((res) => history.push({ pathname: "/message/pass", search: "?message=Shop Added" }));
-                        else {
+                            return this.shopService.Update(Shop)
+                                .then((res) => history.push({ pathname: "/message/pass", search: "?message=Shop Updated Added" }));
+                        else
                             this.setState({ ErrorMessage: { Name: "Name Already Exists", Address: '' } });
-                        }
                     })
                     .catch(() => history.push({ pathname: "/message/fail" }));
             else
-                this.shopService.Update(Shop)
+                this.shopService.IsNameExists(Shop.Title)
+                    .then(res => {
+                        if (!res.data)
+                            return this.shopService.Add(Shop)
+                                .then(() => history.push({ pathname: "/message/pass", search: "?message=New Shop Added" }));
+                        else
+                            this.setState({ ErrorMessage: { Name: "Name Already Exists", Address: "" } });
+                    })
                     .then((res) => history.push({ pathname: "/message/pass", search: "?message=Shop Updated" }))
                     .catch(() => history.push({ pathname: "/message/fail" }));
         }
