@@ -1,6 +1,6 @@
 import React, { CSSProperties } from 'react';
 import { CallStatus } from 'Components/Loader/Loader';
-import ShopSelector from './Containers/ShopSelector/ShopSelector';
+import ShopSelector from '../../../Components/ShopSelector/ShopSelector';
 import InvoiceScheme from './Containers/InvoiceScheme/InvoiceScheme';
 import RowsWrapper from './Containers/RowsWrapper/RowsWrapper';
 import { ShopInvoice, SoldItem } from '../../../Types/DTO';
@@ -52,16 +52,19 @@ export default class InvoiceAdd extends React.PureComponent<IInvoiceProps, Invoi
 		const { SubscriptionId, HandleDelete } = this.props;
 		HandleDelete(SubscriptionId);
 	}
+	HandleShopSelection = (Id: number) => {
+		this.HandleSelection('ShopId', Id);
+	}
 	render() {
 
 		const { ShopInvoice: { SchemeId, ShopId, Invoices: SoldItems }, IsShopAlreadySelected } = this.props;
 
-		const { SubscriptionId,  AddASubscriberComponent, HandleComponentDelete } = this.props;
+		const { SubscriptionId, AddASubscriberComponent, HandleComponentDelete } = this.props;
 		return (
 			<div className='card'>
 				<div className='card-head d-flex justify-content-between'>
 					<AlertMessage mesage={"Shop Already Selected"} show={IsShopAlreadySelected == undefined ? false : IsShopAlreadySelected}>
-						<ShopSelector handleSelection={this.HandleSelection} />
+						<ShopSelector handleSelection={this.HandleShopSelection} />
 					</AlertMessage>
 					<button className='btn btn-danger' onClick={this.HandleDelete}>
 						<i className='fa fa-times'></i>

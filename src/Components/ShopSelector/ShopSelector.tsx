@@ -6,10 +6,9 @@ import { IShopDTO } from 'Types/DTO';
 import './ShopSelector.css';
 
 type ShopSelectorProps = {
-	handleSelection(name: string, value: any): void;
+	handleSelection(Id:number): void;
 };
  const ShopSelector  = function ShopSelector(props: ShopSelectorProps) {
-	const [shopId, setShopId] = useState<number>(-1);
 	const [shops, setShopList] = useState<IShopDTO[]>([]);
 	const [name, setName] = useState<string>('');
 	const [showDropdown, setShouldDropdownDisplay] = useState<boolean>(false);
@@ -21,8 +20,7 @@ type ShopSelectorProps = {
 		
 		setName(e.currentTarget.dataset.name ?? '');
 		const ShopId  =  Number.parseInt(e.currentTarget.dataset.value as string);
-		setShopId(ShopId);
-		props.handleSelection('ShopId',ShopId);
+		props.handleSelection(ShopId);
 	};
 
 	return (

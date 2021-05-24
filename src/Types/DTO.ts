@@ -93,3 +93,12 @@ export interface IShopDTO extends IShopBaseDTO {
 export interface IShopInfoDTO extends IShopBaseDTO {
 	Scheme: SchemeDTO;
 };
+export type InvoiceDetailDTO = {
+     OutgoingShipmentId:number;
+	 ShopId:number;
+	 DateCreated:string;
+	 CostPrice:number;
+	 SellingPrice:number;
+	 Scheme?:SchemeDTO;
+     DuePrice:number;
+}

@@ -19,4 +19,5 @@ const OutgoingShipmentClient = createAxiosInstance(BaseUrl + '/shipment');
 const SchemeClient = createAxiosInstance(BaseUrl + '/scheme');
 const ShopClient = createAxiosInstance(BaseUrl + '/shop');
 const SalesmanClient = createAxiosInstance(BaseUrl + '/salesman');
-export { ProductAxiosClient, OutgoingShipmentClient, SchemeClient, ShopClient, SalesmanClient };
+const InvoiceClient = createAxiosInstance(BaseUrl+'/invoice');
+export { ProductAxiosClient, OutgoingShipmentClient, SchemeClient, ShopClient, SalesmanClient,InvoiceClient };
