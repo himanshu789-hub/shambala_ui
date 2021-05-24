@@ -88,17 +88,43 @@ export interface IShopBaseDTO {
 	Address: string;
 }
 export interface IShopDTO extends IShopBaseDTO {
-	SchemeId: number|null;
+	SchemeId: number | null;
 }
 export interface IShopInfoDTO extends IShopBaseDTO {
 	Scheme: SchemeDTO;
 };
 export type InvoiceDetailDTO = {
-     OutgoingShipmentId:number;
-	 ShopId:number;
-	 DateCreated:string;
-	 CostPrice:number;
-	 SellingPrice:number;
-	 Scheme?:SchemeDTO;
-     DuePrice:number;
+	OutgoingShipmentId: number;
+	ShopId: number;
+	DateCreated: string;
+	CostPrice: number;
+	SellingPrice: number;
+	Scheme?: SchemeDTO;
+	DuePrice: number;
+}
+type BillInfo = {
+	ProductName: string;
+	FlavourName: string;
+	Quantity: number;
+}
+export type InvoiceBillingDTO =
+	{
+		OutgoingShipmentId: number;
+		ShopId: number;
+		DateCreated: string;
+		Invoices: BillInfo[];
+		TotalPrice: number;
+	}
+
+export type CreditDTO = {
+	OutgoingShipmentId: number;
+	ShopId: number;
+	Id:number;
+	Amount: number;
+	DateCreated: string;
+}
+export type CreditInfoDTO = {
+	Credits: CreditDTO[];
+	IsComplted: boolean;
+	DuePrice:number;
 }
