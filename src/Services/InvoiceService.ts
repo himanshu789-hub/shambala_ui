@@ -6,7 +6,7 @@ import { InvoiceClient } from "HttpClient/Axios";
 
 export default class InvoiceService implements IInvoiceService {
     GetInvoices(shopId: number, shipmentId: number): AxiosPromise<InvoiceBillingDTO> {
-        throw new Error("Method not implemented.");
+        return InvoiceClient.get('',{params:{shopId,shipmentId}});
     }
     GetInvoiceDetail(shopId: number, page: number, status?: InvoiceStatus, date?: Date): AxiosPromise<InvoiceDetailDTO[]> {
         let param: any = { shopId, page }

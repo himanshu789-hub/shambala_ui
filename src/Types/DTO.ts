@@ -1,7 +1,13 @@
 
 import { OutgoingStatus, SchemeKey } from 'Enums/Enum';
-import { OutgoingShipment } from './Types';
 
+
+export type OutgoingShipment = {
+	Id: number;
+	DateCreated: string;
+	Salesman: SalesmanDTO;
+	Status: number;
+};
 export type OutgoingShipmentInfo = {
 	Id: number;
 	Products: Product[];
@@ -109,8 +115,8 @@ type BillInfo = {
 }
 export type InvoiceBillingDTO =
 	{
-		OutgoingShipmentId: number;
-		ShopId: number;
+		Shop: IShopDTO;
+		OutgoingShipment: OutgoingShipment;
 		DateCreated: string;
 		Invoices: BillInfo[];
 		TotalPrice: number;
@@ -119,12 +125,18 @@ export type InvoiceBillingDTO =
 export type CreditDTO = {
 	OutgoingShipmentId: number;
 	ShopId: number;
-	Id:number;
+	Id: number;
 	Amount: number;
 	DateCreated: string;
 }
 export type CreditInfoDTO = {
 	Credits: CreditDTO[];
 	IsComplted: boolean;
-	DuePrice:number;
+	DuePrice: number;
 }
+export type InvoiceCreditInfoDTO =
+	{
+		Shop: IShopDTO;
+		OutgoingShipment: OutgoingShipment;
+        CreditLogs:CreditInfoDTO;
+	}

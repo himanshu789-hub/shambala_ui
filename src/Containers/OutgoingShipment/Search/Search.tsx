@@ -1,6 +1,6 @@
 import Loader, { CallStatus, ApiStatusInfo } from 'Components/Loader/Loader';
-import React, { SyntheticEvent } from 'react';
-import { OutgoingShipment } from 'Types/Types';
+import React from 'react';
+import { OutgoingShipment } from 'Types/DTO';
 import './Search.css';
 import IOUtgoingShipmentService from 'Contracts/services/IOutgoingShipmentService';
 import OutgoingService from 'Services/OutgoingShipmentService';

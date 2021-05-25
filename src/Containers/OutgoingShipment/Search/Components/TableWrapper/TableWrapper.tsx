@@ -1,6 +1,6 @@
 import { OutgoingStatus } from "Enums/Enum";
 import { Link } from "react-router-dom";
-import { OutgoingShipment } from "Types/Types";
+import { OutgoingShipment } from "Types/DTO";
 
 type TableWrapperProps = {
     OutgoingShipments: OutgoingShipment[]

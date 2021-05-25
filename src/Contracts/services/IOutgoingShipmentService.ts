@@ -1,6 +1,6 @@
 import {AxiosResponse} from 'axios';
 import {ShipmentDTO, OutgoingShipmentInfo, PostOutgoingShipment, ShopInvoice} from 'Types/DTO';
-import { OutgoingShipment } from 'Types/Types';
+import { OutgoingShipment } from 'Types/DTO';
 export default interface IOutgoingService {
 	GetShipmentProductDetailsById(Id: number): Promise<AxiosResponse<OutgoingShipmentInfo>>;
 	GetShipmentByDateAndSalesmanId(SalesmanId:number,Date:Date): Promise<AxiosResponse<OutgoingShipment[]>>;

@@ -1,0 +1,20 @@
+.group
+{
+display: inline-flex;
+}
+.group:focus-within
+{
+  box-shadow: 0px 0px 3px 2px #1245FF;
+  transition:all .6s ease-out;
+}
+.group>.control{
+  border-radius:0;
+  outline: none;
+  border: 1px solid gray;
+}
+.group>.text
+{
+background: green;
+outline: none;
+  border: none;
+}

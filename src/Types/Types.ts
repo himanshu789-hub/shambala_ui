@@ -1,5 +1,3 @@
-import { SalesmanModal } from "Models/Salesman";
-import { SalesmanDTO } from "./DTO";
 
 export type ShipmentProperty = {
 	Id: number;
@@ -20,12 +18,6 @@ export type ChoosenScheme = {
 	SchemeType: number;
 }
 
-export type OutgoingShipment = {
-	Id: number;
-	DateCreated: string;
-	Salesman: SalesmanDTO;
-	Status: number;
-};
 export type CaretDetails = {
 	Id: number;
 	CaretSize: number;

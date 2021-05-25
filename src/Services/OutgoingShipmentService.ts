@@ -2,7 +2,7 @@ import { AxiosResponse } from 'axios';
 import IOutgoingShipment from 'Contracts/services/IOutgoingShipmentService';
 import { OutgoingShipmentClient } from 'HttpClient/Axios';
 import { ShipmentDTO, OutgoingShipmentInfo, PostOutgoingShipment, ShopInvoice } from 'Types/DTO';
-import { OutgoingShipment } from 'Types/Types';
+import { OutgoingShipment } from 'Types/DTO';
 
 // const mock = new MockAdapter(OutgoingShipmentClient, { delayResponse: 1000 });
 // mock.onGet(/\/outgoing\/getbyid/i).reply(200, OutgoingShipmentProducts);
