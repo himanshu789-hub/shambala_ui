@@ -1,8 +1,7 @@
 import { Route, RouteComponentProps, useRouteMatch } from 'react-router';
-import InvoiceAddWrapper from 'Containers/Invoices/InvoiceWrapper/InvoiceAddWrapper';
-import { Heading } from 'Components/Miscellaneous/Miscellaneous';
-import InvoiceBillWrapper from 'Containers/Invoices/InvoiceBill/InvoiceBill';
-import InvoiceDetail from 'Containers/Invoices/InvoiceDetail/InvoiceDetail';
+import InvoiceAddWrapper from 'Containers/Invoice/InvoiceWrapper/InvoiceAddWrapper';
+import InvoiceBillWrapper from 'Containers/Invoice/InvoiceBill/InvoiceBill';
+import InvoiceDetail from 'Containers/Invoice/InvoiceDetail/InvoiceDetail';
 export default function Invoice() {
 	const match = useRouteMatch();
 	return (

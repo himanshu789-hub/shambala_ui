@@ -1,4 +1,4 @@
-import { InvoiceContext } from 'Containers/Invoices/InvoiceWrapper/Context';
+import { InvoiceContext } from 'Containers/Invoice/InvoiceWrapper/Context';
 import React from 'react';
 import { SoldItem } from 'Types/DTO';
 import Observer from 'Utilities/Observer';

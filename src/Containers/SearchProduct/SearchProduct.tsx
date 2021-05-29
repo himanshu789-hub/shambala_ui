@@ -3,7 +3,7 @@ import IProductService from "Contracts/services/IProductService";
 import React from "react";
 import ProductService from "Services/ProductService";
 import { FlavourInfo, Product, ProductInfo } from "Types/DTO";
-import { caretInfo } from 'Utilities/Utilities';
+import { getQuantityInText } from 'Utilities/Utilities';
 function FlavourTable(props: { Flavours: FlavourInfo[], CaretSize: number }) {
     return (
         <div className="table-wrapper">
@@ -18,8 +18,8 @@ function FlavourTable(props: { Flavours: FlavourInfo[], CaretSize: number }) {
                     {props.Flavours.map((e, index) => <tr key={index}>
                         <td>{index + 1}</td>
                         <td>{e.Title}</td>
-                        <td>{caretInfo(e.QuantityInStock, props.CaretSize)}</td>
-                        <td>{caretInfo(e.QuantityInDispatch,props.CaretSize)}</td>
+                        <td>{getQuantityInText(e.QuantityInStock, props.CaretSize)}</td>
+                        <td>{getQuantityInText(e.QuantityInDispatch,props.CaretSize)}</td>
                     </tr>)}
                 </tbody>
             </table></div>);

@@ -7,6 +7,8 @@ import Loader, { ApiStatusInfo, CallStatus } from "Components/Loader/Loader";
 import ICreditService from "Contracts/services/ICreditService";
 import CreditService from "Services/CreditService";
 import { Invoice_QueryString_HOC,IInvoice_QueryString_Props } from "Components/Invoice/QueryStringWrapper/QueryStringWrapper";
+import IInvoiceService from "Contracts/services/IInvoiceService";
+import InvoiceService from "Services/InvoiceService";
 
 export function Credit_Modal_Wrapper(props: { shopId: number, shipmentId: number, handleRemove(): void, show: boolean }) {
     const { handleRemove } = props;
@@ -64,7 +66,7 @@ function CreditForm(props: CreditFormProps) {
                 <button className="text text-white p-3"><i className="fa fa-plus"></i></button>
             </div>
             <div className="info">
-                {!props.CreditLogs.IsComplted ?
+                {!props.CreditLogs.IsCompleted ?
 
                     (<div className="input-group mb-3">
                         <div className="input-group-prepend">
@@ -96,12 +98,14 @@ function CreditForm(props: CreditFormProps) {
 }
 class Credit extends React.Component<CreditProps, CreditState> {
     creditService: ICreditService;
+    invoiceService:IInvoiceService;
     constructor(props: CreditProps) {
         super(props);
         this.creditService = new CreditService();
         this.state = {
             APIRequestInfo: { Status: CallStatus.EMPTY, Message: '' }, PayingPrice: 0
         }
+        this.invoiceService = new InvoiceService();
     }
     handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
@@ -123,7 +127,7 @@ class Credit extends React.Component<CreditProps, CreditState> {
     componentDidMount() {
         const { ShopId, ShipmentId } = this.props;
         this.setState({ APIRequestInfo: { Status: CallStatus.LOADING, Message: 'Gathering Credit Info' } });
-        this.creditService.GetCreditInfo(ShipmentId, ShopId)
+        this.invoiceService.GetInvoiceDetailWithCreditLog(ShopId,ShipmentId)
             .then(res => this.setState({ APIRequestInfo: { Status: CallStatus.LOADED, Message: undefined }, InvoiceCreditInfo: res.data }))
             .catch(() => this.setState({ APIRequestInfo: { Status: CallStatus.ERROR, Message: undefined } }));
     }

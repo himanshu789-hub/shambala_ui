@@ -103,24 +103,27 @@ export type InvoiceDetailDTO = {
 	OutgoingShipmentId: number;
 	ShopId: number;
 	DateCreated: string;
-	CostPrice: number;
-	SellingPrice: number;
+	TotalCostPrice: number;
+	TotalSellingPrice: number;
 	Scheme?: SchemeDTO;
-	DuePrice: number;
+	TotalDuePrice: number;
 }
 type BillInfo = {
 	ProductName: string;
 	FlavourName: string;
-	Quantity: number;
+	QuantityPurchase: number;
+	SellingPrice: number;
+	CaretSize: number;
 }
-export type InvoiceBillingDTO =
-	{
-		Shop: IShopDTO;
-		OutgoingShipment: OutgoingShipment;
-		DateCreated: string;
-		Invoices: BillInfo[];
-		TotalPrice: number;
-	}
+export type InvoiceBillingDTO = {
+	Shop: IShopDTO;
+	OutgoingShipment: OutgoingShipment;
+	DateCreated: string;
+	BillingInfo: BillInfo[];
+	TotalSellingPrice: number;
+	Scheme: SchemeDTO;
+	TotalDuePrice: number;
+}
 
 export type CreditDTO = {
 	OutgoingShipmentId: number;
@@ -129,14 +132,10 @@ export type CreditDTO = {
 	Amount: number;
 	DateCreated: string;
 }
-export type CreditInfoDTO = {
+export type InvoiceCreditInfoDTO = {
+	Shop: IShopDTO;
+	OutgoingShipment: OutgoingShipment;
 	Credits: CreditDTO[];
-	IsComplted: boolean;
-	DuePrice: number;
+	TotalDuePrice: number;
+	IsCompleted: boolean;
 }
-export type InvoiceCreditInfoDTO =
-	{
-		Shop: IShopDTO;
-		OutgoingShipment: OutgoingShipment;
-        CreditLogs:CreditInfoDTO;
-	}

@@ -8,7 +8,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import InvoiceService from "Services/InvoiceService";
 import { InvoiceDetailDTO, SchemeDTO } from "Types/DTO";
-import { getValidSchemeValue } from "Utilities/Utilities";
+import { getSchemeText, getValidSchemeValue } from "Utilities/Utilities";
 import './InvoiceDetail.css';
 
 type FilterProps = {
@@ -42,22 +42,6 @@ function Filter(props: FilterProps) {
         <button className="btn btn-success mb-2" onClick={props.handleSubmit}>Go</button>
     </div>;
 }
-function Scheme(scheme?: SchemeDTO) {
-    let result = "";
-    if (!scheme)
-        return "";
-    switch (scheme.SchemeType) {
-        case SchemeKey.BOTTLE:
-            result = scheme.Value + "FREE";
-            break;
-        case SchemeKey.CARET:
-            result = scheme.Value + "FREE";
-            break;
-        case SchemeKey.PERCENTAGE:
-            result = getValidSchemeValue(scheme.SchemeType, scheme.Value) + "% Off";
-    }
-    return result;
-}
 function InvoiceDetailTable(props: { data: InvoiceDetailDTO[], page: number }) {
     return <div className="invoice-table mt-4 table-wrapper">
         <table>
@@ -74,13 +58,13 @@ function InvoiceDetailTable(props: { data: InvoiceDetailDTO[], page: number }) {
             </thead>
             <tbody>
                 {props.data.length > 0 ?
-                    props.data.map((e, index) => <tr>
+                    props.data.map((e, index) => <tr key={index}>
                         <td>{(props.page - 1) + index + 1}</td>
                         <td>{new Date(e.DateCreated).toDateString()}</td>
-                        <td>{e.CostPrice}</td>
-                        <td>{Scheme(e.Scheme)}</td>
-                        <td>{e.SellingPrice}</td>
-                        <td>{e.DuePrice}</td>
+                        <td>{e.TotalCostPrice}</td>
+                        <td>{getSchemeText(e.Scheme)}</td>
+                        <td>{e.TotalSellingPrice}</td>
+                        <td>{e.TotalDuePrice}</td>
                         <td><Link to={`/invoice/bill?shipmentId=${e.OutgoingShipmentId}&shopId=${e.ShopId}`}>View Detail</Link></td>
                     </tr>) :
                     <EmptyTableBody numberOfColumns={7} />}
@@ -100,7 +84,7 @@ type InvoiceDetailState = {
 }
 function Pagination(props: { handlePrevious(): void, handleNext(): void, currentPage: number, disableNext: boolean }) {
     return <nav><ul className="pagination justify-content-center">
-        <li className={`page-link ${props.currentPage && "disabled"}`} onClick={props.handlePrevious} >&lt;&lt; Previous</li>
+        <li className={`page-link ${props.currentPage == 1 && "disabled"}`} onClick={props.handlePrevious} >&lt;&lt; Previous</li>
         <li className={`page-link ${props.disableNext && "disabled"}`} onClick={props.handleNext} >Next &gt;&gt;</li>
     </ul></nav>;
 }
@@ -129,7 +113,10 @@ export default class InvoiceDetail extends React.Component<InvoiceDetailProps, I
     handlePagination = (pos: number) => {
         const { ShopId, Filter, Page } = this.state;
         this.setState({ RequestInfo: { Status: CallStatus.LOADING } });
-        this.invoiceService.GetInvoiceDetail(ShopId!, Page, Filter.Status, Filter.Date.length > 0 ? new Date(Filter.Date) : undefined)
+        let NextPage = pos;
+        if (pos <= 0)
+            NextPage = 1;
+        this.invoiceService.GetInvoiceDetail(ShopId!, NextPage, Filter.Status, Filter.Date.length > 0 ? new Date(Filter.Date) : undefined)
             .then(res => this.setState({ InvocieDetails: res.data, Page: pos, RequestInfo: { Status: CallStatus.LOADED, Message: undefined } }))
             .catch(() => this.setState({ RequestInfo: { Status: CallStatus.ERROR, Message: undefined } }));
     }
@@ -145,7 +132,7 @@ export default class InvoiceDetail extends React.Component<InvoiceDetailProps, I
                 {InvocieDetails && <InvoiceDetailTable data={this.state.InvocieDetails!} page={this.state.Page} />}
             </Loader>
             {ShopId && InvocieDetails && <Pagination handleNext={() => this.handlePagination(this.state.Page + 1)}
-                handlePrevious={() => this.handlePagination(-1)} currentPage={this.state.Page - 1} disableNext={this.state.InvocieDetails?.length == 0} />}
+                handlePrevious={() => this.handlePagination(-1)} currentPage={this.state.Page} disableNext={this.state.InvocieDetails?.length == 0} />}
         </div>);
     }
 }
