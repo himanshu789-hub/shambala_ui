@@ -57,10 +57,12 @@ type CreditFormProps = {
     handleSubmit(): void;
 }
 function NotPaidRow() {
-    return <tr><td colSpan={3} className="text-center"><span className="fa-stack fa-2x">
-        <i className="fa fa-ban fa-stack-2x"></i>
-        <i className="fa fa-inr fa-stack-1x fa-inverse"></i>
-    </span></td></tr>;
+    return <tr className="row"><td colSpan={3} className="col text-center">
+        <span className="fa-stack fa-2x">
+        <i className="fa fa-ban fa-stack-2x text-danger"></i>
+        <i className="fa fa-inr fa-stack-1x fa-inverse text-dark"></i>
+    </span>
+    </td></tr>;
 }
 function CreditLogTable(props: { Credits: CreditDTO[] }) {
     const { Credits } = props;
@@ -73,8 +75,8 @@ function CreditLogTable(props: { Credits: CreditDTO[] }) {
             </tr>
         </thead>
         <tbody>
-            {Credits.length > 0 ? (Credits.map(e => <tr className="row">
-                <td className="col">{e.Id}</td>
+            {Credits.length > 0 ? (Credits.map((e,index) => <tr className="row" key={e.Id}>
+                <td className="col">{index+1}</td>
                 <td className="col">{tocurrencyText(e.Amount)}</td>
                 <td className="col">{new Date(e.DateRecieved).toDateString()}</td></tr>)) : (<NotPaidRow />)}
         </tbody>
