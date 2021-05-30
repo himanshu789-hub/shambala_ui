@@ -57,3 +57,8 @@ export  function getSchemeText(scheme?: SchemeDTO) {
     }
     return result;
 }
+
+export function tocurrencyText(num: number)
+{
+    return "₹"+num;
+}

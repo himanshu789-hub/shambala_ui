@@ -124,7 +124,7 @@ export default class TableRow extends React.PureComponent<TableRowProps, TableRo
 		const { Item: { ProductId, FlavourId, CaretSize: MaxSize,Quantity } } = this.props;
 
 		return (
-			<tr>
+			<tr className="table-row">
 				<td>
 					<select
 						className={`form-control ${ProductId == -1 ? 'is-invalid' : ''}`}

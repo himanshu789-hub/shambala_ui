@@ -1,41 +1,41 @@
-tr,td
+.table-row-wrapper-row ,td
 {
 padding:0;margin:0;
 }
-td .form-control
+.table-row-wrapper-row td .form-control
 {
 margin:0;
 border-radius:0;
 }
-.form-control:focus
+.table-row-wrapper-row .form-control:focus
 {
 border-top:0;
 border-bottom:0;
 }
-.table{
+table-row-wrapper{
 padding:0;
 margin:0;
 }
-.table>thead>tr>th{font-size:12px;margin:0;padding:0.4rem;color:gray;text-align:center;}
-.table>tbody>tr:hover .form-control{
+.table-row-wrapper>thead>tr>th{font-size:12px;margin:0;padding:0.4rem;color:gray;text-align:center;}
+.table-row-wrapper-row-wrapper>tbody>tr:hover .form-control{
 background:aliceblue;
 }
 .form-control:focus{
 background:white !important;
 }
 
-.table tr>td{padding:0;margin:0;}
-.table > .form-control{
+.table-row-wrapper tr>td{padding:0;margin:0;}
+.table-row-wrapper > .form-control{
     margin: 0  !important;
 }
-.table td.caret .invalid-feedback{
+.table-row-wrapper td.caret .invalid-feedback{
     display: none !important;
 }
-.table td.caret .form-group
+.table-row-wrapper td.caret .form-group
 {
     margin:0;
 }
-.table td.caret label:nth-of-type(1)
+.table-row-wrapper td.caret label:nth-of-type(1)
 {
     display:none  !important;
 }

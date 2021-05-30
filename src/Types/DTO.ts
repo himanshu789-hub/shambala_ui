@@ -123,6 +123,7 @@ export type InvoiceBillingDTO = {
 	TotalSellingPrice: number;
 	Scheme: SchemeDTO;
 	TotalDuePrice: number;
+	IsCompleted:boolean;
 }
 
 export type CreditDTO = {
@@ -130,7 +131,7 @@ export type CreditDTO = {
 	ShopId: number;
 	Id: number;
 	Amount: number;
-	DateCreated: string;
+	DateRecieved: string;
 }
 export type InvoiceCreditInfoDTO = {
 	Shop: IShopDTO;

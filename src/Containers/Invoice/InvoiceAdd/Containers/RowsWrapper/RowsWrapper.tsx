@@ -39,7 +39,7 @@ export default class RowsWrapper extends React.PureComponent<RowsWrapperProps, R
 		const { SoldItems } = this.props;
 		return (
 			<div>
-				<table className='table'>
+				<table className='table table-row-wrapper'>
 					<thead className='bg-light'>
 						<tr>
 							<th>Product Name</th>

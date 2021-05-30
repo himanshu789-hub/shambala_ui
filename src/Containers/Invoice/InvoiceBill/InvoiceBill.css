@@ -1,0 +1,18 @@
+.text-underline
+{
+text-decoration: underline;
+}
+
+tfoot td
+{
+border: none;
+}
+
+.text-price
+{
+    position: relative;
+}
+.text-price::before
+{
+    content: '₹';
+}
