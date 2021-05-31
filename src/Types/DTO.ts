@@ -31,7 +31,6 @@ export type SalesmanDTO =
 	{
 		Id: number;
 		FullName: string;
-
 	}
 export type OutOfStock = { ProductId: number, FlavourId: number }
 export type BadRequestError =

@@ -6,7 +6,7 @@ import ShopService from "Services/ShopService";
 
 const ShowShopList = (props: { data: IShopDTO[] }) => {
     return <div className="table-wrapper">
-        <table>
+        <table className="table">
             <thead>
                 <tr>
                     <th>S.No</th>
@@ -20,7 +20,7 @@ const ShowShopList = (props: { data: IShopDTO[] }) => {
                     <td>{index + 1}</td>
                     <td>{e.Title}</td>
                     <td>{e.Address}</td>
-                    <td className="p-1"><Link to={`/shop/update/${e.Id}`} className="bg-info text-white p-1"> <i className="fa fa-pencil"></i>Edit</Link></td>
+                    <td><Link to={`/shop/update/${e.Id}`} className="bg-info text-white p-2 rounded"> <i className="fa fa-pencil"></i> Edit</Link></td>
                 </tr>) : <EmptyTableBody numberOfColumns={4}/>}
             </tbody>
         </table>

@@ -9,6 +9,7 @@ import Observer from 'Utilities/Observer';
 import Loader, { ApiStatusInfo, CallStatus } from 'Components/Loader/Loader';
 import IOutgoingService from 'Contracts/services/IOutgoingShipmentService';
 import OutgoingService from 'Services/OutgoingShipmentService';
+import { Heading } from 'Components/Miscellaneous/Miscellaneous';
 
 
 interface IInvoiceAddWrapperProps extends RouteComponentProps<{ id: string }> {
@@ -81,13 +82,15 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 
 	};
 	HandleComponentDelete = (subscriptionId: number, componentId: number) => {
-		const { Mediator, InvoiceMappedObserver, ShopSubscribers: ShopSubscriber } = this.state;
+		const { Mediator, InvoiceMappedObserver, ShopSubscribers } = this.state;
+
 		const Observers = (InvoiceMappedObserver.get(subscriptionId) as Observer[]).filter(e => e.GetObserverInfo().ComponentId != componentId);
 		InvoiceMappedObserver.set(subscriptionId, Observers);
 		Mediator.UnsubscribeAComponent(subscriptionId, componentId);
-		const ShopInvoice = ShopSubscriber.find(e => e.SubscriptionId === subscriptionId)?.ShopInvcoice as ShopInvoice;
-		ShopInvoice.Invoices = ShopInvoice.Invoices.filter(e => e.Id !== componentId);
-		this.setState({ ShopSubscribers: ShopSubscriber });
+		const OldSubscriber = ShopSubscribers.find(e => e.SubscriptionId === subscriptionId);
+		const OldShopInvoice = OldSubscriber?.ShopInvcoice as ShopInvoice;
+		const NewShopInvoice: ShopInvoice = { ...OldShopInvoice, Invoices: OldShopInvoice.Invoices.filter(e => e.Id !== componentId) };
+		this.setState({ ShopSubscribers: ShopSubscribers.map(e => e.SubscriptionId == subscriptionId ? { ...e, ShopInvcoice: NewShopInvoice } : e) });
 	}
 	HandeShopInvoice = (SubscriptionId: number, ComponentId: number, name: string, value: any) => {
 		let { ShopSubscribers: ShopSubscriber } = this.state;
@@ -149,10 +152,10 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 	render() {
 		const { ApiStatus: { Status, Message } } = this.state;
 		return (
-			<Loader Status={Status} Message={Message}>
-				<div className='invoices'>
+			<div className='invoices'>
+				<Heading label="Fill Invoice"/>
+				<Loader Status={Status} Message={Message}>
 					<div className='d-flex flex-column'>
-
 						<InvoiceContext.Provider value={{
 							GetObserverBySubscriberAndComponentId: this.GetObserverBySubscriptionAndComponentId,
 							HandleChange: this.HandeShopInvoice
@@ -180,9 +183,9 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 						</InvoiceContext.Provider>
 					</div>
 					<Action handleAdd={this.AddASubscriber} handleProcess={this.HandleSubmit} />
+				</Loader>
+			</div>
 
-				</div>
-			</Loader>
 		);
 	}
 	componentDidMount() {

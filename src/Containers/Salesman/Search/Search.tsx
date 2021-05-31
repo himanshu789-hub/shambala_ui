@@ -6,7 +6,7 @@ import { EmptyTableBody, Heading } from "Components/Miscellaneous/Miscellaneous"
 
 const ShowSalesmanList = (props: { data: SalesmanDTO[] }) => {
     return <div className="table-wrapper">
-        <table>
+        <table className="table">
             <thead>
                 <tr>
                     <th>S.No</th>
@@ -18,7 +18,7 @@ const ShowSalesmanList = (props: { data: SalesmanDTO[] }) => {
                 {props.data.length > 0 ? props.data.map((e, index) => <tr>
                     <td>{index + 1}</td>
                     <td>{e.FullName}</td>
-                    <td className="p-1"><Link to={`/salesman/update/${e.Id}`} className="bg-info text-white"> <i className="fa fa-pencil"></i>Edit</Link></td>
+                    <td><Link to={`/salesman/update/${e.Id}`} className="bg-info text-white p-2 rounded"> <i className="fa fa-pencil"></i> Edit</Link></td>
                 </tr>) : <EmptyTableBody numberOfColumns={3}/>}
             </tbody>
         </table>
