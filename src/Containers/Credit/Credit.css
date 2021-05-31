@@ -1,6 +1,7 @@
 .group
 {
 display: inline-flex;
+margin: 0.7rem;
 }
 .group:focus-within
 {
@@ -20,14 +21,9 @@ cursor: pointer;
 {
   background-color: rgba(0,0,0,0.34);
 }
-.invoice-info>fieldset
+.bg-pay
 {
-border: 1px solid var(--gray);
-}
-.invoice-info legend
-{
-  width: fit-content;
-  display: inline;
+  background: aliceblue;
 }
 .credit-log-table {
   width: 100%;

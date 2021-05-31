@@ -8,6 +8,7 @@ td {
 	padding: 4px;
 }
 .table-wrapper table {
+	box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
 	border-top: 6px solid var(--table-border);
 }
 
@@ -18,6 +19,10 @@ td {
 .table-wrapper thead > tr > th:first-child {
 	width: 30px;
 	text-align: center;
+}
+.table-wrapper>table>thead>tr{
+  background-color: var(--table-border);
+  color:white
 }
 .table-wrapper > table {
 	width: 100%;
@@ -81,7 +86,7 @@ a.action:active:before {
 
 .app-head
 {
-	background-color: #343a4080;
+	background-image:url("images/wave.svg");font-weight: bold;
 	color: white;
 	padding: 7px;
 }
@@ -107,4 +112,16 @@ transition:opacity 1s linear;
 	-webkit-background-clip:text;
 	-webkit-text-fill-color:transparent;
 	background-clip: text;
+ }
+
+ fieldset{
+	 border:initial;
+ }
+ fieldset>legend{
+	 width: auto;
+ }
+
+ .bg-app
+ {
+	 background-color: var(--table-border);
  }

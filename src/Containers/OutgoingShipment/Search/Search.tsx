@@ -119,7 +119,7 @@ export default class OutgoingShipmentSearch extends React.Component<OutgoingShip
 						Submit
 					</button>
 				</div>
-				<div className='outgoing-table'>
+				<div className='outgoing-table p-3 mt-4'>
 					<Loader children={<TableWrapper OutgoingShipments={OutgoingShipments} />}
 						Status={OutgoingShipmentRequestInfo.Status}
 						Message={OutgoingShipmentRequestInfo.Message} />

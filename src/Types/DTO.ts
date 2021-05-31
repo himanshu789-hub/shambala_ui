@@ -107,6 +107,7 @@ export type InvoiceDetailDTO = {
 	TotalSellingPrice: number;
 	Scheme?: SchemeDTO;
 	TotalDuePrice: number;
+	IsCompleted:boolean;
 }
 type BillInfo = {
 	ProductName: string;
@@ -115,15 +116,11 @@ type BillInfo = {
 	SellingPrice: number;
 	CaretSize: number;
 }
-export type InvoiceBillingDTO = {
+export interface IInvoiceBillingDTO  extends InvoiceDetailDTO{
 	Shop: IShopDTO;
 	OutgoingShipment: OutgoingShipment;
 	DateCreated: string;
 	BillingInfo: BillInfo[];
-	TotalSellingPrice: number;
-	Scheme: SchemeDTO;
-	TotalDuePrice: number;
-	IsCompleted:boolean;
 }
 
 export type CreditDTO = {

@@ -6,9 +6,9 @@ import { IShopDTO } from 'Types/DTO';
 import './ShopSelector.css';
 
 type ShopSelectorProps = {
-	handleSelection(Id:number): void;
+	handleSelection(Id: number): void;
 };
- const ShopSelector  = function ShopSelector(props: ShopSelectorProps) {
+const ShopSelector = function ShopSelector(props: ShopSelectorProps) {
 	const [shops, setShopList] = useState<IShopDTO[]>([]);
 	const [name, setName] = useState<string>('');
 	const [showDropdown, setShouldDropdownDisplay] = useState<boolean>(false);
@@ -17,28 +17,29 @@ type ShopSelectorProps = {
 	const handleSelect = (e: MouseEvent<HTMLLabelElement>) => {
 		setShouldDropdownDisplay(false);
 		setAPIStatus(CallStatus.EMPTY);
-		
+
 		setName(e.currentTarget.dataset.name ?? '');
-		const ShopId  =  Number.parseInt(e.currentTarget.dataset.value as string);
+		const ShopId = Number.parseInt(e.currentTarget.dataset.value as string);
 		props.handleSelection(ShopId);
 	};
 
 	return (
-		<div className='form-group dropdown shop'>
+		<div className='form-group shop dropdown'>
 			<input
 				className='form-control'
 				value={name}
+				data-toggle="dropdown"
 				placeholder='Enter Shop Name'
 				onChange={e => {
-					const name = e.currentTarget.value;
-					setAPIStatus(CallStatus.LOADING);
-					setName(name);
+					const ShopName = e.currentTarget.value;
+					setName(ShopName);
 					setShouldDropdownDisplay(true);
-				
-					ShopServiceHandler.GetAllByName(name).then(res => {
+					if (ShopName.length > 0)
+						setAPIStatus(CallStatus.LOADING);
+					ShopServiceHandler.GetAllByName(ShopName).then(res => {
 						setShopList(res.data);
 						setAPIStatus(CallStatus.LOADED);
-					}).catch(()=>setAPIStatus(CallStatus.ERROR));
+					}).catch(() => setAPIStatus(CallStatus.ERROR));
 				}}
 			/>
 			<div className={`dropdown-menu ${showDropdown ? 'show' : ''}`}>

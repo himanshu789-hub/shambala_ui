@@ -8,7 +8,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import InvoiceService from "Services/InvoiceService";
 import { InvoiceDetailDTO, SchemeDTO } from "Types/DTO";
-import { getSchemeText, getValidSchemeValue } from "Utilities/Utilities";
+import { getSchemeText, getValidSchemeValue, tocurrencyText } from "Utilities/Utilities";
 import './InvoiceDetail.css';
 
 type FilterProps = {
@@ -19,41 +19,41 @@ type FilterProps = {
 }
 function Filter(props: FilterProps) {
     const { handleChange } = props;
-    return <div className="form-inline d-flex align-items-center p-3">
-        <label className="font-weight-bold">Filter By : </label>
-        <div className="input-group mb-2 mr-sm-2 ml-2">
-            <div className="input-group-prepend">
-                <div className="input-group-text">After Date</div>
+    return <div className="p-3">
+        <fieldset className="d-flex border p-2">
+            <legend>Filter By : </legend>
+            <div className="input-group mb-2 mr-sm-2 ml-2">
+                <div className="input-group-prepend">
+                    <div className="input-group-text">After Date</div>
+                </div>
+                <input type="date" name="Date" className="form-control" id="inlineFormInputGroupUsername2" value={props.Date} onChange={handleChange} />
             </div>
-            <input type="date" name="Date" className="form-control" id="inlineFormInputGroupUsername2" value={props.Date} onChange={handleChange} />
-        </div>
-
-        <div className="input-group mb-2 mr-sm-2">
-            <div className="input-group-prepend">
-                <div className="input-group-text">Status</div>
+            <div className="input-group mb-2 mr-sm-2">
+                <div className="input-group-prepend">
+                    <div className="input-group-text">Status</div>
+                </div>
+                <select name="Status" className="form-control" value={props.Status ?? -1} onChange={props.handleChange}>
+                    <option value={-1}>ANY</option>
+                    <option key={InvoiceStatus.DUE} value={InvoiceStatus.DUE}>DUE</option>
+                    <option key={InvoiceStatus.COMPLTED} value={InvoiceStatus.COMPLTED}>COMPLETED</option>
+                </select>
             </div>
-            <select name="Status" value={props.Status ?? -1} onChange={props.handleChange}>
-                <option value={-1}>None</option>
-                <option key={InvoiceStatus.DUE} value={InvoiceStatus.DUE}>DUE</option>
-                <option key={InvoiceStatus.COMPLTED} value={InvoiceStatus.COMPLTED}>COMPLETED</option>
-            </select>
-        </div>
-
-        <button className="btn btn-success mb-2" onClick={props.handleSubmit}>Go</button>
+        </fieldset>
+        <button onClick={props.handleSubmit} className="mt-3 btn btn-success">Go</button>
     </div>;
 }
 function InvoiceDetailTable(props: { data: InvoiceDetailDTO[], page: number }) {
     return <div className="invoice-table mt-4 table-wrapper">
-        <table>
+        <table className="table table-hover">
             <thead>
                 <tr>
-                    <td>S.No</td>
-                    <td>Date Created</td>
-                    <td>Cost Price</td>
-                    <td>Scheme</td>
-                    <td>Sold Price</td>
-                    <td>Due Price</td>
-                    <td>View Detail</td>
+                    <th>S.No</th>
+                    <th>Date Created</th>
+                    <th>Total Cost Price</th>
+                    <th>Scheme</th>
+                    <th>Total Sold Price</th>
+                    <th>Total Due Price</th>
+                    <th>View Detail</th>
                 </tr>
             </thead>
             <tbody>
@@ -61,10 +61,10 @@ function InvoiceDetailTable(props: { data: InvoiceDetailDTO[], page: number }) {
                     props.data.map((e, index) => <tr key={index}>
                         <td>{(props.page - 1) + index + 1}</td>
                         <td>{new Date(e.DateCreated).toDateString()}</td>
-                        <td>{e.TotalCostPrice}</td>
+                        <td>{tocurrencyText(e.TotalCostPrice)}</td>
                         <td>{getSchemeText(e.Scheme)}</td>
-                        <td>{e.TotalSellingPrice}</td>
-                        <td>{e.TotalDuePrice}</td>
+                        <td>{tocurrencyText(e.TotalSellingPrice)}</td>
+                        <td className={`${e.IsCompleted ? 'bg-success text-white' : 'bg-warning'}`}>{e.IsCompleted ? "Completed" : tocurrencyText(e.TotalDuePrice)}</td>
                         <td><Link to={`/invoice/bill?shipmentId=${e.OutgoingShipmentId}&shopId=${e.ShopId}`}>View Detail</Link></td>
                     </tr>) :
                     <EmptyTableBody numberOfColumns={7} />}
@@ -84,16 +84,16 @@ type InvoiceDetailState = {
 }
 function Pagination(props: { handlePrevious(): void, handleNext(): void, currentPage: number, disableNext: boolean }) {
     return <nav><ul className="pagination justify-content-center">
-        <li className={`page-link ${props.currentPage == 1 && "disabled"}`} onClick={props.handlePrevious} >&lt;&lt; Previous</li>
-        <li className={`page-link ${props.disableNext && "disabled"}`} onClick={props.handleNext} >Next &gt;&gt;</li>
-    </ul></nav>;
+        <li className={`page-item ${props.currentPage == 1 && "disabled"}`}><button className={`page-link`} onClick={props.handlePrevious} >&lt;&lt; Previous</button></li>
+        <li className={`page-item ${props.disableNext && "disabled"}`}><button className={`page-link`} onClick={props.handleNext} >Next &gt;&gt;</button>
+        </li></ul></nav>;
 }
 export default class InvoiceDetail extends React.Component<InvoiceDetailProps, InvoiceDetailState> {
     invoiceService: IInvoiceService;
     constructor(props: InvoiceDetailProps) {
         super(props);
         this.state = {
-            Filter: { Date: '' }, RequestInfo: { Status: CallStatus.EMPTY }, Page: 1
+            Filter: { Date: '' }, RequestInfo: { Status: CallStatus.EMPTY }, Page: 0
         };
         this.invoiceService = new InvoiceService();
     }
@@ -107,17 +107,19 @@ export default class InvoiceDetail extends React.Component<InvoiceDetailProps, I
         this.setState({ ShopId: Id == -1 ? undefined : Id });
     }
     handleSubmit = () => {
-        this.setState({ Page: 1 });
-        this.handlePagination(1);
+        this.setState({ Page: 0 }, () => { this.handlePagination(1); });
     }
     handlePagination = (pos: number) => {
         const { ShopId, Filter, Page } = this.state;
         this.setState({ RequestInfo: { Status: CallStatus.LOADING } });
-        let NextPage = pos;
-        if (pos <= 0)
-            NextPage = 1;
+        let NextPage = Page;
+        if (pos > 0)
+            NextPage++;
+        if (pos < 0)
+            ((NextPage - 1) == 0 ? (NextPage = 1) : NextPage--);
+
         this.invoiceService.GetInvoiceDetail(ShopId!, NextPage, Filter.Status, Filter.Date.length > 0 ? new Date(Filter.Date) : undefined)
-            .then(res => this.setState({ InvocieDetails: res.data, Page: pos, RequestInfo: { Status: CallStatus.LOADED, Message: undefined } }))
+            .then(res => this.setState({ InvocieDetails: res.data, Page: NextPage, RequestInfo: { Status: CallStatus.LOADED, Message: undefined } }))
             .catch(() => this.setState({ RequestInfo: { Status: CallStatus.ERROR, Message: undefined } }));
     }
     render() {
@@ -131,7 +133,7 @@ export default class InvoiceDetail extends React.Component<InvoiceDetailProps, I
             <Loader {...this.state.RequestInfo}>
                 {InvocieDetails && <InvoiceDetailTable data={this.state.InvocieDetails!} page={this.state.Page} />}
             </Loader>
-            {ShopId && InvocieDetails && <Pagination handleNext={() => this.handlePagination(this.state.Page + 1)}
+            {ShopId && InvocieDetails && <Pagination handleNext={() => this.handlePagination(1)}
                 handlePrevious={() => this.handlePagination(-1)} currentPage={this.state.Page} disableNext={this.state.InvocieDetails?.length == 0} />}
         </div>);
     }

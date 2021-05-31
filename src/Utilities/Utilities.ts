@@ -41,24 +41,25 @@ export function getValidSchemeValue(Type: SchemeKey, val: number) {
 	return (val).toPrecision(0);
 }
 
-export  function getSchemeText(scheme?: SchemeDTO) {
-    let result = "";
-    if (!scheme)
-        return "";
-    switch (scheme.SchemeType) {
-        case SchemeKey.BOTTLE:
-            result = scheme.Value + "FREE";
-            break;
-        case SchemeKey.CARET:
-            result = scheme.Value + "FREE";
-            break;
-        case SchemeKey.PERCENTAGE:
-            result = getValidSchemeValue(scheme.SchemeType, scheme.Value) + "% Off";
-    }
-    return result;
+export function getSchemeText(scheme?: SchemeDTO) {
+	let result = "";
+	if (!scheme)
+		return "";
+	switch (scheme.SchemeType) {
+		case SchemeKey.BOTTLE:
+			result = scheme.Value + "FREE";
+			break;
+		case SchemeKey.CARET:
+			result = scheme.Value + "FREE";
+			break;
+		case SchemeKey.PERCENTAGE:
+			result = getValidSchemeValue(scheme.SchemeType, scheme.Value) + "% Off";
+	}
+	return result;
 }
-
-export function tocurrencyText(num: number)
-{
-    return "₹"+num;
+export function toDateText(date: string){
+	return new Date(date).toDateString();
+}
+export function tocurrencyText(num: number) {
+	return "₹" + num;
 }

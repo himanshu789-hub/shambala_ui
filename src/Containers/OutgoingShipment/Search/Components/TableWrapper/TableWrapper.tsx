@@ -1,6 +1,7 @@
 import { OutgoingStatus } from "Enums/Enum";
 import { Link } from "react-router-dom";
 import { OutgoingShipment } from "Types/DTO";
+import { toDateText } from "Utilities/Utilities";
 
 type TableWrapperProps = {
     OutgoingShipments: OutgoingShipment[]
@@ -33,7 +34,7 @@ export default function TableWrapper(props: TableWrapperProps) {
         return <NoItem />;
     }
     return <div className='table-wrapper'>
-        <table>
+        <table className="table">
             <thead>
                 <tr>
                     <th>S.No</th>
@@ -49,7 +50,7 @@ export default function TableWrapper(props: TableWrapperProps) {
                             <tr key={index}>
                                 <td>{index + 1}</td>
                                 <td>{value.Salesman.FullName}</td>
-                                <td>{value.DateCreated.substring(0, 10)}</td>
+                                <td>{toDateText(value.DateCreated)}</td>
                                 <td>
                                     <OutgoingStatusButton Status={value.Status} Id={value.Id} />
                                 </td>

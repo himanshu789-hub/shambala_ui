@@ -7,19 +7,21 @@ import { getQuantityInText } from 'Utilities/Utilities';
 function FlavourTable(props: { Flavours: FlavourInfo[], CaretSize: number }) {
     return (
         <div className="table-wrapper">
-            <table >
+            <table className="table">
                 <thead>
-                    <th>S.No.</th>
-                    <th>Flavour Name</th>
-                    <th>Quantity In Stock</th>
-                    <th>Quantity In Dispatch</th>
+                    <tr>
+                        <th>S.No.</th>
+                        <th>Flavour Name</th>
+                        <th>Quantity In Stock</th>
+                        <th>Quantity In Dispatch</th>
+                    </tr>
                 </thead>
                 <tbody>
                     {props.Flavours.map((e, index) => <tr key={index}>
                         <td>{index + 1}</td>
                         <td>{e.Title}</td>
                         <td>{getQuantityInText(e.QuantityInStock, props.CaretSize)}</td>
-                        <td>{getQuantityInText(e.QuantityInDispatch,props.CaretSize)}</td>
+                        <td>{getQuantityInText(e.QuantityInDispatch, props.CaretSize)}</td>
                     </tr>)}
                 </tbody>
             </table></div>);
