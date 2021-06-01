@@ -1,14 +1,16 @@
 import { SchemeKey, SchemeType } from "Enums/Enum";
 import { Product, SchemeDTO } from "Types/DTO";
 
-export const provideValidNumber = (num: string): number => {
+export const provideValidInteger = (num: string): number => {
 	if (!num.length) return 0;
-
 	const parseInteger = Number.parseInt(num);
 	if (parseInteger) return parseInteger;
-
 	return Number.parseInt(num.substring(0, num.length - 1));
 };
+export function provideValidFloat(num:string):number{
+	const re =Number.parseFloat(Number.parseFloat(num).toFixed(2));
+	return num.indexOf('.')!=-1?re+0.00:re;
+}
 export function deepCloneProducts(products: Product[]) {
 	let CloneProducts = [];
 	for (let i = 0; i < products.length; i++) {

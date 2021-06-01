@@ -1,7 +1,7 @@
 import React, { ChangeEvent, SyntheticEvent } from 'react';
 import { CaretDetails } from 'Types/Types';
 import CaretSizeInput from 'Components/CaretSize/CaretSize';
-import { provideValidNumber } from 'Utilities/Utilities';
+import { provideValidInteger } from 'Utilities/Utilities';
 import './ShipmentElement.css';
 import { ShipmentProperty } from 'Types/Types';
 import { Flavour, ShipmentDTO } from 'Types/DTO';
@@ -48,7 +48,7 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 		if (Name && Value != undefined) {
 			const { handleChange, } = this.props;
 			if (Name == 'TotalDefectedPieces')
-				Value = provideValidNumber(Value);
+				Value = provideValidInteger(Value);
 			else if (Name == "ProductId" || Name == "FlavourId") {
 				Value = Number.parseInt(Value);
 				if (Name == "ProductId") {

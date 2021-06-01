@@ -9,7 +9,8 @@ import CreditService from "Services/CreditService";
 import { Invoice_QueryString_HOC, IInvoice_QueryString_Props } from "Components/Invoice/QueryStringWrapper/QueryStringWrapper";
 import IInvoiceService from "Contracts/services/IInvoiceService";
 import InvoiceService from "Services/InvoiceService";
-import { provideValidNumber, tocurrencyText } from "Utilities/Utilities";
+import { provideValidFloat, provideValidInteger, tocurrencyText } from "Utilities/Utilities";
+import Alert from "Components/Alert/Alert";
 
 export function Credit_Modal_Wrapper(props: { shopId: number, shipmentId: number, handleRemove(): void, show: boolean }) {
     const { handleRemove } = props;
@@ -35,7 +36,7 @@ interface CreditProps extends IInvoice_QueryString_Props {
 type CreditState = {
     InvoiceCreditInfo?: InvoiceCreditInfoDTO;
     APIRequestInfo: ApiStatusInfo;
-    PayingPrice: number;
+    PayingPrice: string;
 }
 function InvoiceInfo(props: { Shop: IShopDTO; OutgoingShipment: OutgoingShipment; }) {
     return <div className="d-flex invoice-info">
@@ -48,9 +49,10 @@ function InvoiceInfo(props: { Shop: IShopDTO; OutgoingShipment: OutgoingShipment
 }
 type CreditFormProps = {
     InvoiceCredit: InvoiceCreditInfoDTO;
-    PaidPrice: number;
+    PaidPrice: string;
     handle(e: React.ChangeEvent<HTMLInputElement>): void;
     handleSubmit(): void;
+    handleBlur(): void;
 }
 function NotPaidRow() {
     return <tr className="row"><td colSpan={3} className="col text-center">
@@ -84,7 +86,7 @@ function CreditForm(props: CreditFormProps) {
             <div className="bg-pay form-group p-1">
                 <label className="font-weight-bold text-dark">Payment Recieved : </label>
                 <div className="group">
-                    <input className="form-control due-control" value={props.PaidPrice} name="PaidPrice" onChange={props.handle} />
+                    <input type="text" onBlur={props.handleBlur} className="form-control due-control" value={props.PaidPrice} name="PaidPrice" onChange={props.handle} />
                     <button className="bg-success text-white p-3 btn border-0 rounded-0" onClick={props.handleSubmit} ><i className="fa fa-plus"></i></button>
                 </div>
             </div>
@@ -102,6 +104,7 @@ function CreditForm(props: CreditFormProps) {
     </div>
     );
 }
+
 class Credit extends React.Component<CreditProps, CreditState> {
     creditService: ICreditService;
     invoiceService: IInvoiceService;
@@ -109,33 +112,40 @@ class Credit extends React.Component<CreditProps, CreditState> {
         super(props);
         this.creditService = new CreditService();
         this.state = {
-            APIRequestInfo: { Status: CallStatus.EMPTY, Message: '' }, PayingPrice: 0
+            APIRequestInfo: { Status: CallStatus.EMPTY, Message: '' }, PayingPrice: ''
         }
         this.invoiceService = new InvoiceService();
     }
     IsPriceValueValid(value: string) {
         let IsValueValid = true;
-
-        if (new RegExp(/\D+/i).test(value))
+        if (!new RegExp(/^\d{0,5}((\.?)\d{0,2})$/).test(value))
             IsValueValid = false;
         return IsValueValid;
     }
     handleSubmit = () => {
-        if (this.state.PayingPrice != 0) {
+        if (Number.isFinite(this.state.PayingPrice) && Number.parseFloat(this.state.PayingPrice)!=0) {
             this.creditService
-                .Add({ Amount: this.state.PayingPrice, DateRecieved: new Date().toISOString(), Id: 1, OutgoingShipmentId: this.props.ShipmentId, ShopId: this.props.ShopId })
+                .Add({ Amount: Number.parseFloat(this.state.PayingPrice), DateRecieved: new Date().toISOString(), Id: 1, OutgoingShipmentId: this.props.ShipmentId, ShopId: this.props.ShopId })
                 .then(() => {
-                    this.setState({ PayingPrice: 0 });
+                    this.setState({ PayingPrice: '0.00' });
                     return this.invoiceService.GetInvoiceDetailWithCreditLog(this.props.ShopId, this.props.ShipmentId);
                 })
                 .then(res => this.setState({ InvoiceCreditInfo: res.data }))
         }
+        else
+            alert('Price Cannot Be Zero');
+
     }
     handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { currentTarget: { name, value } } = e;
         if (name == "PaidPrice" && this.IsPriceValueValid(value)) {
-            this.setState({ PayingPrice: provideValidNumber(value) });
+            this.setState({ PayingPrice: value });
         }
+    }
+    OnBlur = () => {
+        const { PayingPrice } = this.state;
+        if (PayingPrice.endsWith('.'))
+            this.setState({ PayingPrice: PayingPrice + '00' });
     }
     render() {
         const { InvoiceCreditInfo, APIRequestInfo, PayingPrice } = this.state;
@@ -148,7 +158,7 @@ class Credit extends React.Component<CreditProps, CreditState> {
                         <div className="row mt-3">
                             <div className="col">
                                 <CreditForm InvoiceCredit={InvoiceCreditInfo!} handle={this.handleChange} PaidPrice={PayingPrice}
-                                    handleSubmit={this.handleSubmit} />
+                                    handleSubmit={this.handleSubmit} handleBlur={this.OnBlur} />
                             </div>
                             <div className="col">
                                 <CreditLogTable Credits={InvoiceCreditInfo?.Credits ?? []} />
@@ -157,6 +167,7 @@ class Credit extends React.Component<CreditProps, CreditState> {
                     </React.Fragment>
                 }
             </Loader>
+
         </div>)
     }
     componentDidMount() {
