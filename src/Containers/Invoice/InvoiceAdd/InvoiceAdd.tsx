@@ -2,9 +2,10 @@ import React, { CSSProperties } from 'react';
 import { CallStatus } from 'Components/Loader/Loader';
 import ShopSelector from '../../../Components/ShopSelector/ShopSelector';
 import InvoiceScheme from './Containers/InvoiceScheme/InvoiceScheme';
+
+import './InvoiceAdd.css';
 import RowsWrapper from './Containers/RowsWrapper/RowsWrapper';
 import { ShopInvoice, SoldItem } from '../../../Types/DTO';
-import './InvoiceAdd.css';
 import { InvoiceContext } from '../InvoiceWrapper/Context';
 
 interface IInvoiceProps {

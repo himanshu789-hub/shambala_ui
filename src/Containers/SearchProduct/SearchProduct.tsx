@@ -7,7 +7,7 @@ import { getQuantityInText } from 'Utilities/Utilities';
 function FlavourTable(props: { Flavours: FlavourInfo[], CaretSize: number }) {
     return (
         <div className="table-wrapper">
-            <table className="table">
+            <table className="table table-hover">
                 <thead>
                     <tr>
                         <th>S.No.</th>
@@ -21,7 +21,7 @@ function FlavourTable(props: { Flavours: FlavourInfo[], CaretSize: number }) {
                         <td>{index + 1}</td>
                         <td>{e.Title}</td>
                         <td>{getQuantityInText(e.QuantityInStock, props.CaretSize)}</td>
-                        <td>{getQuantityInText(e.QuantityInDispatch, props.CaretSize)}</td>
+                        <td className={e.QuantityInDispatch!=0?'bg-warning text-white':''}>{e.QuantityInDispatch==0?'---':getQuantityInText(e.QuantityInDispatch, props.CaretSize)}</td>
                     </tr>)}
                 </tbody>
             </table></div>);

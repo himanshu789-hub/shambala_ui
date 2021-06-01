@@ -23,7 +23,7 @@ export function Add_Update_Wrapper(props: RouteComponentProps<{ id?: string }>, 
     else
         return <div className="alert alter-danger">Invalid Route</div>;
 }
-const EmptyIcon = () => <img src="/glassbin.svg" width="200px" height="200px"/>;
+const EmptyIcon = () => <img src="/glassbin.svg" width="200px" height="200px" />;
 export function EmptyTableBody(props: { numberOfColumns: number }) {
     return <React.Fragment><tr><td colSpan={props.numberOfColumns} rowSpan={3}  ><span className="d-inline-flex flex-column text-danger-grad"><EmptyIcon /><span>Not Found</span></span></td></tr></React.Fragment>
 }

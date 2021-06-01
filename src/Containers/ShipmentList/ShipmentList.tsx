@@ -6,6 +6,7 @@ import ComponentProductListProvider from 'Utilities/ComponentProductListProvider
 import { Product, Flavour, ShipmentDTO, OutOfStock } from 'Types/DTO';
 import MediatorSubject from 'Utilities/MediatorSubject';
 import Observer from 'Utilities/Observer';
+import Alert from 'Components/Alert/Alert';
 type IShipmentListProps = {
 	handleSubmit: (Shipments: ShipmentDTO[]) => void;
 	Products: Product[];
@@ -21,6 +22,7 @@ type IShipmentListState = {
 	Products: Map<string, Product>;
 	ShipmentInfos: Array<ShipmentInfo>;
 	SubscriptionId: number;
+	ShowAlert: boolean;
 };
 
 export default class ShipmentList extends React.Component<IShipmentListProps, IShipmentListState> {
@@ -30,7 +32,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		super(props);
 		this.state = {
 			ShipmentInfos: [],
-			Products: new Map([]), SubscriptionId: Math.random() * 10
+			Products: new Map([]), SubscriptionId: Math.random() * 10, ShowAlert: false
 		};
 		this.products = new Map([]);
 		this.componentListMediator = new MediatorSubject([]);
@@ -153,6 +155,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 					},
 				],
 			});
+		else
+			this.setState({ ShowAlert: true });
 	};
 	resetQuantityLimit = (Id: number) => {
 		this.setState(({ ShipmentInfos }) => {
@@ -207,6 +211,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						})}
 				</div>
 				<Action handleAdd={this.addAShipment} handleProcess={this.handleSubmit} />
+				{this.state.ShowAlert && <Alert message="Product List Is Empty" togglePopUp={() => this.setState({ ShowAlert: false })} />}
 			</div>
 		);
 	}

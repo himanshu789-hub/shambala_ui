@@ -1,0 +1,20 @@
+.carat-control .carat-group>label{
+    background:#288a7c;
+    display: block;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    margin: 0;
+    font-size:0.8rem;
+    color:white;
+    padding: 0.01rem 0.8rem;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+.carat-control .carat-group>.form-control
+{
+    width: 70px;
+  border-top: 0px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
