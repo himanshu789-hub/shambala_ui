@@ -7,6 +7,7 @@ import { Product, Flavour, ShipmentDTO, OutOfStock } from 'Types/DTO';
 import MediatorSubject from 'Utilities/MediatorSubject';
 import Observer from 'Utilities/Observer';
 import Alert from 'Components/Alert/Alert';
+import { addDanger, currentAlert$ } from 'Utilities/AlertUtility';
 type IShipmentListProps = {
 	handleSubmit: (Shipments: ShipmentDTO[]) => void;
 	Products: Product[];
@@ -22,7 +23,7 @@ type IShipmentListState = {
 	Products: Map<string, Product>;
 	ShipmentInfos: Array<ShipmentInfo>;
 	SubscriptionId: number;
-	ShowAlert: boolean;
+	Alert: { Show: boolean, Message: string };
 };
 
 export default class ShipmentList extends React.Component<IShipmentListProps, IShipmentListState> {
@@ -32,7 +33,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		super(props);
 		this.state = {
 			ShipmentInfos: [],
-			Products: new Map([]), SubscriptionId: Math.random() * 10, ShowAlert: false
+			Products: new Map([]), SubscriptionId: Math.random() * 10, Alert: { Message: "", Show: false }
 		};
 		this.products = new Map([]);
 		this.componentListMediator = new MediatorSubject([]);
@@ -115,8 +116,9 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				return {
 					ShipmentInfos: [
 						...IncomingShipments.map(value => {
-							if (value.Shipment.Id == Id) return { ...value, Shipment: { ...value.Shipment, [Name]: Value } };
-							else return value;
+							if (value.Shipment.Id == Id)
+								return { ...value, Shipment: { ...value.Shipment, [Name]: Value } };
+							return value;
 						}),
 					],
 				};
@@ -156,7 +158,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				],
 			});
 		else
-			this.setState({ ShowAlert: true });
+			addDanger("Product Not Availabel");
 	};
 	resetQuantityLimit = (Id: number) => {
 		this.setState(({ ShipmentInfos }) => {
@@ -211,7 +213,6 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						})}
 				</div>
 				<Action handleAdd={this.addAShipment} handleProcess={this.handleSubmit} />
-				{this.state.ShowAlert && <Alert message="Product List Is Empty" togglePopUp={() => this.setState({ ShowAlert: false })} />}
 			</div>
 		);
 	}

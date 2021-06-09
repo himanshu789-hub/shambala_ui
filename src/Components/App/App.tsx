@@ -10,6 +10,7 @@ import SearchProduct from 'Containers/SearchProduct/SearchProduct';
 import Shop from 'Components/Shop/Shop';
 import Scheme from 'Components/Scheme/Scheme';
 import Salesman from 'Components/Salesman/Salesman';
+import Alert from 'Components/Alert/Alert';
 
 
 function MessageRoute() {
@@ -25,6 +26,7 @@ export default class App extends React.Component {
 	render() {
 		return (
 			<React.Fragment>
+				<Alert/>
 				<Nav />
 				<Route path='/' exact>
 					<Home />

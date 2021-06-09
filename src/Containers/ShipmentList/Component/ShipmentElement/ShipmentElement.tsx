@@ -1,5 +1,4 @@
 import React, { ChangeEvent, SyntheticEvent } from 'react';
-import { CaretDetails } from 'Types/Types';
 import CaretSizeInput from 'Components/CaretSize/CaretSize';
 import { provideValidInteger } from 'Utilities/Utilities';
 import './ShipmentElement.css';
@@ -19,14 +18,14 @@ type ShipmentElementProps = {
 };
 type ShipmentElementState = {
 	ProductList: ProductInfo[];
-	flavourList: Flavour[];
+	FlavourList: Flavour[];
 
 };
 export default class ShipmentElement extends React.PureComponent<ShipmentElementProps, ShipmentElementState> {
 	constructor(props: ShipmentElementProps) {
 		super(props);
 		this.state = {
-			ProductList: [], flavourList: []
+			ProductList: [], FlavourList: []
 		}
 		this.handleChange = this.handleChange.bind(this);
 	}
@@ -68,14 +67,14 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 		if (name == "ProductId")
 			this.setState({ ProductList: Observer.GetProduct() });
 		else if (name == "FlavourId")
-			this.setState({ flavourList: Observer.GetFlavours() });
+			this.setState({ FlavourList: Observer.GetFlavours() });
 	}
 	handleFocusIn = () => {
 
 	}
 	render() {
 		const { ShipmentEntity, handleRemove, Limit } = this.props;
-		const { ProductList, flavourList, } = this.state;
+		const { ProductList, FlavourList, } = this.state;
 		const caretSize = ShipmentEntity.CaretSize;
 		return (
 			<div className='incoming-shipment-element-add d-flex  justify-content-around flex-nowrap'>
@@ -111,7 +110,7 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 						<option disabled value='-1'>
 							-- Select Your Option --
 						</option>
-						{flavourList && flavourList.map(e => <option value={e.Id} key={e.Id}>{e.Title}</option>)}
+						{FlavourList && FlavourList.map(e => <option value={e.Id} key={e.Id}>{e.Title}</option>)}
 					</select>
 				</div>
 				<div className={`form-group ${ShipmentEntity.CaretSize == 0 ? 'is-invalid' : ''}`}>
