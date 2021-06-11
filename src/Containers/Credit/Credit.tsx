@@ -11,6 +11,7 @@ import IInvoiceService from "Contracts/services/IInvoiceService";
 import InvoiceService from "Services/InvoiceService";
 import { provideValidFloat, provideValidInteger, tocurrencyText } from "Utilities/Utilities";
 import Alert from "Components/Alert/Alert";
+import { addDanger } from "Utilities/AlertUtility";
 
 export function Credit_Modal_Wrapper(props: { shopId: number, shipmentId: number, handleRemove(): void, show: boolean }) {
     const { handleRemove } = props;
@@ -123,7 +124,7 @@ class Credit extends React.Component<CreditProps, CreditState> {
         return IsValueValid;
     }
     handleSubmit = () => {
-        if (Number.isFinite(this.state.PayingPrice) && Number.parseFloat(this.state.PayingPrice)!=0) {
+        if (Number.isFinite(Number.parseFloat(this.state.PayingPrice)) && Number.parseFloat(this.state.PayingPrice) != 0) {
             this.creditService
                 .Add({ Amount: Number.parseFloat(this.state.PayingPrice), DateRecieved: new Date().toISOString(), Id: 1, OutgoingShipmentId: this.props.ShipmentId, ShopId: this.props.ShopId })
                 .then(() => {
@@ -133,8 +134,7 @@ class Credit extends React.Component<CreditProps, CreditState> {
                 .then(res => this.setState({ InvoiceCreditInfo: res.data }))
         }
         else
-            alert('Price Cannot Be Zero');
-
+            addDanger("Price Cannot Be Zero");
     }
     handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { currentTarget: { name, value } } = e;

@@ -27,6 +27,10 @@ cursor: pointer;
 }
 .credit-log-table {
   width: 100%;
+  background-image: url("/src/images/doublewave.svg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: bottom;
 }
 .credit-log-table tbody {
   max-height: 300px;

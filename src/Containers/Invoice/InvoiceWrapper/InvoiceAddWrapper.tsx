@@ -10,6 +10,7 @@ import Loader, { ApiStatusInfo, CallStatus } from 'Components/Loader/Loader';
 import IOutgoingService from 'Contracts/services/IOutgoingShipmentService';
 import OutgoingService from 'Services/OutgoingShipmentService';
 import { Heading } from 'Components/Miscellaneous/Miscellaneous';
+import { addDanger } from 'Utilities/AlertUtility';
 
 
 interface IInvoiceAddWrapperProps extends RouteComponentProps<{ id: string }> {
@@ -153,7 +154,7 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 		const { ApiStatus: { Status, Message } } = this.state;
 		return (
 			<div className='invoices'>
-				<Heading label="Fill Invoice"/>
+				<Heading label="Fill Invoice" />
 				<Loader Status={Status} Message={Message}>
 					<div className='d-flex flex-column'>
 						<InvoiceContext.Provider value={{
@@ -209,7 +210,8 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 					const { history } = this.props;
 					history.push("/message/fail", { message: "Some Error Ocurred" });
 				});
-
 		}
+		else
+			addDanger("The Shipment Id Is Not Obtained");
 	};
 }

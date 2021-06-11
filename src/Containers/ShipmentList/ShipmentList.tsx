@@ -1,13 +1,11 @@
 import React, { ChangeEvent, SyntheticEvent } from 'react';
 import Action from 'Components/Action/Action';
-import { CaretDetails } from 'Types/Types';
 import ShipmentElement from 'Containers/ShipmentList/Component/ShipmentElement/ShipmentElement';
-import ComponentProductListProvider from 'Utilities/ComponentProductListProvider';
 import { Product, Flavour, ShipmentDTO, OutOfStock } from 'Types/DTO';
 import MediatorSubject from 'Utilities/MediatorSubject';
 import Observer from 'Utilities/Observer';
-import Alert from 'Components/Alert/Alert';
-import { addDanger, currentAlert$ } from 'Utilities/AlertUtility';
+import { addDanger, addWarn } from 'Utilities/AlertUtility';
+
 type IShipmentListProps = {
 	handleSubmit: (Shipments: ShipmentDTO[]) => void;
 	Products: Product[];
@@ -128,7 +126,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 	handleSubmit() {
 		const element = document.getElementsByClassName('is-invalid');
 		if (element.length > 0) {
-			console.log('InValid Form');
+			addWarn("Please Add Atleast One Item");
 		} else {
 			const { handleSubmit } = this.props;
 			const { ShipmentInfos: Shipments } = this.state;
