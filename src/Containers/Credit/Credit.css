@@ -19,7 +19,24 @@ cursor: pointer;
 }
 .transparent-bg
 {
-  background-color: rgba(0,0,0,0.34);
+  background-color: rgb(132 125 125);
+}
+.modal{
+  animation: fade 1s ease-in-out;
+}
+@keyframes fade{
+  0%{
+    opacity: 0.1;
+  }
+  100%
+  {
+    opacity: 1;
+  }
+}
+.modal-content
+{
+  width: 90%;
+    margin: auto;
 }
 .bg-pay
 {
