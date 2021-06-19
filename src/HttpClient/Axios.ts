@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 
-const BaseUrl = 'https://localhost:5001/api';
+const BaseUrl = '/api';
 const AxiosConfig: AxiosRequestConfig = { headers: { 'Content-Type': 'application/json' } };
 
 const createAxiosInstance = (baseUrl: string): AxiosInstance=>{
