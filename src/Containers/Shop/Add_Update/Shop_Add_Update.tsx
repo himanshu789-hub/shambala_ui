@@ -129,21 +129,20 @@ export default class Add_Update extends React.Component<IAddProps, AddState>
                         this.setState({ ShowSpinner: false });
                         if (!res.data)
                             return this.shopService.Update(Shop)
-                                .then((res) => history.push({ pathname: "/message/pass", search: "?message=Shop Updated Added" }));
                         else
                             this.setState({ ErrorMessage: { Name: "Name Already Exists", Address: '' } });
                     })
+                    .then((res) => history.push({ pathname: "/message/pass", search: "?message=Shop Updated Added" }))
                     .catch(() => history.push({ pathname: "/message/fail" }));
             else
                 this.shopService.IsNameExists(Shop.Title)
                     .then(res => {
                         if (!res.data)
                             return this.shopService.Add(Shop)
-                                .then(() => history.push({ pathname: "/message/pass", search: "?message=New Shop Added" }));
                         else
                             this.setState({ ErrorMessage: { Name: "Name Already Exists", Address: "" } });
                     })
-                    .then((res) => history.push({ pathname: "/message/pass", search: "?message=Shop Updated" }))
+                    .then(() => history.push({ pathname: "/message/pass", search: "?message=New Shop Added" }))
                     .catch(() => history.push({ pathname: "/message/fail" }));
         }
     }

@@ -126,12 +126,16 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 	handleSubmit() {
 		const element = document.getElementsByClassName('is-invalid');
 		if (element.length > 0) {
-			addWarn("Please Add Atleast One Item");
+			addWarn("Please Fill Detail Properly!");
 		} else {
+			console.log('Valid Form');
+		
 			const { handleSubmit } = this.props;
 			const { ShipmentInfos: Shipments } = this.state;
+			if(Shipments.length>0)
 			handleSubmit(Shipments.map(e => e.Shipment));
-			console.log('Valid Form');
+			else 
+             addWarn("Please, Add Atleast One Item");
 		}
 	}
 	addAShipment = () => {
@@ -188,7 +192,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		this.setState(({ ShipmentInfos: IncomingShipments }) => {
 			return { ShipmentInfos: IncomingShipments.filter(e => e.Shipment.Id != Id) };
 		});
-	};
+	}
 	render() {
 		const { ShipmentInfos: IncomingShipments } = this.state;
 		return (

@@ -132,6 +132,7 @@ class Credit extends React.Component<CreditProps, CreditState> {
                     return this.invoiceService.GetInvoiceDetailWithCreditLog(this.props.ShopId, this.props.ShipmentId);
                 })
                 .then(res => this.setState({ InvoiceCreditInfo: res.data }))
+                
         }
         else
             addDanger("Price Cannot Be Zero");
