@@ -38,6 +38,7 @@ const ShowSchemeList = (props: { data: SchemeDTO[] }) => {
     </div>;
 }
 const S = new SchemeService();
+
 export default function SchemeSearchList() {
     const endPoint = S.GetAllByName.bind(S);
     return <div>

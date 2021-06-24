@@ -119,10 +119,9 @@ export default class Add_Update extends React.Component<IAddProps, AddState>
         if (this.IsAllValid()) {
             const { history } = this.props;
             const { Shop } = this.state;
-
             this.setState({ ShowSpinner: true })
             const IsOnUpdate = this.props.Id != undefined;
-
+            
             if (IsOnUpdate)
                 this.shopService.IsNameExists(Shop.Title,Shop.Id).
                     then((res) => {

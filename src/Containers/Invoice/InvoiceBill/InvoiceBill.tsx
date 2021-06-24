@@ -23,7 +23,7 @@ function DisplayInvoiceBill(props: DisplayInvoiceBillProps) {
                 <div className="row">
                     <div className="col-3 form-group">
                         <label>Shop Name</label>
-                        <input type="text" value={Shop.Title} readOnly={true} className="form-control" />
+                        <input type="text" value={Shop.Title}  readOnly={true} className="form-control" />
                     </div>
                     <div className="col-3 form-group">
                         <label>Address</label>

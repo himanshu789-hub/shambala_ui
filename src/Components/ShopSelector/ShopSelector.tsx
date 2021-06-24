@@ -29,6 +29,7 @@ const ShopSelector = function ShopSelector(props: ShopSelectorProps) {
 				className='form-control'
 				value={name}
 				data-toggle="dropdown"
+				data-controlType="search"
 				placeholder='Enter Shop Name'
 				onChange={e => {
 					const ShopName = e.currentTarget.value;

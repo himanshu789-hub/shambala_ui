@@ -125,3 +125,6 @@ transition:opacity 1s linear;
  {
 	 background-color: var(--table-border);
  }
+ tr.selected{
+	 background-color: rgba(0, 0, 0, 0.075);
+ }

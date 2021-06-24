@@ -39,7 +39,7 @@ function Filter(props: FilterProps) {
                 </select>
             </div>
         </fieldset>
-        <button onClick={props.handleSubmit} className="mt-3 btn btn-success">Go</button>
+        <button type="submit" onClick={props.handleSubmit} className="mt-3 btn btn-success">Go</button>
     </div>;
 }
 function InvoiceDetailTable(props: { data: InvoiceDetailDTO[], page: number }) {
@@ -126,10 +126,12 @@ export default class InvoiceDetail extends React.Component<InvoiceDetailProps, I
         const { ShopId, InvocieDetails } = this.state;
         return (<div className="">
             <Heading label="Get Invoice Details" />
-            <div className="col-3 mt-2">
-                <ShopSelector handleSelection={this.handleSelection} />
-            </div>
-            {ShopId && <Filter {...this.state.Filter} handleChange={this.handleChange} handleSubmit={this.handleSubmit} />}
+            <form>
+                <div className="col-3 mt-2">
+                    <ShopSelector handleSelection={this.handleSelection} />
+                </div>
+                {ShopId && <Filter {...this.state.Filter} handleChange={this.handleChange} handleSubmit={this.handleSubmit} />}
+            </form>
             <Loader {...this.state.RequestInfo}>
                 {InvocieDetails && <InvoiceDetailTable data={this.state.InvocieDetails!} page={this.state.Page} />}
             </Loader>

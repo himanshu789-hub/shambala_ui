@@ -44,16 +44,17 @@ export default class FetchList<T> extends React.Component<FetchListProps<T>, Fet
     render() {
         const { FetchRequestInfo } = this.state;
         return <div>
-            <div className="form-inline justify-content-center align-items-start mb-4">
+            <div  className="form-inline justify-content-center align-items-start mb-4">
                 <div className='d-flex flex-column col-5'>
-                    <input name="Name" value={this.state.Name} placeholder="Enter Text To Search"
+                    <input name="Name" data-controlType="search" value={this.state.Name} placeholder="Enter Text To Search"
                         onChange={({ currentTarget: { value } }) => this.setState({ Name: value })} className="form-control" />
                     <small className='form-text  text-danger'>{this.state.ErrorMsg}</small>
                 </div>
-                <button type='submit' className='btn btn-success' onClick={this.handleSubmit}>
+                <button type='button' className='btn btn-success' onClick={this.handleSubmit}>
                     Submit
                 </button>
             </div>
+
             <Loader Status={FetchRequestInfo.Status} Message={FetchRequestInfo.Message}>
                 <React.Fragment>{this.props.render(this.state.data)}</React.Fragment>
             </Loader>
