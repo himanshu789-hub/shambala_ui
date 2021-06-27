@@ -50,11 +50,11 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 		return ((InvoiceMappedObserver.get(subscriptionId) as Observer[]).find(e => e.GetObserverInfo().ComponentId === componentId)) as Observer;
 	}
 	AddASubscriber = () => {
-		const { InvoiceMappedObserver, Mediator } = this.state;
+		const { InvoiceMappedObserver } = this.state;
 		const { OutgoingShipmentId } = this.state;
 		const NewSubscriptionId = Math.random();
 		InvoiceMappedObserver.set(NewSubscriptionId, []);
-		const NewSubscriber: ShopInvoice = { Invoices: [], SchemeId: undefined, ShopId: undefined, DateCreated: new Date(), OutgoingShipmentId: OutgoingShipmentId! };
+		const NewSubscriber: ShopInvoice = { Invoices: [], SchemeId:null, ShopId: undefined, DateCreated: new Date(), OutgoingShipmentId: OutgoingShipmentId! };
 		this.setState(({ ShopSubscribers: ShopSubscriber }) => {
 			return { ShopSubscribers: [...ShopSubscriber, { ShopInvcoice: NewSubscriber, SubscriptionId: NewSubscriptionId }] };
 		});

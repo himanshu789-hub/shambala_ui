@@ -126,12 +126,10 @@ export default class InvoiceDetail extends React.Component<InvoiceDetailProps, I
         const { ShopId, InvocieDetails } = this.state;
         return (<div className="">
             <Heading label="Get Invoice Details" />
-            <form>
                 <div className="col-3 mt-2">
                     <ShopSelector handleSelection={this.handleSelection} />
                 </div>
                 {ShopId && <Filter {...this.state.Filter} handleChange={this.handleChange} handleSubmit={this.handleSubmit} />}
-            </form>
             <Loader {...this.state.RequestInfo}>
                 {InvocieDetails && <InvoiceDetailTable data={this.state.InvocieDetails!} page={this.state.Page} />}
             </Loader>

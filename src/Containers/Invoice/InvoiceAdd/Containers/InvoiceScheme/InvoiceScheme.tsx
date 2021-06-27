@@ -14,7 +14,7 @@ type InvoiceSchemeState = {
 	SelectedScheme?: SchemeDTO;
 	APIStatus: number;
 	APIMessage: string | undefined;
-	ChoosenSchemeId: number;
+	ChoosenSchemeId: number|null;
 	ChoosenSchemeEnumType: number;
 };
 
@@ -24,7 +24,7 @@ export default class InvoiceScheme extends React.PureComponent<InvoiceSchemeProp
 		super(props);
 		this.state = {
 			APIStatus: CallStatus.LOADING,
-			ChoosenSchemeId: -1,
+			ChoosenSchemeId: null,
 			APIMessage: 'Gethering Selected Shop Scheme',
 			ChoosenSchemeEnumType: -1,
 		};
@@ -34,7 +34,6 @@ export default class InvoiceScheme extends React.PureComponent<InvoiceSchemeProp
 		switch (name) {
 			case 'ChoosenSchemeType':
 				const schemeenumtype = value;
-
 				if (schemeenumtype === SchemeType.FIXED) {
 					this.handleSelection((this.state.SelectedScheme as SchemeDTO).Id);
 				}
@@ -48,8 +47,9 @@ export default class InvoiceScheme extends React.PureComponent<InvoiceSchemeProp
 		}
 	};
 	handleSelection = (Id: number) => {
-		this.setState({ ChoosenSchemeId: Id });
-		this.props.handleSchemeSelection('SchemeId', Id);
+		const resultID = Id == -1 ? null : Id;
+		this.setState({ ChoosenSchemeId: resultID });
+		this.props.handleSchemeSelection('SchemeId', resultID);
 	};
 	render() {
 		const { APIStatus, APIMessage, SelectedScheme, ChoosenSchemeId: ChoosenScheme, ChoosenSchemeEnumType: ChoosenSchemeType } = this.state;
@@ -57,12 +57,12 @@ export default class InvoiceScheme extends React.PureComponent<InvoiceSchemeProp
 		return (
 			<Loader Status={APIStatus} Message={APIMessage}>
 				<React.Fragment>
-					<SchemeOptions ChoosenSchemeEnumType={ChoosenSchemeType} 
+					<SchemeOptions ChoosenSchemeEnumType={ChoosenSchemeType}
 						HandleChange={this.handleChange}
 						ShouldDisabledFixed={!SelectedScheme} />
 					{
 						ChoosenSchemeType === SchemeType.VARIABLE && (
-							<SchemeList SchemeId={ChoosenScheme} handleSelection={this.handleSelection} />
+							<SchemeList SchemeId={ChoosenScheme ?? -1} handleSelection={this.handleSelection} />
 						)
 					}
 				</React.Fragment>
@@ -77,11 +77,11 @@ export default class InvoiceScheme extends React.PureComponent<InvoiceSchemeProp
 				.GetByShopId(ShopId)
 				.then(res => {
 					const choosenSchemeType = res.data ? SchemeType.FIXED : SchemeType.VARIABLE;
-					this.setState({ SelectedScheme: res.data,APIStatus:CallStatus.LOADED,ChoosenSchemeId:res.data.Id??-1, APIMessage: undefined, ChoosenSchemeEnumType: choosenSchemeType });
-					if (choosenSchemeType==SchemeType.FIXED)
+					this.setState({ SelectedScheme: res.data, APIStatus: CallStatus.LOADED, ChoosenSchemeId: res.data.Id ?? -1, APIMessage: undefined, ChoosenSchemeEnumType: choosenSchemeType });
+					if (choosenSchemeType == SchemeType.FIXED)
 						this.props.handleSchemeSelection('SchemeId', res.data.Id);
 				})
-				.catch(e => this.setState({ APIStatus: CallStatus.ERROR,APIMessage:undefined }));
+				.catch(() => this.setState({ APIStatus: CallStatus.ERROR, APIMessage: undefined }));
 		}
 	}
 }

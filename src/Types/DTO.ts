@@ -75,7 +75,7 @@ export type SoldItem = {
 };
 export type ShopInvoice = {
 	ShopId: number | undefined;
-	SchemeId: number | undefined;
+	SchemeId: number | null;
 	Invoices: SoldItem[];
 	DateCreated: Date;
 	OutgoingShipmentId: number;
@@ -106,7 +106,7 @@ export type InvoiceDetailDTO = {
 	TotalSellingPrice: number;
 	Scheme?: SchemeDTO;
 	TotalDuePrice: number;
-	IsCompleted:boolean;
+	IsCompleted: boolean;
 }
 type BillInfo = {
 	ProductName: string;
@@ -115,7 +115,7 @@ type BillInfo = {
 	SellingPrice: number;
 	CaretSize: number;
 }
-export interface IInvoiceBillingDTO  extends InvoiceDetailDTO{
+export interface IInvoiceBillingDTO extends InvoiceDetailDTO {
 	Shop: IShopDTO;
 	OutgoingShipment: OutgoingShipment;
 	DateCreated: string;
@@ -136,3 +136,10 @@ export type InvoiceCreditInfoDTO = {
 	TotalDuePrice: number;
 	IsCompleted: boolean;
 }
+export type OutgingReturnDTO =
+	{
+		ProductId: number;
+		FlavourId: number;
+		TotalQuantityReturned: number;
+		TotalQuantityDefected: number;
+	}
