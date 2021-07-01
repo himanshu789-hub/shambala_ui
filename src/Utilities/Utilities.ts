@@ -1,4 +1,4 @@
-import { SchemeKey, SchemeType } from "Enums/Enum";
+﻿import { SchemeKey, SchemeType } from "Enums/Enum";
 import { Product, SchemeDTO } from "Types/DTO";
 
 export const provideValidInteger = (num: string): number => {
@@ -63,5 +63,5 @@ export function toDateText(date: string){
 	return new Date(date).toDateString();
 }
 export function tocurrencyText(num: number) {
-	return "₹" + num;
+	return 0x20B9 + num;
 }
