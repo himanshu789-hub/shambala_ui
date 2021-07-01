@@ -8,9 +8,12 @@ function ShopSelector(props: { handleSelection(Id: number): void }) {
 		return new ShopService().GetAllByName(name).then(res => res.data);
 	}
 	function HandleEnter(e: IShopBaseDTO) {
-		props.handleSelection(e.Id);
+		debugger;
+		props.handleSelection(e ? e.Id : -1);
+
+
 	}
-	
+
 	return <SearchPanel<IShopBaseDTO> PlaceHolder="Enter Shop Name" DisplayFunction={e => <div>{e.Title}</div>}
 		FetchPoint={FetchName} HandleEnter={HandleEnter} PropertyName={"Title"} />
 }
