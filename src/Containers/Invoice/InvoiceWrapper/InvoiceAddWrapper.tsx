@@ -157,7 +157,7 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 					if (res.Result)
 						return this.PostShipmentAsync();
 				})
-				.catch(() => this.setState({ ApiStatus: { Status: CallStatus.ERROR, Message: undefined } }));
+					.catch(() => this.setState({ ApiStatus: { Status: CallStatus.ERROR, Message: undefined } }));
 			else
 				this.PostShipmentAsync()
 					.catch(() => this.setState({ ApiStatus: { Status: CallStatus.ERROR, Message: undefined } }));
@@ -206,7 +206,7 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 
 		return (<div className='invoices'>
 			<Heading label="Fill Credit Detail" />
-
+			{DisplayComponent}
 		</div>);
 	}
 	componentDidMount() {
