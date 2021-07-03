@@ -1,15 +1,20 @@
 ﻿import { SchemeKey, SchemeType } from "Enums/Enum";
 import { Product, SchemeDTO } from "Types/DTO";
 
+export const IsValidInteger = function (num: string): boolean {
+	if (num.length == 0)
+		return false;
+	return num.search("[\D]")==-1;
+}
 export const provideValidInteger = (num: string): number => {
 	if (!num.length) return 0;
 	const parseInteger = Number.parseInt(num);
 	if (parseInteger) return parseInteger;
 	return Number.parseInt(num.substring(0, num.length - 1));
 };
-export function provideValidFloat(num:string):number{
-	const re =Number.parseFloat(Number.parseFloat(num).toFixed(2));
-	return num.indexOf('.')!=-1?re+0.00:re;
+export function provideValidFloat(num: string): number {
+	const re = Number.parseFloat(Number.parseFloat(num).toFixed(2));
+	return num.indexOf('.') != -1 ? re + 0.00 : re;
 }
 export function deepCloneProducts(products: Product[]) {
 	let CloneProducts = [];
@@ -43,6 +48,16 @@ export function getValidSchemeValue(Type: SchemeKey, val: number) {
 	return (val).toPrecision(0);
 }
 
+export const KeyCode = {
+	UP: 38,
+	DOWN: 40,
+	ENTER: 13,
+	ESC: 27,
+	HOME: 36,
+	END: 35,
+	LEFT: 37,
+	RIGHT: 39
+}
 export function getSchemeText(scheme?: SchemeDTO) {
 	let result = "";
 	if (!scheme)
@@ -59,7 +74,7 @@ export function getSchemeText(scheme?: SchemeDTO) {
 	}
 	return result;
 }
-export function toDateText(date: string){
+export function toDateText(date: string) {
 	return new Date(date).toDateString();
 }
 export function tocurrencyText(num: number) {

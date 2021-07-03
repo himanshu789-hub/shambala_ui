@@ -2,6 +2,7 @@ import Loader, { CallStatus } from 'Components/Loader/Loader';
 import React, { ChangeEvent, MouseEvent, MouseEventHandler, useState } from 'react';
 import { useEffect } from 'react';
 import { KeyboardEvent } from 'react';
+import { KeyCode  as Keys} from 'Utilities/Utilities';
 import './SearchPanel.css';
 
 interface IComboBox<T> {
@@ -10,12 +11,6 @@ interface IComboBox<T> {
     DisplayFunction(data: T): JSX.Element;
     PlaceHolder: string;
     PropertyName: string;
-}
-const Keys = {
-    UP: 38,
-    DOWN: 40,
-    ENTER: 13,
-    ESC: 27
 }
 const ComboxBoxHelphers = {
     Id: "x-combobox",
@@ -132,6 +127,8 @@ const SearchPanel = function <T>(props: SearchPanelProps<T>) {
         if (e.altKey && e.key == "/") {
             makeInputFocus();
         }
+        if (e.key == "Enter")
+            makeInputFocus();
     }
 
 

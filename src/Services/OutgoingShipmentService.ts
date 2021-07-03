@@ -1,20 +1,22 @@
-import { AxiosResponse } from 'axios';
+import { AxiosPromise, AxiosResponse } from 'axios';
 import IOutgoingShipment from 'Contracts/services/IOutgoingShipmentService';
 import { OutgoingShipmentClient } from 'HttpClient/Axios';
-import { ShipmentDTO, OutgoingShipmentInfo, PostOutgoingShipment, ShopInvoice } from 'Types/DTO';
+import { ShipmentDTO, OutgoingShipmentInfo, PostOutgoingShipment, ShopInvoice, IOutgoingShipmentLedgerWithOldDebit, LedgerStatus, IOutgoingShipmentLedger } from 'Types/DTO';
 import { OutgoingShipment, OutgingReturnDTO } from 'Types/DTO';
 
-// const mock = new MockAdapter(OutgoingShipmentClient, { delayResponse: 1000 });
-// mock.onGet(/\/outgoing\/getbyid/i).reply(200, OutgoingShipmentProducts);
-// mock.onGet(/\/outgoing\/search/i).reply(200, OutgoingShipmentValue);
-
 export default class OutgoingService implements IOutgoingShipment {
-	Complete(Id: number, invoices: ShopInvoice[]): Promise<AxiosResponse<void>> {
+	ValidateShipmentAmount(ledgers: IOutgoingShipmentLedger[]): AxiosPromise<LedgerStatus> {
+		return OutgoingShipmentClient.post('/calculateledger',ledgers);
+	}
+	GetById(Id: number): Promise<AxiosResponse<OutgoingShipment>> {
+		return OutgoingShipmentClient.get('/getbyId', { params: { Id } });
+	}
+	Complete(Id: number, invoices: IOutgoingShipmentLedgerWithOldDebit[]): Promise<AxiosResponse<boolean>> {
 		var data = invoices.map(e => { return { ...e, DateCreated: new Date() } });
 		return OutgoingShipmentClient.post(`/complete/${Id}`, data);
 	}
 	Return(Id: number, shipments: ShipmentDTO[]): Promise<AxiosResponse<void>> {
-	const returnShipments = 	shipments.map(e => {
+		const returnShipments = shipments.map(e => {
 			const shipment: OutgingReturnDTO = { FlavourId: e.FlavourId, ProductId: e.ProductId, TotalQuantityReturned: e.TotalRecievedPieces, TotalQuantityDefected: e.TotalDefectedPieces };
 			return shipment;
 		});

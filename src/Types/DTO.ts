@@ -121,7 +121,11 @@ export interface IInvoiceBillingDTO extends InvoiceDetailDTO {
 	DateCreated: string;
 	BillingInfo: BillInfo[];
 }
-
+export type LedgerStatus = {
+	Result: boolean;
+	TotalAmount: number;
+    YourTotal:number; 
+}
 export type CreditDTO = {
 	OutgoingShipmentId: number;
 	ShopId: number;
@@ -129,12 +133,25 @@ export type CreditDTO = {
 	Amount: number;
 	DateRecieved: string;
 }
+export type CreditLeftOver = {
+	ShopId: number;
+	Credit: number;
+}
 export type InvoiceCreditInfoDTO = {
 	Shop: IShopDTO;
 	OutgoingShipment: OutgoingShipment;
 	Credits: CreditDTO[];
 	TotalDuePrice: number;
 	IsCompleted: boolean;
+}
+export interface IOutgoingShipmentLedger {
+	ShopId: number;
+	Credit: number;
+	Debit: number;
+}
+export interface IOutgoingShipmentLedgerWithOldDebit extends IOutgoingShipmentLedger {
+
+	OldDebit: number;
 }
 export type OutgingReturnDTO =
 	{

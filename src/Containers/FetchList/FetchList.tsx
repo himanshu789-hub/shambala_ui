@@ -1,6 +1,6 @@
 import { AxiosResponse } from "axios";
 import Loader, { ApiStatusInfo, CallStatus } from "Components/Loader/Loader";
-import React from "react"
+import React from "react";
 
 type FetchAPI<T> = (name: string) => Promise<AxiosResponse<T[]>>;
 type FetchListProps<T extends {}> = {

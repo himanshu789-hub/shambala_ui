@@ -1,6 +1,6 @@
 import Loader, { CallStatus } from 'Components/Loader/Loader';
 import ShipmentList from 'Containers/ShipmentList/ShipmentList';
-import IOutgoingService from 'Contracts/services/IOutgoingShipmentService';
+import IOutgoingShipmentService from 'Contracts/services/IOutgoingShipmentService';
 import { OutgoingStatus } from 'Enums/Enum';
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
@@ -28,7 +28,7 @@ function OutgoingStatusDisplay(props: { Status: OutgoingStatus }) {
 	return <div className="alert alert-danger">{message}</div>;
 }
 export default class OutgoingShipmentReturn extends React.Component<IOutgoingShipmentReturnProps, OutgoingShipmentReturnState> {
-	_outgoingService: IOutgoingService;
+	_outgoingService: IOutgoingShipmentService;
 	constructor(props: IOutgoingShipmentReturnProps) {
 		super(props);
 		this.state = {

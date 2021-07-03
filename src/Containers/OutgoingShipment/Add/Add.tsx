@@ -4,7 +4,7 @@ import IProductService from 'Contracts/services/IProductService';
 import ProductService from 'Services/ProductService';
 import { ShipmentDTO, PostOutgoingShipment, Product, SalesmanDTO, BadRequestError, OutOfStock } from 'Types/DTO';
 import Loader, { CallStatus } from 'Components/Loader/Loader';
-import IOutgoingService from 'Contracts/services/IOutgoingShipmentService';
+import IOutgoingShipmentService from 'Contracts/services/IOutgoingShipmentService';
 import OutgoingService from 'Services/OutgoingShipmentService';
 import SalesmanList from 'Components/SalesmanList/SalesmanList';
 import { RouteChildrenProps } from 'react-router';
@@ -20,7 +20,7 @@ type OutgoingShipmentAddState = {
 };
 export default class OutgoingShipmentAdd extends React.Component<OutgoingShipmentAddProps, OutgoingShipmentAddState> {
 	_productService: IProductService;
-	_outgoingShipmentService: IOutgoingService;
+	_outgoingShipmentService: IOutgoingShipmentService;
 	constructor(props: OutgoingShipmentAddProps) {
 		super(props);
 		this._productService = new ProductService();

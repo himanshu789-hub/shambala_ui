@@ -1,7 +1,8 @@
 import { AxiosPromise } from "axios";
-import {  CreditDTO, InvoiceCreditInfoDTO } from "Types/DTO";
+import {  CreditDTO, CreditLeftOver, InvoiceCreditInfoDTO } from "Types/DTO";
 
 export default interface ICreditService {
     Add(Credit: CreditDTO): AxiosPromise<CreditDTO>;
     GetCreditInfo(shipmentId: number, shopId: number):AxiosPromise<InvoiceCreditInfoDTO>;
+    GetCreditLeftByShopIds(shopIds:number[]):AxiosPromise<CreditLeftOver[]>;
 }

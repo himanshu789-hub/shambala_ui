@@ -1,217 +1,224 @@
-import React, { ReactNode } from 'react';
-import InvoiceAdd from '../InvoiceAdd/InvoiceAdd';
+import React, { Fragment, KeyboardEvent, ReactNode } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
-import MediatorSubject from 'Utilities/MediatorSubject';
-import Action from 'Components/Action/Action';
-import { ShopInvoice, Product, SoldItem } from 'Types/DTO';
-import { InvoiceContext } from './Context';
-import Observer from 'Utilities/Observer';
+import { ShopInvoice, Product, SoldItem, IOutgoingShipmentLedgerWithOldDebit, IShopBaseDTO, LedgerStatus, OutgoingShipment, IOutgoingShipmentLedger, CreditLeftOver } from 'Types/DTO';
 import Loader, { ApiStatusInfo, CallStatus } from 'Components/Loader/Loader';
-import IOutgoingService from 'Contracts/services/IOutgoingShipmentService';
+import IOutgoingShipmentService from 'Contracts/services/IOutgoingShipmentService';
 import OutgoingService from 'Services/OutgoingShipmentService';
-import { Heading } from 'Components/Miscellaneous/Miscellaneous';
+import { Heading, Spinner } from 'Components/Miscellaneous/Miscellaneous';
+import GridView from 'Components/GridView/GridView';
+import { useState } from 'react';
+import ShopSelector from 'Components/ShopSelector/ShopSelector';
+import { IsValidInteger, tocurrencyText } from 'Utilities/Utilities';
 import { addDanger } from 'Utilities/AlertUtility';
-
+import CreditService from 'Services/CreditService';
+import { OutgoingStatus } from 'Enums/Enum';
 
 interface IInvoiceAddWrapperProps extends RouteComponentProps<{ id: string }> {
 }
 
+function FloatingInput(props: React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>) {
+	const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+		if (!((e.keyCode >= 48 && e.keyCode <= 57) || (e.keyCode >= 96 && e.keyCode <= 105) || e.keyCode == 190))
+			e.preventDefault();
+		if (e.keyCode == 190)
+			e.currentTarget.value.includes(".") && e.preventDefault();
 
+		props.onKeyDown && props.onKeyDown(e);
+	}
+	const onBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+		if (e.currentTarget.value.charAt(e.currentTarget.value.length - 1) == '.')
+			e.currentTarget.value = e.currentTarget.value + '00'
+
+		props.onBlur && props.onBlur(e);
+	}
+	return <input {...props} onKeyDown={handleKeyDown} onBlur={onBlur} />
+}
 type InvoiceAddWrapperState = {
-	Mediator: MediatorSubject;
 	ShopSubscribers: ShopSubscriber[];
-	Products: Product[];
-	InvoiceMappedObserver: Map<number, Observer[]>;
 	ApiStatus: ApiStatusInfo;
 	OutgoingShipmentId?: number;
+	LedgerStatus?: LedgerStatus;
+	OutgoingShipment?: OutgoingShipment;
+	ShowSpinner: boolean;
+	CreditLeftOvers: CreditLeftOver[];
 };
+type ShopLedger = {
+	Shop: IShopBaseDTO;
+	Credit: number;
+	Debit: number;
+	OldDebit: number;
+}
 type ShopSubscriber = {
-	SubscriptionId: number;
-	ShopInvcoice: ShopInvoice;
+	Id: number;
+	ShopLedger: ShopLedger;
 	IsShopUnique?: boolean;
 };
+type FloatingPointWrapperProps = {
+	Id: number;
+	Name: string;
+	Value: any;
+	handleChange(SubscriptionId: number, name: string, value: any): void;
+}
+
+
+function FloatingPointWrapper(props: FloatingPointWrapperProps) {
+	const { handleChange, Id, Name, Value } = props;
+	const [fraction, setFraction] = useState<string>(Value + '');
+	const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+		setFraction(e.currentTarget.value);
+		handleChange(Id, Name, e.currentTarget.value);
+	}
+	return <FloatingInput {...props} name={Name} onChange={(e) => setFraction(e.currentTarget.value)} value={fraction} onBlur={handleBlur} />
+}
+function CalculateTotalAmountInHand(ledgers: IOutgoingShipmentLedger[]) {
+	let total: number = 0;
+	for (var i = 0; i < ledgers.length; i++) {
+		total += ledgers[i].Credit;
+	}
+	return total;
+}
+const ShowLegerStatus = (props: { LedgerStatus?: LedgerStatus, AmountInHand: number }) => {
+	const { LedgerStatus } = props;
+	if (!LedgerStatus)
+		return <React.Fragment></React.Fragment>;
+
+	if (!LedgerStatus.Result)
+		return <div className="alert alter-danger">Total Shipment Cost Mismatch : {tocurrencyText(LedgerStatus.TotalAmount - LedgerStatus.YourTotal)}</div>
+	return <div className="alert alert-success">Amount In Hand : {tocurrencyText(props.AmountInHand)}</div>;
+}
+
+function toLedgersWithoutOldDebit(shopSubscribers: ShopSubscriber[]) {
+	return shopSubscribers.map((e): IOutgoingShipmentLedger => { return { Credit: e.ShopLedger.Credit, Debit: e.ShopLedger.Debit, ShopId: e.ShopLedger.Shop.Id } });
+}
+function toLedgersWithOldDebit(shopSubscribers: ShopSubscriber[]) {
+	return shopSubscribers.map((e): IOutgoingShipmentLedgerWithOldDebit => { return { Credit: e.ShopLedger.Credit, Debit: e.ShopLedger.Debit, ShopId: e.ShopLedger.Shop.Id, OldDebit: e.ShopLedger.OldDebit } });
+}
 
 export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrapperProps, InvoiceAddWrapperState> {
 
-	_outgoingService: IOutgoingService;
+	_outgoingService: IOutgoingShipmentService;
 	constructor(props: IInvoiceAddWrapperProps) {
 		super(props);
 		this.state = {
-			Mediator: new MediatorSubject([]),
-			ShopSubscribers: [],
-			Products: [],
-			ApiStatus: { Status: CallStatus.EMPTY, Message: '' },
-			InvoiceMappedObserver: new Map()
+			ShopSubscribers: [], CreditLeftOvers: [],
+			ApiStatus: { Status: CallStatus.EMPTY, Message: '' }, ShowSpinner: false
 		};
 		this._outgoingService = new OutgoingService();
 	}
-	GetObserverBySubscriptionAndComponentId = (subscriptionId: number, componentId: number): Observer => {
-		const { InvoiceMappedObserver } = this.state;
-		return ((InvoiceMappedObserver.get(subscriptionId) as Observer[]).find(e => e.GetObserverInfo().ComponentId === componentId)) as Observer;
-	}
 	AddASubscriber = () => {
-		const { InvoiceMappedObserver } = this.state;
-		const { OutgoingShipmentId } = this.state;
 		const NewSubscriptionId = Math.random();
-		InvoiceMappedObserver.set(NewSubscriptionId, []);
-		const NewSubscriber: ShopInvoice = { Invoices: [], SchemeId:null, ShopId: undefined, DateCreated: new Date(), OutgoingShipmentId: OutgoingShipmentId! };
+		this.setState(({ ShopSubscribers }) => { return { ShopSubscribers: [...ShopSubscribers, { Id: NewSubscriptionId, ShopLedger: { Credit: 0, Debit: 0, Shop: { Address: '', Id: -1, Title: '' }, OldDebit: 0 } }] } })
+	};
+
+	HandleDelete = (Id: number) => {
 		this.setState(({ ShopSubscribers: ShopSubscriber }) => {
-			return { ShopSubscribers: [...ShopSubscriber, { ShopInvcoice: NewSubscriber, SubscriptionId: NewSubscriptionId }] };
+			return { ShopSubscribers: ShopSubscriber.filter(e => e.Id != Id) };
 		});
 	};
-	AddASubscriberComponent = (subscriptionId: number) => {
-		const { Mediator, InvoiceMappedObserver } = this.state;
-		const ComponentId = Math.random() * 10;
-		const Observer = Mediator.GetAObserver(subscriptionId, ComponentId);
+	HandeShopLedger = (SubscriptionId: number, name: string, value: any) => {
 		let { ShopSubscribers } = this.state;
-		const Observers = InvoiceMappedObserver.get(subscriptionId) as Observer[];
-		Observers.push(Observer);
-		const OldSubscriber = ShopSubscribers.find(e => e.SubscriptionId == subscriptionId) as ShopSubscriber;
-		const OldShopInvoice = OldSubscriber.ShopInvcoice as ShopInvoice;
-		OldShopInvoice.Invoices.push({ CaretSize: 0, FlavourId: -1, ProductId: -1, Id: ComponentId, Quantity: 0 });
-		let NewShopSubscriber = { ...OldSubscriber, ShopInvcoice: { ...OldShopInvoice, Invoices: [...OldShopInvoice.Invoices] } } as ShopSubscriber;
-		ShopSubscribers = ShopSubscribers.map(e => e.SubscriptionId == subscriptionId ? NewShopSubscriber : e);
-		this.setState({ ShopSubscribers: ShopSubscribers });
-	}
-	HandleDelete = (SubscriptionId: number) => {
-		const { Mediator } = this.state;
-		Mediator.Unsubscribe(SubscriptionId);
-
-		this.setState(({ ShopSubscribers: ShopSubscriber }) => {
-			return { ShopSubscribers: ShopSubscriber.filter(e => e.SubscriptionId != SubscriptionId) };
-		});
-
-	};
-	HandleComponentDelete = (subscriptionId: number, componentId: number) => {
-		const { Mediator, InvoiceMappedObserver, ShopSubscribers } = this.state;
-
-		const Observers = (InvoiceMappedObserver.get(subscriptionId) as Observer[]).filter(e => e.GetObserverInfo().ComponentId != componentId);
-		InvoiceMappedObserver.set(subscriptionId, Observers);
-		Mediator.UnsubscribeAComponent(subscriptionId, componentId);
-		const OldSubscriber = ShopSubscribers.find(e => e.SubscriptionId === subscriptionId);
-		const OldShopInvoice = OldSubscriber?.ShopInvcoice as ShopInvoice;
-		const NewShopInvoice: ShopInvoice = { ...OldShopInvoice, Invoices: OldShopInvoice.Invoices.filter(e => e.Id !== componentId) };
-		this.setState({ ShopSubscribers: ShopSubscribers.map(e => e.SubscriptionId == subscriptionId ? { ...e, ShopInvcoice: NewShopInvoice } : e) });
-	}
-	HandeShopInvoice = (SubscriptionId: number, ComponentId: number, name: string, value: any) => {
-		let { ShopSubscribers: ShopSubscriber } = this.state;
-		const ShopInvoice = ShopSubscriber.find(e => e.SubscriptionId == SubscriptionId)?.ShopInvcoice as ShopInvoice;
-		let SoldItem = ShopInvoice.Invoices.find(e => e.Id == ComponentId) as SoldItem;
-		// if (name == 'FlavourId') {
-		// 	Mediator.SetASubscription(SubscriptionId, ComponentId, SoldItem.ProductId, value);
-		// }
-		// else if (name == 'ProductId') {
-		// 	Mediator.SetASubscription(SubscriptionId, ComponentId, value);
-		// }
-		// else if (name == 'Quantity') {
-		// 	Mediator.SetASubscription(SubscriptionId, ComponentId, SoldItem.ProductId, SoldItem.FlavouId, value);
-		// }
-		if (name == "ProductId") {
-			SoldItem.CaretSize = this.GetCaretSizeByProductId(value);
-			SoldItem.FlavourId = -1;
-		}
-		if (Object.keys(SoldItem).includes(name)) {
-			ShopInvoice.Invoices = ShopInvoice.Invoices.map(e => {
-				if (e.Id == ComponentId)
-					return { ...SoldItem, [name]: value };
-				else return e;
+		this.setState({
+			ShopSubscribers: ShopSubscribers.map(e => {
+				if (e.Id == SubscriptionId)
+					return { ...e, [name]: value };
+				return e;
 			})
-			ShopSubscriber = ShopSubscriber.map(e => {
-				if (e.SubscriptionId == SubscriptionId)
-					return { ...e, ShopInvcoice: { ...e.ShopInvcoice } };
-				else return e;
-			})
-		}
-		SoldItem = { ...SoldItem, [name]: value };
-		this.setState({ ShopSubscribers: ShopSubscriber }, () => console.log("Handle CHanged Executed"));
-		console.log('Handle CHanged Out');
+		})
 	};
-	HandleShopOrSchemeChange = (subscriptionId: number, name: string, value: any) => {
-		let { ShopSubscribers } = this.state;
-		const CurrentShupscriber = ShopSubscribers.find(e => e.SubscriptionId == subscriptionId) as ShopSubscriber;
+	HandleShopSelection = (Id: number, shop: IShopBaseDTO) => {
+		const { ShopSubscribers } = this.state;
+		const IsShopUnique = ShopSubscribers.find(e => e.Id != Id && e.ShopLedger.Shop.Id == shop.Id) == null;
 
-		const ShopInvoice = CurrentShupscriber.ShopInvcoice as ShopInvoice;
-		if (Object.keys(ShopInvoice).includes(name)) {
-			if (name == "ShopId") {
-				if (CurrentShupscriber) {
-					const IsAlreadySelected = ShopSubscribers.find(e => e.ShopInvcoice.ShopId == value) != null;
-					CurrentShupscriber.IsShopUnique = !IsAlreadySelected;
-				}
+		this.setState(({ ShopSubscribers }) => {
+			return {
+				ShopSubscribers: ShopSubscribers.map((e) => e.Id == Id ? { ...e, Shop: shop, IsShopUnique } : e)
 			}
-			ShopSubscribers = ShopSubscribers.map(e =>
-				e.SubscriptionId == subscriptionId ? { ...CurrentShupscriber, ShopInvcoice: { ...ShopInvoice, [name]: value } } : e
-			);
-
-		}
-		this.setState({ ShopSubscribers: ShopSubscribers });
+		});
 	}
-
-	GetCaretSizeByProductId = (productId: number): number => {
-		const { Products } = this.state;
-		return Products.find(e => e.Id == productId)?.CaretSize ?? 0;
+	CheckShipmentAmountAsync = (): Promise<LedgerStatus> => this._outgoingService.ValidateShipmentAmount(toLedgersWithoutOldDebit(this.state.ShopSubscribers)).then(res => { this.setState({ LedgerStatus: res.data }); return res.data });
+	CheckOldDebtClearedAsync = (): Promise<CreditLeftOver[]> => new CreditService().GetCreditLeftByShopIds(this.state.ShopSubscribers.map(e => e.ShopLedger.Shop.Id)).then(res => { this.setState({ CreditLeftOvers: res.data }); return res.data; })
+	CompleteAsync = () => {
+		const { OutgoingShipmentId } = this.state;
+		if (OutgoingShipmentId)
+			this._outgoingService.Complete(OutgoingShipmentId, toLedgersWithOldDebit(this.state.ShopSubscribers))
+	}
+	PostShipmentAsync = () => {
+		return this.CheckOldDebtClearedAsync().then(res => {
+			if (res.length == 0)
+				return this.CompleteAsync();
+		})
+	}
+	HandleSubmit = () => {
+		const { ShopSubscribers, LedgerStatus } = this.state;
+		if (ShopSubscribers.length > 0) {
+			const IsCheckShipmentCompleted = LedgerStatus?.Result ?? false;
+			if (!IsCheckShipmentCompleted)
+				this.CheckShipmentAmountAsync().then(res => {
+					if (res.Result)
+						return this.PostShipmentAsync();
+				})
+				.catch(() => this.setState({ ApiStatus: { Status: CallStatus.ERROR, Message: undefined } }));
+			else
+				this.PostShipmentAsync()
+					.catch(() => this.setState({ ApiStatus: { Status: CallStatus.ERROR, Message: undefined } }));
+		}
+		else
+			addDanger('Please Add Some Ledger');
 	};
+
 	render() {
-		const { ApiStatus: { Status, Message } } = this.state;
-		return (
-			<div className='invoices'>
-				<Heading label="Fill Invoice" />
-				<Loader Status={Status} Message={Message}>
-					<div className='d-flex flex-column'>
-						<InvoiceContext.Provider value={{
-							GetObserverBySubscriberAndComponentId: this.GetObserverBySubscriptionAndComponentId,
-							HandleChange: this.HandeShopInvoice
-							// HandleShopOrSchemeChange: this.HandleShopOrSchemeChange,
-							// HandleComponentDelete:this.HandleComponentDelete,
-							// AddASoldItem: this.AddASubscriberComponent
-						}}>
-
-							{this.state.ShopSubscribers.map(e => (
-
-								<InvoiceAdd
-									SubscriptionId={e.SubscriptionId}
-									key={e.SubscriptionId}
-									HandleDelete={this.HandleDelete}
-									ShopInvoice={e.ShopInvcoice}
-									AddASubscriberComponent={this.AddASubscriberComponent}
-									HandleShopOrSchemeChange={this.HandleShopOrSchemeChange}
-									IsShopAlreadySelected={e.IsShopUnique != undefined ? !e.IsShopUnique : undefined}
-									GetCaretSizeByProductId={this.GetCaretSizeByProductId}
-									HandleComponentDelete={this.HandleComponentDelete}
-								/>
+		const { ShowSpinner, ApiStatus: { Status, Message }, ShopSubscribers, LedgerStatus, OutgoingShipmentId, OutgoingShipment } = this.state;
+		const header = <tr>
+			<th>S.No.</th>
+			<th>Shop Name</th>
+			<th>Debit</th>
+			<th>Credit</th>
+			<th>Old Due</th>
+			<th>Action</th>
+		</tr>;
+		const length = ShopSubscribers.length;
+		let DisplayComponent = <Fragment></Fragment>;
 
 
-							))}
-						</InvoiceContext.Provider>
-					</div>
-					<Action handleAdd={this.AddASubscriber} handleProcess={this.HandleSubmit} />
-				</Loader>
-			</div>
+		if (!OutgoingShipmentId)
+			DisplayComponent = <div className="alert alert-danger">Shopment Id Is Not Valid</div>;
+		else {
+			if (OutgoingShipment?.Status == OutgoingStatus.COMPLETED)
+				DisplayComponent = <div className="alert alert-warning">Shipment Has Been Processed</div>;
+			else
+				DisplayComponent = <Loader Status={Status} Message={Message} Overlay={true}>
+					<GridView<ShopSubscriber> HeaderDisplay={header} >
+						{this.state.ShopSubscribers.map((e, index) => {
+							return (<tr>
+								<td>{index + 1}</td>
+								<td><ShopSelector handleSelection={this.HandleShopSelection.bind(this, e.Id)} /></td>
+								<td><FloatingPointWrapper Id={e.Id} Name="Credit" Value={e.ShopLedger.Credit} handleChange={this.HandeShopLedger} /></td>
+								<td><FloatingPointWrapper Id={e.Id} Name="Debit" Value={e.ShopLedger.Debit} handleChange={this.HandeShopLedger} /></td>
+								<td><FloatingPointWrapper Id={e.Id} Name="OldDebit" Value={e.ShopLedger.OldDebit} handleChange={this.HandeShopLedger} /></td>
+								<td>{length - 1 != index ? <button onClick={this.AddASubscriber}><i className="fa fa-minus fa-2x"></i></button> : <button onClick={() => this.HandleDelete(e.Id)} className="fa fa-plus fa-2x"></button>}</td>
+							</tr>);
+						})}
+					</GridView>
+					<ShowLegerStatus LedgerStatus={this.state.LedgerStatus} AmountInHand={LedgerStatus?.Result ? CalculateTotalAmountInHand(toLedgersWithoutOldDebit(ShopSubscribers)) : 0} />
+					{!LedgerStatus?.Result && <button disabled={ShowSpinner} onClick={this.HandleSubmit}>Submit <Spinner show={ShowSpinner} /></button>}
+				</Loader>;
+		}
 
-		);
+		return (<div className='invoices'>
+			<Heading label="Fill Credit Detail" />
+
+		</div>);
 	}
 	componentDidMount() {
 		const { params: { id } } = this.props.match;
-		const Id = Number.parseInt(id);
-		if (Id) {
-			this.setState({ ApiStatus: { Status: CallStatus.LOADING, Message: 'Gathering Shipment Product Info' }, OutgoingShipmentId: Id });
-			this._outgoingService.GetShipmentProductDetailsById(Id)
-				.then(res => this.setState({ Mediator: new MediatorSubject(res.data.Products), Products: res.data.Products, ApiStatus: { Status: CallStatus.LOADED, Message: '' } })).catch(() => this.setState({ ApiStatus: { Status: CallStatus.LOADED, Message: undefined } }));
+		if (id && IsValidInteger(id)) {
+			this.setState({ ApiStatus: { Status: CallStatus.LOADING, Message: "Gathering Shipment Info" }, OutgoingShipmentId: Number.parseInt(id) });
+			this._outgoingService.GetById(Number.parseInt(id))
+				.then(res => res.data && this.setState({
+					OutgoingShipmentId: Number.parseInt(id),
+					OutgoingShipment: res.data, ApiStatus: { Status: CallStatus.LOADED }
+				}))
+				.catch(() => this.setState({ ApiStatus: { Status: CallStatus.ERROR, Message: undefined } }));
 		}
 	}
-
-	HandleSubmit = () => {
-		const { ShopSubscribers, OutgoingShipmentId } = this.state;
-		if (OutgoingShipmentId) {
-			this._outgoingService.Complete(OutgoingShipmentId, ShopSubscribers.map(e => e.ShopInvcoice))
-				.then(() => {
-					const { history } = this.props;
-					history.push("/message/pass", { message: "Completed Sucessfully" });
-				}).catch(() => {
-					const { history } = this.props;
-					history.push("/message/fail", { message: "Some Error Ocurred" });
-				});
-		}
-		else
-			addDanger("The Shipment Id Is Not Obtained");
-	};
 }

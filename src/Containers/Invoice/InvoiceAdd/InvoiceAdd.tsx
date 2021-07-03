@@ -72,7 +72,7 @@ export default class InvoiceAdd extends React.PureComponent<IInvoiceProps, Invoi
 					</button>
 				</div>
 				<div className='card-body'>
-					{ShopId && <InvoiceScheme handleSchemeSelection={this.HandleSelection} ShopId={ShopId} />}
+					{/* {ShopId && <InvoiceScheme handleSchemeSelection={this.HandleSelection} ShopId={ShopId} />} */}
 					{ShopId  && !IsShopAlreadySelected && (
 						<InvoiceContext.Consumer>
 							{
