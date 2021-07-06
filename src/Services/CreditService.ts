@@ -5,8 +5,8 @@ import { CreditDTO,  CreditLeftOver,  InvoiceCreditInfoDTO } from "Types/DTO";
 
 
 export default class CreditService implements ICreditService {
-    GetCreditLeftByShopIds(shopIds: number[]): AxiosPromise<CreditLeftOver[]> {
-        return CreditClient.post('/getcreditlefttillshipmentId',shopIds);
+    GetCreditLeftByShopIds(credits:CreditLeftOver[]): AxiosPromise<CreditLeftOver[]> {
+        return CreditClient.post('/getleftover',credits);
     }
     GetCreditInfo(shipmentId: number, shopId: number): AxiosPromise<InvoiceCreditInfoDTO> {
         throw new Error("Method not implemented.");

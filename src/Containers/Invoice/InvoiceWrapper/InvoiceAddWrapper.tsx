@@ -52,6 +52,7 @@ type ShopSubscriber = {
 	Id: number;
 	ShopLedger: ShopLedger;
 	IsShopUnique?: boolean;
+	CreditOverDue?: CreditLeftOver;
 };
 type FloatingPointWrapperProps = {
 	Id: number;
@@ -83,7 +84,7 @@ const ShowLegerStatus = (props: { LedgerStatus?: LedgerStatus, AmountInHand: num
 		return <React.Fragment></React.Fragment>;
 
 	if (!LedgerStatus.Result)
-		return <div className="alert alter-danger">Total Shipment Cost Mismatch : {tocurrencyText(LedgerStatus.TotalAmount - LedgerStatus.YourTotal)}</div>
+		return <div className="alert alter-danger">Total Shipment Cost Mismatch : {tocurrencyText(LedgerStatus.TotalShipmentPrice - LedgerStatus.YourTotal)}</div>
 	return <div className="alert alert-success">Amount In Hand : {tocurrencyText(props.AmountInHand)}</div>;
 }
 
@@ -135,8 +136,24 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 			}
 		});
 	}
-	CheckShipmentAmountAsync = (): Promise<LedgerStatus> => this._outgoingService.ValidateShipmentAmount(toLedgersWithoutOldDebit(this.state.ShopSubscribers)).then(res => { this.setState({ LedgerStatus: res.data }); return res.data });
-	CheckOldDebtClearedAsync = (): Promise<CreditLeftOver[]> => new CreditService().GetCreditLeftByShopIds(this.state.ShopSubscribers.map(e => e.ShopLedger.Shop.Id)).then(res => { this.setState({ CreditLeftOvers: res.data }); return res.data; })
+	CheckShipmentAmountAsync = (): Promise<LedgerStatus> => this._outgoingService.CheckShipmentAmount(toLedgersWithoutOldDebit(this.state.ShopSubscribers)).then(res => { this.setState({ LedgerStatus: res.data }); return res.data });
+
+	CheckOldDebtClearedAsync = (): Promise<CreditLeftOver[]> =>
+		new CreditService().GetCreditLeftByShopIds(this.state.ShopSubscribers.map((e):CreditLeftOver => {return {Credit:e.ShopLedger.OldDebit,ShopId:e.ShopLedger.Shop.Id}}))
+			.then(res => {
+				const { ShopSubscribers } = this.state;
+
+				this.setState({
+					ShopSubscribers: ShopSubscribers.map(e => {
+						const shopCredit = res.data.find(e => e.ShopId == e.ShopId);
+						if (shopCredit)
+							return { ...e, CreditOverDue: shopCredit };
+						return { ...e, CreditOverDue: undefined }
+					})
+				});
+				return res.data;
+			});
+
 	CompleteAsync = () => {
 		const { OutgoingShipmentId } = this.state;
 		if (OutgoingShipmentId)
@@ -179,7 +196,6 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 		const length = ShopSubscribers.length;
 		let DisplayComponent = <Fragment></Fragment>;
 
-
 		if (!OutgoingShipmentId)
 			DisplayComponent = <div className="alert alert-danger">Shopment Id Is Not Valid</div>;
 		else {
@@ -194,7 +210,12 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 								<td><ShopSelector handleSelection={this.HandleShopSelection.bind(this, e.Id)} /></td>
 								<td><FloatingPointWrapper Id={e.Id} Name="Credit" Value={e.ShopLedger.Credit} handleChange={this.HandeShopLedger} /></td>
 								<td><FloatingPointWrapper Id={e.Id} Name="Debit" Value={e.ShopLedger.Debit} handleChange={this.HandeShopLedger} /></td>
-								<td><FloatingPointWrapper Id={e.Id} Name="OldDebit" Value={e.ShopLedger.OldDebit} handleChange={this.HandeShopLedger} /></td>
+								<td>
+									<span>
+										<FloatingPointWrapper Id={e.Id} Name="OldDebit" Value={e.ShopLedger.OldDebit} handleChange={this.HandeShopLedger} />
+										{e.CreditOverDue && <span className="text-danger">Credit limit is ${e.CreditOverDue.Credit}</span>}
+									</span>
+								</td>
 								<td>{length - 1 != index ? <button onClick={this.AddASubscriber}><i className="fa fa-minus fa-2x"></i></button> : <button onClick={() => this.HandleDelete(e.Id)} className="fa fa-plus fa-2x"></button>}</td>
 							</tr>);
 						})}

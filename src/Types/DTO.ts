@@ -14,6 +14,11 @@ export type OutgoingShipmentInfo = {
 	Salesman: SalesmanDTO;
 	Status: OutgoingStatus;
 };
+export type OutgoingShipmentCompleteDetail = {
+	DateCreated:Date;
+	Id:number;
+	Ledgers:IOutgoingShipmentLedgerWithOldDebit[]
+}
 export type PostOutgoingShipment = {
 	DateCreated: Date,
 	Shipments: ShipmentDTO[];
@@ -123,7 +128,7 @@ export interface IInvoiceBillingDTO extends InvoiceDetailDTO {
 }
 export type LedgerStatus = {
 	Result: boolean;
-	TotalAmount: number;
+	TotalShipmentPrice: number;
     YourTotal:number; 
 }
 export type CreditDTO = {
@@ -137,6 +142,7 @@ export type CreditLeftOver = {
 	ShopId: number;
 	Credit: number;
 }
+
 export type InvoiceCreditInfoDTO = {
 	Shop: IShopDTO;
 	OutgoingShipment: OutgoingShipment;

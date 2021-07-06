@@ -7,6 +7,6 @@ export default interface IOutgoingShipmentService {
 	PostOutgoingShipmentWithProductList(OutgoingShipmentPost: PostOutgoingShipment): Promise<AxiosResponse<void>>;
 	Return(Id: number, shipments: ShipmentDTO[]): Promise<AxiosResponse<void>>;
 	Complete(Id: number, ledger: IOutgoingShipmentLedgerWithOldDebit[]): Promise<AxiosResponse<boolean>>;
-	ValidateShipmentAmount(ledgers:IOutgoingShipmentLedger[]):AxiosPromise<LedgerStatus>;
+	CheckShipmentAmount(ledgers:IOutgoingShipmentLedger[]):AxiosPromise<LedgerStatus>;
 	GetById(Id: number): Promise<AxiosResponse<OutgoingShipment>>;
 }
