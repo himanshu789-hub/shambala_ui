@@ -7,7 +7,7 @@ import { InvoiceStatus, SchemeKey } from "Enums/Enum";
 import React from "react";
 import { Link } from "react-router-dom";
 import InvoiceService from "Services/InvoiceService";
-import { InvoiceDetailDTO, SchemeDTO } from "Types/DTO";
+import { InvoiceDetailDTO, IShopBaseDTO, SchemeDTO } from "Types/DTO";
 import { getSchemeText, getValidSchemeValue, tocurrencyText } from "Utilities/Utilities";
 import './InvoiceDetail.css';
 
@@ -101,10 +101,10 @@ export default class InvoiceDetail extends React.Component<InvoiceDetailProps, I
         const { currentTarget: { name, value } } = e;
         this.setState(({ Filter }) => { return { Filter: { ...Filter, [name]: value } } });
     }
-    handleSelection = (Id: number) => {
-        if (Id !== this.state.ShopId)
+    handleSelection = (shop: IShopBaseDTO) => {
+        if (shop.Id !== this.state.ShopId)
             this.setState({ InvocieDetails: undefined });
-        this.setState({ ShopId: Id == -1 ? undefined : Id });
+        this.setState({ ShopId: shop.Id == -1 ? undefined : shop.Id });
     }
     handleSubmit = () => {
         this.setState({ Page: 0 }, () => { this.handlePagination(1); });

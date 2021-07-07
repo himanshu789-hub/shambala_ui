@@ -1,4 +1,4 @@
-import React, { Fragment, KeyboardEvent, ReactNode } from 'react';
+import React, { ChangeEvent, Fragment, KeyboardEvent, ReactNode } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { ShopInvoice, Product, SoldItem, IOutgoingShipmentLedgerWithOldDebit, IShopBaseDTO, LedgerStatus, OutgoingShipment, IOutgoingShipmentLedger, CreditLeftOver } from 'Types/DTO';
 import Loader, { ApiStatusInfo, CallStatus } from 'Components/Loader/Loader';
@@ -18,20 +18,23 @@ interface IInvoiceAddWrapperProps extends RouteComponentProps<{ id: string }> {
 
 function FloatingInput(props: React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>) {
 	const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-		if (!((e.keyCode >= 48 && e.keyCode <= 57) || (e.keyCode >= 96 && e.keyCode <= 105) || e.keyCode == 190))
+		if (!((e.keyCode >= 48 && e.keyCode <= 57) || (e.keyCode >= 96 && e.keyCode <= 105) || e.keyCode == 190 || e.keyCode == 8 ||e.keyCode==13|| (e.keyCode >= 37 && e.keyCode <= 40))) {
 			e.preventDefault();
-		if (e.keyCode == 190)
+			return;
+		}
+		if (e.keyCode == 190) {
 			e.currentTarget.value.includes(".") && e.preventDefault();
-
+			return;
+		}
 		props.onKeyDown && props.onKeyDown(e);
 	}
 	const onBlur = (e: React.FocusEvent<HTMLInputElement>) => {
 		if (e.currentTarget.value.charAt(e.currentTarget.value.length - 1) == '.')
-			e.currentTarget.value = e.currentTarget.value + '00'
-
+			e.currentTarget.value = e.currentTarget.value + '00';
+			
 		props.onBlur && props.onBlur(e);
 	}
-	return <input {...props} onKeyDown={handleKeyDown} onBlur={onBlur} />
+	return <input {...props}  onKeyDown={handleKeyDown} onBlur={onBlur} />;
 }
 type InvoiceAddWrapperState = {
 	ShopSubscribers: ShopSubscriber[];
@@ -55,7 +58,7 @@ type ShopSubscriber = {
 	CreditOverDue?: CreditLeftOver;
 };
 type FloatingPointWrapperProps = {
-	Id: number;
+	RowId: number;
 	Name: string;
 	Value: any;
 	handleChange(SubscriptionId: number, name: string, value: any): void;
@@ -63,13 +66,18 @@ type FloatingPointWrapperProps = {
 
 
 function FloatingPointWrapper(props: FloatingPointWrapperProps) {
-	const { handleChange, Id, Name, Value } = props;
+	const { handleChange, RowId: Id, Name, Value } = props;
 	const [fraction, setFraction] = useState<string>(Value + '');
 	const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
 		setFraction(e.currentTarget.value);
 		handleChange(Id, Name, e.currentTarget.value);
 	}
-	return <FloatingInput {...props} name={Name} onChange={(e) => setFraction(e.currentTarget.value)} value={fraction} onBlur={handleBlur} />
+
+	const inputHandleChange = (e: ChangeEvent<HTMLInputElement>) => {
+		debugger;
+		setFraction(e.currentTarget.value);
+	}
+	return <span className="edit-input" tabIndex={-1}><FloatingInput tabIndex={-1} name={Name} className="form-control" value={fraction} onBlur={handleBlur} onChange={inputHandleChange} /></span>
 }
 function CalculateTotalAmountInHand(ledgers: IOutgoingShipmentLedger[]) {
 	let total: number = 0;
@@ -101,7 +109,7 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 	constructor(props: IInvoiceAddWrapperProps) {
 		super(props);
 		this.state = {
-			ShopSubscribers: [], CreditLeftOvers: [],
+			ShopSubscribers: [{ Id: Math.random(), ShopLedger: { Credit: 0, Debit: 0, OldDebit: 0, Shop: { Address: '', Id: -1, Title: '' } } }], CreditLeftOvers: [],
 			ApiStatus: { Status: CallStatus.EMPTY, Message: '' }, ShowSpinner: false
 		};
 		this._outgoingService = new OutgoingService();
@@ -139,7 +147,7 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 	CheckShipmentAmountAsync = (): Promise<LedgerStatus> => this._outgoingService.CheckShipmentAmount(toLedgersWithoutOldDebit(this.state.ShopSubscribers)).then(res => { this.setState({ LedgerStatus: res.data }); return res.data });
 
 	CheckOldDebtClearedAsync = (): Promise<CreditLeftOver[]> =>
-		new CreditService().GetCreditLeftByShopIds(this.state.ShopSubscribers.map((e):CreditLeftOver => {return {Credit:e.ShopLedger.OldDebit,ShopId:e.ShopLedger.Shop.Id}}))
+		new CreditService().GetCreditLeftByShopIds(this.state.ShopSubscribers.map((e): CreditLeftOver => { return { Credit: e.ShopLedger.OldDebit, ShopId: e.ShopLedger.Shop.Id } }))
 			.then(res => {
 				const { ShopSubscribers } = this.state;
 
@@ -205,23 +213,23 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 				DisplayComponent = <Loader Status={Status} Message={Message} Overlay={true}>
 					<GridView<ShopSubscriber> HeaderDisplay={header} >
 						{this.state.ShopSubscribers.map((e, index) => {
-							return (<tr>
-								<td>{index + 1}</td>
-								<td><ShopSelector handleSelection={this.HandleShopSelection.bind(this, e.Id)} /></td>
-								<td><FloatingPointWrapper Id={e.Id} Name="Credit" Value={e.ShopLedger.Credit} handleChange={this.HandeShopLedger} /></td>
-								<td><FloatingPointWrapper Id={e.Id} Name="Debit" Value={e.ShopLedger.Debit} handleChange={this.HandeShopLedger} /></td>
+							return (<tr key={e.Id}>
+								<td tabIndex={-1}>{index + 1}</td>
+								<td><span className="edit-input" tabIndex={-1}><ShopSelector handleSelection={this.HandleShopSelection.bind(this, e.Id)} /></span></td>
+								<td><FloatingPointWrapper RowId={e.Id} Name="Credit" Value={e.ShopLedger.Credit} handleChange={this.HandeShopLedger} /></td>
+								<td><FloatingPointWrapper RowId={e.Id} Name="Debit" Value={e.ShopLedger.Debit} handleChange={this.HandeShopLedger} /></td>
 								<td>
 									<span>
-										<FloatingPointWrapper Id={e.Id} Name="OldDebit" Value={e.ShopLedger.OldDebit} handleChange={this.HandeShopLedger} />
-										{e.CreditOverDue && <span className="text-danger">Credit limit is ${e.CreditOverDue.Credit}</span>}
+										<FloatingPointWrapper RowId={e.Id} Name="OldDebit" Value={e.ShopLedger.OldDebit} handleChange={this.HandeShopLedger} />
+										{e.CreditOverDue && <span className="text-danger">Must be less than ${tocurrencyText(e.CreditOverDue.Credit)}</span>}
 									</span>
 								</td>
-								<td>{length - 1 != index ? <button onClick={this.AddASubscriber}><i className="fa fa-minus fa-2x"></i></button> : <button onClick={() => this.HandleDelete(e.Id)} className="fa fa-plus fa-2x"></button>}</td>
+								<td>{length - 1 != index ? <button tabIndex={-1} className="btn" onClick={() => this.HandleDelete(e.Id)}><i className="fa fa-minus"></i></button> : <button tabIndex={-1} onClick={this.AddASubscriber} className="btn"><i className="fa fa-plus"></i></button>}</td>
 							</tr>);
 						})}
 					</GridView>
 					<ShowLegerStatus LedgerStatus={this.state.LedgerStatus} AmountInHand={LedgerStatus?.Result ? CalculateTotalAmountInHand(toLedgersWithoutOldDebit(ShopSubscribers)) : 0} />
-					{!LedgerStatus?.Result && <button disabled={ShowSpinner} onClick={this.HandleSubmit}>Submit <Spinner show={ShowSpinner} /></button>}
+					{!LedgerStatus?.Result && <button disabled={ShowSpinner} className="btn btn-success" onClick={this.HandleSubmit}>Submit <Spinner show={ShowSpinner} /></button>}
 				</Loader>;
 		}
 

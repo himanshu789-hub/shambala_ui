@@ -42,15 +42,15 @@ const Loader = function (props: React.PropsWithChildren<LoaderProps>): JSX.Eleme
 	else if (Status == CallStatus.EMPTY) return <React.Fragment></React.Fragment>;
 
 	return (<Fragment>
-		<div className={`loader ${CallStatus.LOADED == Status ? 'd-block' : (CallStatus.LOADING == Status && Overlay ? 'd-block' : 'd-none')}`}>
+		<div className={`loader-root`}>
 			{props.children}
-			<div className={`loader-wrapper ${CallStatus.LOADING == Status ? 'd-block' : 'd-none'}`}>
-				<div className='loader-holder'>
-					<div className='loader' style={LoaderProerties}></div>
-					<label className='text-info font-weight-bold blink'>{Message}</label>
+				<div className={`loader-wrapper ${CallStatus.LOADED == Status ? 'd-none' : (CallStatus.LOADING == Status ? `d-block ${Overlay && 'overlay'}` : 'd-none')}`}>
+					<div className='loader-holder'>
+						<div className='loader' style={LoaderProerties}></div>
+						<label className='text-info font-weight-bold blink'>{Message}</label>
+					</div>
 				</div>
 			</div>
-		</div>
 	</Fragment>
 	);
 }

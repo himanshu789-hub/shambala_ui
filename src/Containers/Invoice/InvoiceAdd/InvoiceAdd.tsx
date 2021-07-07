@@ -5,7 +5,7 @@ import InvoiceScheme from './Containers/InvoiceScheme/InvoiceScheme';
 
 import './InvoiceAdd.css';
 import RowsWrapper from './Containers/RowsWrapper/RowsWrapper';
-import { ShopInvoice, SoldItem } from '../../../Types/DTO';
+import { IShopBaseDTO, ShopInvoice, SoldItem } from '../../../Types/DTO';
 import { InvoiceContext } from '../InvoiceWrapper/Context';
 
 interface IInvoiceProps {
@@ -53,8 +53,8 @@ export default class InvoiceAdd extends React.PureComponent<IInvoiceProps, Invoi
 		const { SubscriptionId, HandleDelete } = this.props;
 		HandleDelete(SubscriptionId);
 	}
-	HandleShopSelection = (Id: number) => {
-		this.HandleSelection('ShopId', Id);
+	HandleShopSelection = (shop:IShopBaseDTO) => {
+		this.HandleSelection('ShopId', shop.Id);
 	}
 	render() {
 
@@ -65,8 +65,8 @@ export default class InvoiceAdd extends React.PureComponent<IInvoiceProps, Invoi
 			<div className='card'>
 				<div className='card-head d-flex justify-content-between'>
 					<AlertMessage mesage={"Shop Already Selected"} show={IsShopAlreadySelected == undefined ? false : IsShopAlreadySelected}>
-						<ShopSelector handleSelection={this.HandleShopSelection} />
-					</AlertMessage>
+						 <ShopSelector handleSelection={this.HandleShopSelection} />
+					</AlertMessage> 
 					<button className='btn btn-danger' onClick={this.HandleDelete}>
 						<i className='fa fa-times'></i>
 					</button>

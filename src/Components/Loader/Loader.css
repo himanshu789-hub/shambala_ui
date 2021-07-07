@@ -2,12 +2,20 @@
 .loader-wrapper
 {
 	position: absolute;
-	height: 100%;
+	height: 132px;width: 100%;top:0;background: white;
 }
 .loader{
   position: relative;
   width:100%;
   height:100%;
+}
+.overlay
+{
+  background:rgb(171 168 168 / 39%)
+}
+.loader-root
+{
+position: relative;
 }
 .loader-holder
 {

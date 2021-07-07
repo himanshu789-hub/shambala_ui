@@ -77,6 +77,7 @@ function ComboBox<T>(props: IComboBoxExtend<T>) {
         if (e.keyCode == Keys.UP || e.keyCode == Keys.DOWN) {
             e.preventDefault();
         }
+        e.stopPropagation();
     }
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -133,9 +134,9 @@ const SearchPanel = function <T>(props: SearchPanelProps<T>) {
 
 
     return (
-        <div className='form-group shop dropdown'>
-            <input ref={labelInput} className='form-control' value={name} data-toggle="dropdown" data-controltype="search"
-                placeholder={props.PlaceHolder || ''} onKeyDown={onkeyDown} onClick={makeInputFocus} />
+        <div className='form-group shop dropdown m-0'>
+            <input ref={labelInput} tabIndex={-1} className='form-control' value={name} data-toggle="dropdown" data-controltype="search"
+                placeholder={props.PlaceHolder || ''} onKeyDown={onkeyDown} onClick={makeInputFocus}/>
             <ComboBox<T>  {...props} DropDownToggle={setShouldDropdownDisplay} LabelFocus={labelInput}
                 FocusInput={focusInput} Name={name} SetName={setName} ShowDropDown={showDropdown} />
         </div>

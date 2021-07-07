@@ -1,0 +1,10 @@
+#gridview-table [tabindex="0"]
+{
+    border: 2px dotted red;
+    outline: none;
+}
+.edit-input
+{
+    display: block;
+    width: 100%;
+}
