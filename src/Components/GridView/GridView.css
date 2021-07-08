@@ -1,4 +1,4 @@
-#gridview-table [tabindex="0"]
+#gridview-table [tabindex="0"]:not(input)
 {
     border: 2px dotted red;
     outline: none;
@@ -7,4 +7,5 @@
 {
     display: block;
     width: 100%;
+    padding:3px;
 }

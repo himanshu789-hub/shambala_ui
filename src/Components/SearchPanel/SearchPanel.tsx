@@ -2,7 +2,7 @@ import Loader, { CallStatus } from 'Components/Loader/Loader';
 import React, { ChangeEvent, MouseEvent, MouseEventHandler, useState } from 'react';
 import { useEffect } from 'react';
 import { KeyboardEvent } from 'react';
-import { KeyCode  as Keys} from 'Utilities/Utilities';
+import { KeyCode as Keys } from 'Utilities/Utilities';
 import './SearchPanel.css';
 
 interface IComboBox<T> {
@@ -32,9 +32,11 @@ function ComboBox<T>(props: IComboBoxExtend<T>) {
     const [activeIndex, setActiveIndex] = useState<number>(-1);
     const { HandleEnter, DropDownToggle, SetName } = props;
     const close = () => {
-        props.DropDownToggle(false);
-        if (props.Name.length == 0)
-            HandleEnter(null);
+        DropDownToggle(false);
+        if (activeIndex == -1) {
+            SetName('');
+        }
+        props.LabelFocus.current?.focus();
     }
     const handleKeyDown = function (e: KeyboardEvent<HTMLInputElement>) {
         let newActiveIndex = -1;
@@ -93,7 +95,6 @@ function ComboBox<T>(props: IComboBoxExtend<T>) {
         else
             setList([]);
     }
-    useEffect(() => { if (!props.ShowDropDown) props.LabelFocus.current?.focus(); }, [props.ShowDropDown])
     useEffect(() => {
         setActiveIndex(-1);
     }, [list])
@@ -135,8 +136,8 @@ const SearchPanel = function <T>(props: SearchPanelProps<T>) {
 
     return (
         <div className='form-group shop dropdown m-0'>
-            <input ref={labelInput} tabIndex={-1} className='form-control' value={name} data-toggle="dropdown" data-controltype="search"
-                placeholder={props.PlaceHolder || ''} onKeyDown={onkeyDown} onClick={makeInputFocus}/>
+            <input ref={labelInput} tabIndex={-1} className='form-control' value={name} data-controltype="search"
+                placeholder={props.PlaceHolder || ''} onKeyDown={onkeyDown} onClick={makeInputFocus} />
             <ComboBox<T>  {...props} DropDownToggle={setShouldDropdownDisplay} LabelFocus={labelInput}
                 FocusInput={focusInput} Name={name} SetName={setName} ShowDropDown={showDropdown} />
         </div>

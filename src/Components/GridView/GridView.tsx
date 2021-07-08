@@ -26,11 +26,9 @@ export default function GridView<T extends {}>(props: GridViewProps<T>) {
         const nextColumn = activeCell.ColIndex + col;
         const nextRow = activeCell.RowIndex + row;
 
-        return { ColIndex: nextColumn >= getTotalColumn() ? activeCell.ColIndex : nextColumn, RowIndex: nextRow >= getTotalRow() ? activeCell.RowIndex : nextRow };
+        return { ColIndex: nextColumn >= getTotalColumn() || nextColumn<0 ? activeCell.ColIndex : nextColumn, RowIndex: nextRow >= getTotalRow() || nextRow<0 ? activeCell.RowIndex : nextRow };
     }
     const getFocusAbleElement = function (cellPosition: Cell) {
-        if (!IsCellActive())
-            return null;
         const cell = getRoot()?.querySelectorAll('tr')[cellPosition.RowIndex].querySelectorAll('td')[cellPosition.ColIndex];
         let focusableElement: HTMLElement | undefined | null = cell;
         if (cell?.hasAttribute('tabindex')) {
@@ -61,6 +59,52 @@ export default function GridView<T extends {}>(props: GridViewProps<T>) {
     const activateNext = function (cell: Cell) {
         removeFocusToElement(activeCell)
         setFocusToElement(cell);
+        setActiveCell(cell);
+    }
+    const handleClickEvent = function (event: React.MouseEvent) {
+        const grid = getRoot()?.querySelectorAll('tr');
+        if (grid) {
+            for (var i = 0; i < grid.length; i++) {
+                var cols = grid[i].querySelectorAll('td');
+                let IsFound = false;
+                for (var j = 0; j < cols.length ?? 0; j++) {
+                    const element = cols[j];
+                    if (element && (element).contains(event.target as Element)) {
+                        IsFound = true;
+                        const cell = { ColIndex: j, RowIndex: i };
+                        focusToEditablELement(element, cell);
+                        break;
+                    }
+                }
+                if (IsFound) {
+                    console.log('founded');
+                    break;
+
+                }
+            }
+        }
+    }
+    const focusToEditablELement = function (element: Element, cell: Cell) {
+
+        if (find(element, 'input')) {
+            removeFocusToElement(activeCell);
+
+            if (!element.querySelector('input')?.matches('[tabindex="0"')) {
+                getFocusAbleElement(cell)?.querySelector('input')?.setAttribute('tabindex', '0');
+                getFocusAbleElement(cell)?.querySelector('input')?.focus();
+                setShouldChangeFocus(false);
+            }
+            else {
+                element.querySelector('input')?.blur();
+                element.querySelector('input')?.setAttribute('tabindex', '-1');
+                setFocusToElement(cell);
+                setShouldChangeFocus(true);
+            }
+            setActiveCell(cell);
+        }
+        else {
+            activateNext(cell);
+        }
     }
     const handleKeyDownEvent = function (e: KeyboardEvent<HTMLTableElement>) {
 
@@ -96,45 +140,32 @@ export default function GridView<T extends {}>(props: GridViewProps<T>) {
                 }
                 break;
             case KeyCode.ENTER:
-                const cell = getFocusAbleElement(activeCell);
+                const cell = getRoot()?.querySelectorAll('tr')[activeCell.RowIndex].querySelectorAll('td')[activeCell.ColIndex];
                 if (cell) {
-                    if (find(cell, 'input')) {
-                        if (!cell.querySelector('input')?.matches('[tabindex="0"')) {
-                            removeFocusToElement(activeCell);
-                            getFocusAbleElement(activeCell)?.querySelector('input')?.setAttribute('tabindex', '0');
-                            setShouldChangeFocus(false);
-                        }
-                        else {
-                            cell.querySelector('input')?.blur();
-                            cell.querySelector('input')?.setAttribute('tabindex', '-1');
-                            setFocusToElement(activeCell);
-                            setShouldChangeFocus(true);
-                        }
-                    }
-                    return;
+                    focusToEditablELement(cell, activeCell);
                 }
-                break;
+                return;
             default: return;
         }
         if (shouldChangeFocus) {
             activateNext(nextCell);
-            setActiveCell(nextCell);
         }
     }
+    const onFocus = () => {
+        if (!IsCellActive())
+            setActiveCell({ ColIndex: 0, RowIndex: 0 });
+    }
     useEffect(() => {
-        if (!shouldChangeFocus) {
-            getFocusAbleElement(activeCell)?.querySelector('input')?.focus();
-        }
-    }, [shouldChangeFocus]);
-
+        document.getElementById('gridview-table')?.focus();
+    }, [])
     return (<div className="table-wrapper">
-        <table className="table" id="gridview-table" tabIndex={0} onKeyDown={handleKeyDownEvent}>
+        <table className="table" id="gridview-table" tabIndex={0} onKeyDown={handleKeyDownEvent} onClick={handleClickEvent} onFocus={onFocus}>
             <thead>
                 {HeaderDisplay}
             </thead>
             <tbody>
                 {props.children}
             </tbody>
-        </table></div>)
+        </table></div>);
 
 }
