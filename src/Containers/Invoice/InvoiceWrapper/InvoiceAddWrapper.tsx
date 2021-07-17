@@ -12,6 +12,7 @@ import { IsValidInteger, tocurrencyText } from 'Utilities/Utilities';
 import { addDanger } from 'Utilities/AlertUtility';
 import CreditService from 'Services/CreditService';
 import { OutgoingStatus } from 'Enums/Enum';
+import Action from 'Components/Action/Action';
 
 interface IInvoiceAddWrapperProps extends RouteComponentProps<{ id: string }> {
 }
@@ -211,7 +212,7 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 				DisplayComponent = <div className="alert alert-warning">Shipment Has Been Processed</div>;
 			else
 				DisplayComponent = <Loader Status={Status} Message={Message} Overlay={true}>
-					<GridView<ShopSubscriber> HeaderDisplay={header} >
+					<GridView<ShopSubscriber> HeaderDisplay={header} Length={length}>
 						{this.state.ShopSubscribers.map((e, index) => {
 							return (<tr key={e.Id}>
 								<td tabIndex={-1}>{index + 1}</td>
@@ -224,12 +225,13 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 										{e.CreditOverDue && <span className="text-danger">Must be less than ${tocurrencyText(e.CreditOverDue.Credit)}</span>}
 									</span>
 								</td>
-								<td>{length - 1 != index ? <button tabIndex={-1} className="btn" onClick={() => this.HandleDelete(e.Id)}><i className="fa fa-minus"></i></button> : <button tabIndex={-1} onClick={this.AddASubscriber} className="btn"><i className="fa fa-plus"></i></button>}</td>
+								<td><button tabIndex={-1} className="btn" onClick={() => this.HandleDelete(e.Id)}><i className="fa fa-minus"></i></button></td>
 							</tr>);
 						})}
 					</GridView>
 					<ShowLegerStatus LedgerStatus={this.state.LedgerStatus} AmountInHand={LedgerStatus?.Result ? CalculateTotalAmountInHand(toLedgersWithoutOldDebit(ShopSubscribers)) : 0} />
 					{!LedgerStatus?.Result && <button disabled={ShowSpinner} className="btn btn-success" onClick={this.HandleSubmit}>Submit <Spinner show={ShowSpinner} /></button>}
+					<Action handleAdd={this.AddASubscriber} handleProcess={this.HandleSubmit}/>
 				</Loader>;
 		}
 
@@ -237,6 +239,11 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 			<Heading label="Fill Credit Detail" />
 			{DisplayComponent}
 		</div>);
+	}
+	handleAdd=(event:KeyboardEvent)=>{
+        if(event.altKey && event.key=="+"){
+			this.AddASubscriber();
+		}
 	}
 	componentDidMount() {
 		const { params: { id } } = this.props.match;
@@ -249,5 +256,9 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 				}))
 				.catch(() => this.setState({ ApiStatus: { Status: CallStatus.ERROR, Message: undefined } }));
 		}
+		window.addEventListener("keydown",(e)=>this.handleAdd((e as any) as KeyboardEvent));
+	}
+	componentWillUnmount(){
+
 	}
 }

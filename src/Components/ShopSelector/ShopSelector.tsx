@@ -3,12 +3,12 @@ import React from "react";
 import ShopService from "Services/ShopService";
 import { IShopBaseDTO } from "Types/DTO";
 
-function ShopSelector(props: { handleSelection(shop:IShopBaseDTO): void }) {
+function ShopSelector(props: { handleSelection(shop: IShopBaseDTO): void }) {
 	function FetchName(name: string) {
 		return new ShopService().GetAllByName(name).then(res => res.data);
 	}
 	function HandleEnter(e: IShopBaseDTO) {
-		props.handleSelection(e);
+		e == null ? props.handleSelection({ Id: -1, Address: '', Title: '' }) : props.handleSelection(e);
 	}
 
 	return <SearchPanel<IShopBaseDTO> PlaceHolder="Enter Shop Name" DisplayFunction={e => <div>{e.Title}</div>}

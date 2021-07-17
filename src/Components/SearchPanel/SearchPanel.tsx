@@ -38,6 +38,22 @@ function ComboBox<T>(props: IComboBoxExtend<T>) {
         }
         props.LabelFocus.current?.focus();
     }
+    const handleClick = function (index: number) {
+        selectCurret(index);
+    }
+    const selectCurret = function (index: number) {
+        if (index == -1) {
+            HandleEnter(null);
+            SetName('');
+        }
+        else {
+            const item = list[index].Item;
+            close();
+            SetName((item as any)[props.PropertyName]);
+            HandleEnter(item);
+        }
+        setActiveIndex(index);
+    }
     const handleKeyDown = function (e: KeyboardEvent<HTMLInputElement>) {
         let newActiveIndex = -1;
 
@@ -55,10 +71,7 @@ function ComboBox<T>(props: IComboBoxExtend<T>) {
                     newActiveIndex = list.length - 1;
                 break;
             case Keys.ENTER:
-                const item = list[activeIndex].Item;
-                SetName((item as any)[props.PropertyName]);
-                close();
-                HandleEnter(item);
+                selectCurret(activeIndex);
                 break;
             case Keys.ESC:
                 if (props.Name.length == 0)
@@ -95,18 +108,24 @@ function ComboBox<T>(props: IComboBoxExtend<T>) {
         else
             setList([]);
     }
+
     useEffect(() => {
         setActiveIndex(-1);
     }, [list])
     return (<div className={`d-none flex-column justify-content list-wrapper ${props.ShowDropDown ? 'd-flex' : ''}`}>
         <label className="text-right" onClick={close}><i className="fa fa-times"></i></label>
         <input onKeyDown={handleKeyDown} ref={props.FocusInput} value={props.Name} data-controltype="search"
-            placeholder={props.PlaceHolder} className="form-control" onChange={handleChange} onBlur={() => close()} />
-        <div id="x-combobox" className="mt-4">
-            <Loader Status={APIStatus}>
-                {list.map((e, index) => <div key={index} className={activeIndex == index ? 'focused' : ''} data-id={`x-comboxbox-item-` + e.Id}>{props.DisplayFunction(e.Item)}</div>)}
-            </Loader>
-        </div>
+            placeholder={props.PlaceHolder} className="form-control" onChange={handleChange} />
+        <Loader Status={APIStatus}>
+
+            <div id="x-combobox" className="mt-4" onMouseEnter={() => setActiveIndex(-1)}>
+                {list.map((e, index) =>
+                    <div key={index} className={activeIndex == index ? 'focused' : ''} data-id={`x-comboxbox-item-` + e.Id}
+                        onClick={() => handleClick(index)}>
+                        {props.DisplayFunction(e.Item)}
+                    </div>)}
+            </div>
+        </Loader>
 
     </div>)
 }
@@ -129,7 +148,7 @@ const SearchPanel = function <T>(props: SearchPanelProps<T>) {
         if (e.altKey && e.key == "/") {
             makeInputFocus();
         }
-        if (e.key == "Enter")
+        if (new RegExp('^[A-Za-z]$').test(e.key))
             makeInputFocus();
     }
 

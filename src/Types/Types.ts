@@ -1,3 +1,4 @@
+import { ShipmentDTO } from "./DTO";
 
 export type ShipmentProperty = {
 	Id: number;
@@ -22,3 +23,9 @@ export type CaretDetails = {
 	Id: number;
 	CaretSize: number;
 };
+
+export type InitialShipment = {
+	Shipment:ShipmentDTO;
+	MaxLimit?:number;
+	MinLimit?:number;
+}

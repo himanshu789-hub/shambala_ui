@@ -55,6 +55,7 @@ export default class MediatorSubject {
 			this._quantityMediator.Unsubscibe(subscriptionId, componentId);
 	}
 	SetASubscription(subscriptionId: number, componentId: number, productId: number, flavourId?: number, quantity?: number) {
+		
 		if (this._productMediator.IsAlreadySubscribed(subscriptionId, componentId)) {
 			if (this._productMediator.ChangeSubscription(subscriptionId, componentId, productId)) {
 				this._flavourMediator.IsSubscribed(subscriptionId, componentId) &&

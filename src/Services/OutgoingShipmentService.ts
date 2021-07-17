@@ -5,6 +5,10 @@ import { ShipmentDTO, OutgoingShipmentInfo, PostOutgoingShipment, ShopInvoice, I
 import { OutgoingShipment, OutgingReturnDTO } from 'Types/DTO';
 
 export default class OutgoingService implements IOutgoingShipment {
+	UpdateOutgoingShipment(Id: number, Shipment: PostOutgoingShipment): AxiosPromise<boolean> {
+	return OutgoingShipmentClient.put('/update'+Id,Shipment);
+	}
+	
 	CheckShipmentAmount(ledgers: IOutgoingShipmentLedger[]): AxiosPromise<LedgerStatus> {
 		return OutgoingShipmentClient.post('/checkamount', ledgers);
 	}

@@ -11,15 +11,14 @@ type ShipmentElementProps = {
 	ShipmentEntity: ShipmentDTO;
 	handleChange: (property: ShipmentProperty) => void;
 	Observer: Observer;
-	ResetQuantityLimit(Id: number): void;
 	SetQuantity: Function;
 	handleRemove: Function;
-	Limit?: number;
+	MaxLimit?: number;
+	MinLimit?:number;
 };
 type ShipmentElementState = {
 	ProductList: ProductInfo[];
 	FlavourList: Flavour[];
-
 };
 export default class ShipmentElement extends React.PureComponent<ShipmentElementProps, ShipmentElementState> {
 	constructor(props: ShipmentElementProps) {
@@ -32,7 +31,7 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 	setQuantity = (totalQuantity: number) => {
 		const {
 			SetQuantity,
-			Observer, Limit,
+			Observer, MaxLimit: Limit,
 			ShipmentEntity: { Id },
 		} = this.props;
 		Limit && Observer.SetQuantity(totalQuantity);
@@ -52,7 +51,6 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 				Value = Number.parseInt(Value);
 				if (Name == "ProductId") {
 					Observer.SetProduct(Value);
-
 				}
 				else {
 					Observer.SetFlavour(Value);
@@ -73,7 +71,7 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 
 	}
 	render() {
-		const { ShipmentEntity, handleRemove, Limit } = this.props;
+		const { ShipmentEntity, handleRemove, MaxLimit: Limit,MinLimit } = this.props;
 		const { ProductList, FlavourList, } = this.state;
 		const caretSize = ShipmentEntity.CaretSize;
 		return (
@@ -120,7 +118,7 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 				</div>
 				<div className={`form-group`}>
 					<label htmlFor='caretSize'>Quantity</label>
-					<CaretSizeInput Size={caretSize} handleInput={this.setQuantity} Limit={Limit}
+					<CaretSizeInput Size={caretSize} handleInput={this.setQuantity} MaxLimit={Limit}  MinLimit={MinLimit}
 						Quantity={ShipmentEntity.TotalRecievedPieces} OnFocusIn={this.handleFocusIn} />
 				</div>
 

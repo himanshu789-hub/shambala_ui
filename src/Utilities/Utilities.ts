@@ -1,10 +1,10 @@
 ﻿import { SchemeKey, SchemeType } from "Enums/Enum";
-import { Product, SchemeDTO } from "Types/DTO";
+import { OutgoingShipmentDetail, Product, SchemeDTO, ShipmentDTO } from "Types/DTO";
 
 export const IsValidInteger = function (num: string): boolean {
 	if (num.length == 0)
 		return false;
-	return num.search("[\D]")==-1;
+	return num.search("[\D]") == -1;
 }
 export const provideValidInteger = (num: string): number => {
 	if (!num.length) return 0;
@@ -73,6 +73,9 @@ export function getSchemeText(scheme?: SchemeDTO) {
 			result = getValidSchemeValue(scheme.SchemeType, scheme.Value) + "% Off";
 	}
 	return result;
+}
+export function OutgoingDetailToShipment(shipment: OutgoingShipmentDetail): ShipmentDTO {
+	return { CaretSize: shipment.CaretSize, FlavourId: shipment.FlavourId, Id: shipment.Id, ProductId: shipment.ProductId, TotalDefectedPieces: shipment.TotalQuantityRejected, TotalRecievedPieces: shipment.TotalQuantityShiped }
 }
 export function toDateText(date: string) {
 	return new Date(date).toDateString();

@@ -9,4 +9,5 @@ export default interface IOutgoingShipmentService {
 	Complete(Id: number, ledger: IOutgoingShipmentLedgerWithOldDebit[]): Promise<AxiosResponse<boolean>>;
 	CheckShipmentAmount(ledgers:IOutgoingShipmentLedger[]):AxiosPromise<LedgerStatus>;
 	GetById(Id: number): Promise<AxiosResponse<OutgoingShipment>>;
+	UpdateOutgoingShipment(Id:number,Shipment:PostOutgoingShipment):AxiosPromise<boolean>;
 }

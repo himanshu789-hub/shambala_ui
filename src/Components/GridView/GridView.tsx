@@ -6,6 +6,7 @@ import './GridView.css';
 type GridViewProps<T> = {
     HeaderDisplay: JSX.Element;
     children: React.ReactNode;
+    Length: number;
 }
 type Cell = {
     RowIndex: number;
@@ -15,7 +16,6 @@ export default function GridView<T extends {}>(props: GridViewProps<T>) {
     const { HeaderDisplay } = props;
     const [activeCell, setActiveCell] = useState<Cell>({ ColIndex: -1, RowIndex: -1 });
     const [shouldChangeFocus, setShouldChangeFocus] = useState<boolean>(true);
-
     const IsCellActive = function () { return activeCell.ColIndex != -1 && activeCell.RowIndex != -1 };
     const getRoot = () => document.querySelector('#gridview-table>tbody');
     const getTotalColumn = () => (getRoot()?.querySelector('tr')?.querySelectorAll('td').length) ?? 0;
@@ -25,8 +25,7 @@ export default function GridView<T extends {}>(props: GridViewProps<T>) {
             return { ColIndex: activeCell.ColIndex == -1 ? 0 : activeCell.ColIndex, RowIndex: activeCell.RowIndex == -1 ? 0 : activeCell.RowIndex };
         const nextColumn = activeCell.ColIndex + col;
         const nextRow = activeCell.RowIndex + row;
-
-        return { ColIndex: nextColumn >= getTotalColumn() || nextColumn<0 ? activeCell.ColIndex : nextColumn, RowIndex: nextRow >= getTotalRow() || nextRow<0 ? activeCell.RowIndex : nextRow };
+        return { ColIndex: nextColumn >= getTotalColumn() || nextColumn < 0 ? activeCell.ColIndex : nextColumn, RowIndex: nextRow >= getTotalRow() || nextRow < 0 ? activeCell.RowIndex : nextRow };
     }
     const getFocusAbleElement = function (cellPosition: Cell) {
         const cell = getRoot()?.querySelectorAll('tr')[cellPosition.RowIndex].querySelectorAll('td')[cellPosition.ColIndex];
@@ -57,8 +56,10 @@ export default function GridView<T extends {}>(props: GridViewProps<T>) {
         return element.querySelector(selector) != null;
     }
     const activateNext = function (cell: Cell) {
-        removeFocusToElement(activeCell)
-        setFocusToElement(cell);
+        if (cell.ColIndex != -1 && cell.RowIndex != -1) {
+            removeFocusToElement(activeCell)
+            setFocusToElement(cell);
+        }
         setActiveCell(cell);
     }
     const handleClickEvent = function (event: React.MouseEvent) {
@@ -158,6 +159,16 @@ export default function GridView<T extends {}>(props: GridViewProps<T>) {
     useEffect(() => {
         document.getElementById('gridview-table')?.focus();
     }, [])
+    useEffect(() => {
+        if (IsCellActive()) {
+            if (props.Length == 0) {
+                activateNext({ ColIndex: -1, RowIndex: -1 })
+            }
+            else {
+                activateNext({ ColIndex: 0, RowIndex: props.Length-1 });
+            }
+        }
+    }, [props.Length])
     return (<div className="table-wrapper">
         <table className="table" id="gridview-table" tabIndex={0} onKeyDown={handleKeyDownEvent} onClick={handleClickEvent} onFocus={onFocus}>
             <thead>

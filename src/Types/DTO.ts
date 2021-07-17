@@ -1,5 +1,6 @@
 
 import { OutgoingStatus, SchemeKey } from 'Enums/Enum';
+import { NumberLiteralType } from 'typescript';
 
 
 export type OutgoingShipment = {
@@ -7,7 +8,17 @@ export type OutgoingShipment = {
 	DateCreated: string;
 	Salesman: SalesmanDTO;
 	Status: number;
+	OutgoingShipmentDetails: OutgoingShipmentDetail[];
 };
+export type OutgoingShipmentDetail = {
+	Id:number;
+	ProductId: number;
+	FlavourId: number;
+	TotalQuantityShiped: number;
+	TotalQuantityRejected: number;
+	CaretSize:number;
+	TotalQuantityReturned: number;
+}
 export type OutgoingShipmentInfo = {
 	Id: number;
 	Products: Product[];
@@ -15,9 +26,9 @@ export type OutgoingShipmentInfo = {
 	Status: OutgoingStatus;
 };
 export type OutgoingShipmentCompleteDetail = {
-	DateCreated:Date;
-	Id:number;
-	Ledgers:IOutgoingShipmentLedgerWithOldDebit[]
+	DateCreated: Date;
+	Id: number;
+	Ledgers: IOutgoingShipmentLedgerWithOldDebit[]
 }
 export type PostOutgoingShipment = {
 	DateCreated: Date,
@@ -129,7 +140,7 @@ export interface IInvoiceBillingDTO extends InvoiceDetailDTO {
 export type LedgerStatus = {
 	Result: boolean;
 	TotalShipmentPrice: number;
-    YourTotal:number; 
+	YourTotal: number;
 }
 export type CreditDTO = {
 	OutgoingShipmentId: number;

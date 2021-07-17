@@ -5,17 +5,20 @@ import { Product, Flavour, ShipmentDTO, OutOfStock } from 'Types/DTO';
 import MediatorSubject from 'Utilities/MediatorSubject';
 import Observer from 'Utilities/Observer';
 import { addDanger, addWarn } from 'Utilities/AlertUtility';
+import { InitialShipment } from 'Types/Types';
 
 type IShipmentListProps = {
 	handleSubmit: (Shipments: ShipmentDTO[]) => void;
 	Products: Product[];
 	ShouldLimitQuantity: boolean;
 	ResetElement?: OutOfStock[];
+	InitialShipments?:InitialShipment[];
 };
 type ShipmentInfo = {
 	Shipment: ShipmentDTO;
 	Observer: Observer;
-	Limit?: number;
+	MaxLimit?: number;
+	MinLimit?:number;
 }
 type IShipmentListState = {
 	Products: Map<string, Product>;
@@ -73,6 +76,23 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				}
 			});
 		}
+
+		const { InitialShipments } = nextProps;
+		if (InitialShipments && InitialShipments != this.props.InitialShipments) {
+			const ShipmentInfos: Array<ShipmentInfo> = [];
+			
+			for (var i = 0; i < InitialShipments.length; i++) {
+				const Id = Math.random();
+				const observer = this.componentListMediator.GetAObserver(this.state.SubscriptionId, Id);
+				const initial = InitialShipments[i];const shipment = initial.Shipment;
+				observer.SetProduct(shipment.ProductId);
+				observer.SetFlavour(shipment.FlavourId);
+				const quantity = shipment.TotalRecievedPieces > observer.GetQuantityLimit() ? 0 : shipment.TotalRecievedPieces;
+                observer.SetQuantity(quantity);
+				ShipmentInfos.push({Observer:observer,Shipment:{...shipment,TotalRecievedPieces:quantity},MaxLimit:initial.MaxLimit,MinLimit:initial.MinLimit});
+			}
+			this.setState({ShipmentInfos:ShipmentInfos});
+		}
 	}
 
 	handleChange(propertyValue: { Id: number; Name: string; Value: any }) {
@@ -88,7 +108,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						ShipmentInfos.map(e => {
 							if (e.Shipment.Id == Id) {
 								e.Shipment.FlavourId && e.Observer.UnsubscribeToQuantity()
-								return { ...e, Shipment: { ...e.Shipment, ProductId: ProductId, FlavourId: -1, CaretSize: this.selectProductCaretDetails(ProductId) }, Limit: ShouldLimitQuantity ? 0 : undefined };
+								return { ...e, Shipment: { ...e.Shipment, ProductId: ProductId, FlavourId: -1, CaretSize: this.selectProductCaretDetails(ProductId) }, MaxLimit: ShouldLimitQuantity ? 0 : undefined };
 							}
 							return e;
 						}),
@@ -101,7 +121,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 					ShipmentInfos: [
 						...ShipmentInfos.map(e => {
 							if (e.Shipment.Id == Id) {
-								return { ...e, Shipment: { ...e.Shipment, FlavourId: Value }, Limit: ShouldLimitQuantity ? e.Observer.GetQuantityLimit() : undefined };
+								return { ...e, Shipment: { ...e.Shipment, FlavourId: Value }, MaxLimit: ShouldLimitQuantity ? e.Observer.GetQuantityLimit() : undefined };
 							}
 							return { ...e };
 						}),
@@ -129,13 +149,13 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			addWarn("Please Fill Detail Properly!");
 		} else {
 			console.log('Valid Form');
-		
+
 			const { handleSubmit } = this.props;
 			const { ShipmentInfos: Shipments } = this.state;
-			if(Shipments.length>0)
-			handleSubmit(Shipments.map(e => e.Shipment));
-			else 
-             addWarn("Please, Add Atleast One Item");
+			if (Shipments.length > 0)
+				handleSubmit(Shipments.map(e => e.Shipment));
+			else
+				addWarn("Please, Add Atleast One Item");
 		}
 	}
 	addAShipment = () => {
@@ -168,7 +188,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				ShipmentInfos: ShipmentInfos.map(e => {
 					if (e.Shipment.Id == Id) {
 						e.Observer.UnsubscribeToQuantity();
-						return { ...e, Shipment: { ...e.Shipment }, Limit: e.Observer.GetQuantityLimit() };
+						return { ...e, Shipment: { ...e.Shipment }, MaxLimit: e.Observer.GetQuantityLimit() };
 					}
 					return e;
 				})
@@ -208,8 +228,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 									SetQuantity={this.setQuantity}
 									handleRemove={this.handleRemove}
 									Observer={value.Observer}
-									Limit={value.Limit}
-									ResetQuantityLimit={this.resetQuantityLimit}
+									MaxLimit={value.MaxLimit}
+									MinLimit={value.MinLimit}
 								/>
 							);
 						})}
