@@ -1,0 +1,25 @@
+.select-wrapper
+{
+position: relative;
+}
+.select-body
+{
+
+}
+.select-input
+{
+
+}
+.select-list
+{
+    position: absolute;
+    top:110%;
+    display: none;
+}
+.select-list > .selected
+{
+
+}
+.select-list.open{
+    display: block;
+}

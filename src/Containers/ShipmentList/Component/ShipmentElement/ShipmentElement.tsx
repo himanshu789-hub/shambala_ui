@@ -6,6 +6,7 @@ import { ShipmentProperty } from 'Types/Types';
 import { Flavour, ShipmentDTO } from 'Types/DTO';
 import Observer from 'Utilities/Observer';
 import { ProductInfo } from 'Types/Mediator';
+import ReactSelect from 'Components/Select/Select';
 
 type ShipmentElementProps = {
 	ShipmentEntity: ShipmentDTO;
@@ -78,7 +79,7 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 			<div className='incoming-shipment-element-add d-flex  justify-content-around flex-nowrap'>
 				<div className={`form-group ${!ShipmentEntity.ProductId ? 'is-invalid' : ''}`}>
 					<label htmlFor='product'>Product Name</label>
-					<select
+					{/* <select
 						className='form-control'
 						value={ShipmentEntity.ProductId}
 						data-src={ShipmentEntity.Id}
@@ -93,7 +94,8 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 								{value.Title}
 							</option>
 						))}
-					</select>
+					</select> */}
+					<ReactSelect list={ProductList.map(e=>{return {label:e.Title,value:e.Id}})}/>
 					<div className='invalid-feedback'>Please, Select a Product!</div>
 				</div>
 				<div className={`form-group ${ShipmentEntity.FlavourId}`}>
