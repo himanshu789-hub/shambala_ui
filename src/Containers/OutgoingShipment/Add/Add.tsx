@@ -11,8 +11,8 @@ import { RouteChildrenProps } from 'react-router';
 import { AxiosError } from 'axios';
 import { InitialShipment } from 'Types/Types';
 
-interface OutgoingShipmentAddProps extends RouteChildrenProps<{ id: string }> {
-
+interface OutgoingShipmentAddProps extends RouteChildrenProps<{ id?: string }> {
+	Id?: string;
 };
 type OutgoingShipmentAddState = {
 	Products: Product[];
@@ -41,7 +41,7 @@ export default class OutgoingShipmentAdd extends React.Component<OutgoingShipmen
 			OutgoingShipment.DateCreated = new Date();
 			OutgoingShipment.Shipments = Shipments;
 			if (this.state.OutgoingShipment) {
-               this._outgoingShipmentService.UpdateOutgoingShipment(this.state.OutgoingShipment.Id,OutgoingShipment);
+				this._outgoingShipmentService.UpdateOutgoingShipment(this.state.OutgoingShipment.Id, OutgoingShipment);
 			}
 			else {
 				this._outgoingShipmentService.PostOutgoingShipmentWithProductList(OutgoingShipment)
@@ -94,13 +94,12 @@ export default class OutgoingShipmentAdd extends React.Component<OutgoingShipmen
 	}
 	componentDidMount() {
 		this.setState({ APIStatus: CallStatus.LOADING });
-		const { match } = this.props;
-
+		const {Id } = this.props;
 		this._productService.GetAll().then(res => {
 			this.setState({ Products: res.data });
-			if (match?.params) {
-				const id = match.params.id;
-				if (Number.parseInt(id)) {
+			if (Id) {
+				const id = Id;
+				if (id && Number.parseInt(id)) {
 					this._outgoingShipmentService.GetById(Number.parseInt(id))
 						.then(res => {
 							this.setState({ OutgoingShipment: res.data });

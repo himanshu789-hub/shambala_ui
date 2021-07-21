@@ -1,14 +1,17 @@
 import { AxiosPromise, AxiosResponse } from 'axios';
 import IOutgoingShipment from 'Contracts/services/IOutgoingShipmentService';
 import { OutgoingShipmentClient } from 'HttpClient/Axios';
-import { ShipmentDTO, OutgoingShipmentInfo, PostOutgoingShipment, ShopInvoice, IOutgoingShipmentLedgerWithOldDebit, LedgerStatus, IOutgoingShipmentLedger, OutgoingShipmentCompleteDetail } from 'Types/DTO';
+import { ShipmentDTO, OutgoingShipmentInfo, PostOutgoingShipment, ShopInvoice, IOutgoingShipmentLedgerWithOldDebit, LedgerStatus, IOutgoingShipmentLedger, OutgoingShipmentCompleteDetail, OutgoingShipmentPriceDetail } from 'Types/DTO';
 import { OutgoingShipment, OutgingReturnDTO } from 'Types/DTO';
 
 export default class OutgoingService implements IOutgoingShipment {
-	UpdateOutgoingShipment(Id: number, Shipment: PostOutgoingShipment): AxiosPromise<boolean> {
-	return OutgoingShipmentClient.put('/update'+Id,Shipment);
+	GetOutgoingShipmentPriceDetailById(Id: number): AxiosPromise<OutgoingShipmentPriceDetail> {
+		return OutgoingShipmentClient.get('/getpricedetailbyid');
 	}
-	
+	UpdateOutgoingShipment(Id: number, Shipment: PostOutgoingShipment): AxiosPromise<boolean> {
+		return OutgoingShipmentClient.put('/update' + Id, Shipment);
+	}
+
 	CheckShipmentAmount(ledgers: IOutgoingShipmentLedger[]): AxiosPromise<LedgerStatus> {
 		return OutgoingShipmentClient.post('/checkamount', ledgers);
 	}

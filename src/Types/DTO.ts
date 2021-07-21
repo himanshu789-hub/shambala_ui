@@ -1,8 +1,31 @@
-
 import { OutgoingStatus, SchemeKey } from 'Enums/Enum';
-import { NumberLiteralType } from 'typescript';
 
-
+export type OutgoingShipmentPriceDetail = {
+	Id: number;
+	Salesman: SalesmanDTO;
+	ProductDetails: OutgoingShipmentProductDetail[];
+}
+export type OutgoingShipmentProductDetail = {
+	ProductId: number;
+	Name: string;
+	FlavourDetails: OutgoingShipmentFlavourDetail[];
+}
+export type OutgoingShipmentFlavourDetail = {
+	FlavourId: number;
+	Name: string;
+	VariantDetails: FlavourVariantDetail[];
+	SchemeDetail: FlavourSchemeDetail;
+}
+export type FlavourVariantDetail = {
+	Quantity: number;
+	TotalPrice: number;
+	PricePerCarat: number;
+}
+export type FlavourSchemeDetail = {
+	TotalPrice: number;
+	Quantity: number;
+	PricePerBottle: number;
+}
 export type OutgoingShipment = {
 	Id: number;
 	DateCreated: string;
@@ -11,12 +34,12 @@ export type OutgoingShipment = {
 	OutgoingShipmentDetails: OutgoingShipmentDetail[];
 };
 export type OutgoingShipmentDetail = {
-	Id:number;
+	Id: number;
 	ProductId: number;
 	FlavourId: number;
 	TotalQuantityShiped: number;
 	TotalQuantityRejected: number;
-	CaretSize:number;
+	CaretSize: number;
 	TotalQuantityReturned: number;
 }
 export type OutgoingShipmentInfo = {
