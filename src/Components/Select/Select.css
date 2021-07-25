@@ -1,25 +1,38 @@
-.select-wrapper
-{
-position: relative;
+.select-wrapper {
+    position: relative;
 }
-.select-body
-{
+
+.select-wrapper:focus-within {
+    border: 2px solid var(--table-border) !important;
 
 }
-.select-input
-{
 
-}
-.select-list
-{
+.select-body {}
+
+.select-input {}
+
+.select-list {
     position: absolute;
-    top:110%;
+    top: 110%;
     display: none;
 }
-.select-list > .selected
+input:focus
 {
+    outline: none;
+}
+.select-list>.item {
+    padding: 0.2rem;
+}
+
+.select-list>.item.selected {
+    background: var(--table-border);
 
 }
-.select-list.open{
+
+.select-list.open {
     display: block;
+    width: 100%;
+    background: white;
+    border: 1px solid gray;
+    padding: 0.3rem;
 }

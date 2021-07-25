@@ -161,7 +161,7 @@ export default class TableRow extends React.PureComponent<TableRowProps, TableRo
 					<input className={`form-control ${MaxSize == 0 ? 'is-invalid' : ''}`} value={MaxSize} readOnly />
 				</td>
 				<td className="caret">
-					<CaretSize Size={MaxSize ?? 0} handleInput={this.HandleInput} Limit={QuantityLimit} OnFocusIn={this.HandleFocus} Quantity={Quantity}/>
+					<CaretSize Size={MaxSize ?? 0} handleInput={this.HandleInput} MaxLimit={QuantityLimit} OnFocusIn={this.HandleFocus} Quantity={Quantity}/>
 				</td>
 				<td>
 					<button onClick={this.Delete} className="btn btn-light w-100"><i className="fa fa-trash"></i></button>

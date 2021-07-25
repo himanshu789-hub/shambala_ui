@@ -7,6 +7,7 @@ import { Flavour, ShipmentDTO } from 'Types/DTO';
 import Observer from 'Utilities/Observer';
 import { ProductInfo } from 'Types/Mediator';
 import ReactSelect from 'Components/Select/Select';
+import { observers } from '@politie/sherlock/symbols';
 
 type ShipmentElementProps = {
 	ShipmentEntity: ShipmentDTO;
@@ -15,7 +16,7 @@ type ShipmentElementProps = {
 	SetQuantity: Function;
 	handleRemove: Function;
 	MaxLimit?: number;
-	MinLimit?:number;
+	MinLimit?: number;
 };
 type ShipmentElementState = {
 	ProductList: ProductInfo[];
@@ -60,19 +61,25 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 			handleChange({ Id, Name, Value });
 		}
 	}
-	handleClick = (e: React.FocusEvent<HTMLSelectElement>) => {
-		const { currentTarget: { name, value } } = e;
+	handleProductSelect = (value: any) => {
 		const { Observer } = this.props;
-		if (name == "ProductId")
-			this.setState({ ProductList: Observer.GetProduct() });
-		else if (name == "FlavourId")
-			this.setState({ FlavourList: Observer.GetFlavours() });
+		Observer.SetProduct(value);
+	}
+	handleFlavourFocus = (e: React.FocusEvent<HTMLSelectElement>) => {
+		const { currentTarget: { name, value } } = e;
+
+		const { Observer } = this.props;
+		this.setState({ FlavourList: Observer.GetFlavours() });
+	}
+	handleProductFocus = (e: React.FocusEvent) => {
+		const { Observer } = this.props;
+		this.setState({ ProductList: Observer.GetProduct() });
 	}
 	handleFocusIn = () => {
 
 	}
 	render() {
-		const { ShipmentEntity, handleRemove, MaxLimit: Limit,MinLimit } = this.props;
+		const { ShipmentEntity, handleRemove, MaxLimit: Limit, MinLimit } = this.props;
 		const { ProductList, FlavourList, } = this.state;
 		const caretSize = ShipmentEntity.CaretSize;
 		return (
@@ -95,7 +102,8 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 							</option>
 						))}
 					</select> */}
-					<ReactSelect list={ProductList.map(e=>{return {label:e.Title,value:e.Id}})}/>
+					<ReactSelect list={ProductList.map(e => { return { label: e.Title, value: e.Id } })} onFous={this.handleProductFocus} 
+					onSelect={this.handleProductSelect} />
 					<div className='invalid-feedback'>Please, Select a Product!</div>
 				</div>
 				<div className={`form-group ${ShipmentEntity.FlavourId}`}>
@@ -105,7 +113,7 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 						id='flavour'
 						className='form-control'
 						onChange={this.handleChange}
-						onFocus={this.handleClick}
+						onFocus={this.handleFlavourFocus}
 						value={ShipmentEntity.FlavourId}>
 						<option disabled value='-1'>
 							-- Select Your Option --
@@ -120,7 +128,7 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 				</div>
 				<div className={`form-group`}>
 					<label htmlFor='caretSize'>Quantity</label>
-					<CaretSizeInput Size={caretSize} handleInput={this.setQuantity} MaxLimit={Limit}  MinLimit={MinLimit}
+					<CaretSizeInput Size={caretSize} handleInput={this.setQuantity} MaxLimit={Limit} MinLimit={MinLimit}
 						Quantity={ShipmentEntity.TotalRecievedPieces} OnFocusIn={this.handleFocusIn} />
 				</div>
 

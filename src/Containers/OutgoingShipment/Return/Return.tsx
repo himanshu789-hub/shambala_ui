@@ -84,7 +84,7 @@ export default class OutgoingShipmentReturn extends React.Component<IOutgoingShi
 					return this._outgoingService.GetById(Id);
 				}).then(result => {
 					this.setState({
-						InitialShipments: result.data.Status == OutgoingStatus.PENDING ? result.data.OutgoingShipmentDetails.filter(e => e.TotalQuantityReturned > 0).map(e => { return { Shipment: OutgoingDetailToShipment(e) } }) : undefined,
+						InitialShipments: result.data.Status == OutgoingStatus.PENDING ? result.data.OutgoingShipmentDetails.filter(e => e.TotalQuantityReturned > 0).map(e => { return { Shipment: {...OutgoingDetailToShipment(e),TotalRecievedPieces:e.TotalQuantityReturned,TotalDefectedPieces:e.TotalQuantityRejected} } }) : undefined,
 						ApiStatus: CallStatus.LOADED
 					});
 				})
