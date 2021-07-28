@@ -4,11 +4,11 @@ import { GridGetterParams, GridRendererParams, GridSetterParams } from "../Grid"
 
 export function ProductCellRenderer(props: GridRendererParams<ShipmentDTO['ProductId']>) {
     const { data, value } = props;
-    return data.Observer?.GetProduct().find(e => e.Id == value)?.Title ?? '';
+    return data.Observer?.GetProduct().find(e => e.Id == value)?.Title ?? '--';
 }
 export function FlavourCellRenderer(props: GridRendererParams<ShipmentDTO['FlavourId']>) {
     const { data, value } = props;
-    return data.Observer.GetProduct().find(e => e.Id == value)?.Title;
+    return data.Observer.GetFlavours().find(e => e.Id == value)?.Title ?? '--';
 }
 
 

@@ -1,4 +1,3 @@
-import { } from '@ag-grid-community/react/lib/reactComponent';
 import CaretSize, { ICaretSizeProps } from 'Components/CaretSize/CaretSize'
 import React, { forwardRef, Ref, useImperativeHandle } from 'react'
 import { useRef } from 'react'
@@ -26,6 +25,7 @@ export const CaretSizeEditor = forwardRef<Ref<ICellEditor>, GridEditorParams<num
                 , focusIn() {
                     if(isFlavourAvailable()){
                         rowValue.Observer.UnsubscribeToQuantity();
+                        rowValue.MaxLimit = rowValue.Observer.GetQuantityLimit()
                     }
                     inputRef.current?.focus();
                 },

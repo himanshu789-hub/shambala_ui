@@ -1,6 +1,6 @@
 import Observer from "Utilities/Observer";
 import { ShipmentDTO } from 'Types/DTO';
-import { ICellEditorParams, ICellRendererParams, ValueGetterParams, ValueSetterParams } from "@ag-grid-community/all-modules";
+import { ICellEditorParams, ICellRendererParams, ValueGetterParams, ValueSetterParams, RowDataTransaction } from "@ag-grid-community/all-modules";
 export type IRowValue = {
       Shipment: ShipmentDTO;
       Observer: Observer;
@@ -19,3 +19,7 @@ export type GridSetterParams<ValueType> = Omit<GridParamsWithData<ValueSetterPar
       newValue: ValueType
 }
 export type GridGetterParams = GridParamsWithData<ValueGetterParams>;
+export type GridRowDataTransaction = Omit<{ [Property in keyof RowDataTransaction]+?: IRowValue[] }, 'addIndex' | 'remove'> & {
+      addIndex?: (number | null),
+      remove?: { Id:number }[]
+};

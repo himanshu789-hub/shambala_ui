@@ -3,22 +3,30 @@ import { Product, Flavour, ShipmentDTO, OutOfStock } from 'Types/DTO';
 import MediatorSubject from 'Utilities/MediatorSubject';
 import { addDanger, addWarn } from 'Utilities/AlertUtility';
 import { InitialShipment } from 'Types/Types';
-import { AgGridColumn, AgGridReact } from '@ag-grid-community/react';
-import { GridGetterParams, IRowValue } from 'Components/AgGridComponent/Grid';
-import { GridOptions } from '@ag-grid-community/all-modules';
+import { AgGridReact } from '@ag-grid-community/react';
+import { GridGetterParams, GridRowDataTransaction, IRowValue } from 'Components/AgGridComponent/Grid';
+import { GridOptions, GridReadyEvent, RowDataTransaction } from '@ag-grid-community/all-modules';
 import { FlavourCellRenderer, FlavourValueGetter, FlavourValueSetter, ProductCellRenderer, ProductValueGetter, ProductValueSetter } from 'Components/AgGridComponent/Renderer/SelectWithAriaRender';
 import { GridFlavourSelectEditor, GridProductSelectEditor } from 'Components/AgGridComponent/Editors/SelectWithAriaEditor';
 import CaretSizeRender, { CaretSizeValueGetter, CaretSizeValueSetter } from 'Components/AgGridComponent/Renderer/CaretSizeRenderer';
 import { CaretSizeEditor } from 'Components/AgGridComponent/Editors/CaretSizeEditor';
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
+import { getARandomNumber } from 'Utilities/Utilities';
+import { AllCommunityModules } from '@ag-grid-community/all-modules';
+import Action from 'Components/Action/Action';
+import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
+import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
+import { setTimeout } from 'node:timers';
 
-type IShipmentListProps = {
-	handleSubmit: (Shipments: ShipmentDTO[]) => void;
-	Products: Product[];
-	ShouldLimitQuantity: boolean;
-	ResetElement?: OutOfStock[];
-	InitialShipments?: InitialShipment[];
-};
+
+type IShipmentListProps =
+	{
+		handleSubmit: (Shipments: ShipmentDTO[]) => void;
+		Products: Product[];
+		ShouldLimitQuantity: boolean;
+		ResetElement?: OutOfStock[];
+		InitialShipments?: InitialShipment[];
+	};
 type IShipmentListState = {
 	Products: Map<string, Product>;
 	ShipmentInfos: Array<IRowValue>;
@@ -32,6 +40,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 	componentListMediator: MediatorSubject;
 	constructor(props: IShipmentListProps) {
 		super(props);
+		this.products = new Map([]);
+		this.componentListMediator = new MediatorSubject([]);
 		this.state = {
 			ShipmentInfos: [],
 			GridOptions: {
@@ -40,38 +50,43 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						cellRendererFramework: ProductCellRenderer,
 						cellEditorFramework: GridProductSelectEditor,
 						valueGetter: ProductValueGetter,
-						valueSetter: ProductValueSetter
+						valueSetter: ProductValueSetter,
+						headerName: 'Product Name'
 					},
 					{
 						cellRendererFramework: FlavourCellRenderer,
 						cellEditorFramework: GridFlavourSelectEditor,
 						valueGetter: FlavourValueGetter,
-						valueSetter: FlavourValueSetter
+						valueSetter: FlavourValueSetter,
+						headerName: 'Flavour Name'
 					},
 					{
 						valueGetter: (props: GridGetterParams) => props.data.Shipment.CaretSize,
 						editable: false,
+						headerName: 'Caret Size'
 					},
 					{
 						cellEditorFramework: CaretSizeEditor,
 						cellRendererFramework: CaretSizeRender,
 						valueGetter: CaretSizeValueGetter,
-						valueSetter: CaretSizeValueSetter
+						valueSetter: CaretSizeValueSetter,
+						headerName: 'Quantity'
 					},
 					{
 						cellRendererFramework: ActionCellRenderer,
 						cellRendererParams: {
 							addAChild: this.addAShipment,
 							deleteAChild: this.handleRemove
-						} as ActionCellParams
+						} as ActionCellParams,
+						headerName: 'Action'
 					}
-				]
+				],
+
 			},
-			Products: new Map([]), SubscriptionId: Math.random() * 10, Alert: { Message: "", Show: false }
+			Products: new Map([]),
+			SubscriptionId: Math.random() * 10,
+			Alert: { Message: "", Show: false }
 		};
-		this.products = new Map([]);
-		this.componentListMediator = new MediatorSubject([]);
-		this.handleChange = this.handleChange.bind(this);
 		this.addAShipment = this.addAShipment.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
 	}
@@ -85,8 +100,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				});
 				this.products = new Map(products);
 				this.componentListMediator.Unsubscribe(this.state.SubscriptionId);
-				this.componentListMediator = new MediatorSubject(Products.map(e => { return { ...e } }));
-				this.setState({ Products: products, ShipmentInfos: [] });
+				this.componentListMediator = new MediatorSubject(Products);
+					this.setState({ Products: products, ShipmentInfos: [this.createAShipment(getARandomNumber())] });
 			}
 		}
 		if (nextProps.ResetElement && nextProps.ResetElement != this.props.ResetElement) {
@@ -128,54 +143,6 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		}
 	}
 
-	handleChange(propertyValue: { Id: number; Name: string; Value: any }) {
-		const { Id, Name, Value } = propertyValue;
-		const { ShouldLimitQuantity } = this.props;
-
-		if (Name == 'ProductId') {
-			const ProductId = Number.parseInt(Value);
-
-			this.setState(({ ShipmentInfos }) => {
-				return {
-					ShipmentInfos:
-						ShipmentInfos.map(e => {
-							if (e.Shipment.Id == Id) {
-								e.Shipment.FlavourId && e.Observer.UnsubscribeToQuantity()
-								return { ...e, Shipment: { ...e.Shipment, ProductId: ProductId, FlavourId: -1, CaretSize: this.selectProductCaretDetails(ProductId) }, MaxLimit: ShouldLimitQuantity ? 0 : undefined };
-							}
-							return e;
-						}),
-
-				};
-			});
-		} else if (Name == 'FlavourId') {
-			this.setState(({ ShipmentInfos }) => {
-				return {
-					ShipmentInfos: [
-						...ShipmentInfos.map(e => {
-							if (e.Shipment.Id == Id) {
-								return { ...e, Shipment: { ...e.Shipment, FlavourId: Value }, MaxLimit: ShouldLimitQuantity ? e.Observer.GetQuantityLimit() : undefined };
-							}
-							return { ...e };
-						}),
-					],
-				};
-			});
-		}
-		else {
-			this.setState(({ ShipmentInfos: IncomingShipments }) => {
-				return {
-					ShipmentInfos: [
-						...IncomingShipments.map(value => {
-							if (value.Shipment.Id == Id)
-								return { ...value, Shipment: { ...value.Shipment, [Name]: Value } };
-							return value;
-						}),
-					],
-				};
-			});
-		}
-	}
 	handleSubmit() {
 		const element = document.getElementsByClassName('is-invalid');
 		if (element.length > 0) {
@@ -191,79 +158,50 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				addWarn("Please, Add Atleast One Item");
 		}
 	}
+	createAShipment = (Id: number): IRowValue => {
+		return {
+			Shipment: { Id: Id, CaretSize: 0, FlavourId: -1, ProductId: -1, TotalDefectedPieces: 0, TotalRecievedPieces: 0 },
+			Observer: this.componentListMediator.GetAObserver(this.state.SubscriptionId, Id)
+		};
+	}
 	addAShipment = () => {
-		const { ShipmentInfos, Products, SubscriptionId } = this.state;
-		const componentId = Math.floor(Math.random() * 1000);
-		const Observer = this.componentListMediator.GetAObserver(SubscriptionId, componentId);
-		if (Products.size != 0)
-			this.setState({
-				ShipmentInfos: [
-					...ShipmentInfos,
-					{
-						Observer,
-						Shipment: {
-							Id: componentId,
-							ProductId: -1,
-							TotalDefectedPieces: 0,
-							FlavourId: -1,
-							CaretSize: 0,
-							TotalRecievedPieces: 0,
-						}
-					},
-				],
-			});
+		const { Products } = this.state;
+		const componentId = getARandomNumber();
+		if (Products.size != 0) {
+			const rowTransations: GridRowDataTransaction = {
+				add: [this.createAShipment(componentId)], addIndex: 0
+			};
+			this.state.GridOptions.api?.applyTransaction(rowTransations);
+		}
 		else
 			addDanger("Product Not Availabel");
 	};
-	resetQuantityLimit = (Id: number) => {
-		this.setState(({ ShipmentInfos }) => {
-			return {
-				ShipmentInfos: ShipmentInfos.map(e => {
-					if (e.Shipment.Id == Id) {
-						e.Observer.UnsubscribeToQuantity();
-						return { ...e, Shipment: { ...e.Shipment }, MaxLimit: e.Observer.GetQuantityLimit() };
-					}
-					return e;
-				})
-			}
-		})
+	private OnGridReady = (params: GridReadyEvent) => {
+		this.setState((prevState) => ({ GridOptions: { ...prevState.GridOptions, api: params.api, columnApi: params.columnApi } }));
 	}
 	selectProductCaretDetails = (Id: number): number => {
 		let product = this.products.get(Id + '');
 		if (product) return product.CaretSize;
 		return 0;
 	};
-	setQuantity = (Id: number, quantity: number) => {
-		this.handleChange({ Id, Name: 'TotalRecievedPieces', Value: quantity });
-	};
+	componentWillUpdate() {
+		debugger;
+	}
 	handleRemove = (Id: number) => {
-		const { ShipmentInfos, SubscriptionId } = this.state;
-		const currentShipmentElement = ShipmentInfos.find(e => e.Shipment.Id == Id);
-		if (currentShipmentElement) {
-			this.componentListMediator?.UnsubscribeAComponent(SubscriptionId, Id);
+		const { GridOptions } = this.state;
+		const GridTransaction: GridRowDataTransaction = {
+			remove: [{ Id: Id }]
 		}
-		this.setState(({ ShipmentInfos: IncomingShipments }) => {
-			return { ShipmentInfos: IncomingShipments.filter(e => e.Shipment.Id != Id) };
-		});
+		GridOptions.api?.applyTransaction(GridTransaction);
 	}
 	render() {
-		const { ShipmentInfos: IncomingShipments } = this.state;
-		return <AgGridReact rowData={this.state.ShipmentInfos} gridOptions={this.state.GridOptions}>
-		</AgGridReact>;
-	}
+		const { ShipmentInfos,GridOptions } = this.state;
 
-	componentDidMount() {
-		const { Products } = this.props;
-		if (Products && Products.length > 0) {
-			let products = new Map<string, Product>();
-			if (Products.length > 0) {
-				Products.forEach(function (value, index) {
-					products.set(value.Id + '', value);
-				});
-				this.products = new Map(products);
-				this.componentListMediator = new MediatorSubject(Products.map(e => { return { ...e }; }));
-				this.setState({ Products: products });
-			}
-		}
+		return (<div className="ag-theme-alpine" style={{ height: '500px', width: '100vw' }}>
+			<AgGridReact modules={AllCommunityModules} singleClickEdit={true} gridOptions={GridOptions}
+				rowData={ShipmentInfos} onGridReady={this.OnGridReady}>
+			</AgGridReact>
+			<Action handleAdd={this.addAShipment} handleProcess={this.handleSubmit} />
+		</div>);
 	}
 }
