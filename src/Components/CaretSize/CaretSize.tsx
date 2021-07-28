@@ -1,13 +1,14 @@
-import React, { ChangeEvent, memo, useEffect, useRef, useState } from 'react';
+import React, { ChangeEvent, memo, Ref, useEffect, useRef, useState } from 'react';
 import './CaretSize.css';
 
-interface ICaretSizeProps {
+export interface ICaretSizeProps {
 	Size: number;
 	handleInput: (num: number) => void;
 	MaxLimit?: number;
 	OnFocusIn?: () => void;
 	OnFocusOut?: () => void;
 	Quantity: number;
+	ref:Ref<HTMLInputElement>;
 	MinLimit?: number;
 }
 function getTwoDigitValue(num: number): string {

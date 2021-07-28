@@ -1,4 +1,4 @@
-import React, { memo, useEffect } from 'react';
+import React, { memo, Ref, useEffect } from 'react';
 import { useState } from 'react';
 import { KeyCode } from 'Utilities/Utilities';
 import './Select.css';
@@ -22,17 +22,18 @@ function Select(props: SelectProps) {
         <div className={`select-list ${IsOpen && 'open'}`}>{list.map((e, index) => <div onMouseOver={onMoseEvent} data-index={index} className={`item ${index === selectedIndex ? 'selected' : ''}`} onClick={onMouseClick} key={index}>{e.label}</div>)}</div>
     </div>);
 }
-type ValueContainer = { label: string, value: any };
+export type ValueContainer = { label: string, value: any };
 type SelectWithAriaProps = {
     defaultValue?: any;
     list: ValueContainer[];
-    onFous(e: React.FocusEvent): void;
+    onFous?(e: React.FocusEvent): void;
+    ref:Ref<HTMLInputElement|null>;
 }
 type ReactSelctProps = {
     onSelect(value: any): void;
 }
 function SelectWithAria(props: SelectWithAriaProps & ReactSelctProps) {
-    const { list, defaultValue: value, onSelect } = props;
+    const { list, defaultValue: value, onSelect,ref } = props;
     const [inputLabel, setInputLabel] = useState<any>(value);
     const [elements, setElements] = useState<ValueContainer[]>(list);
     const [index, setIndex] = useState<number>(-1);
@@ -87,7 +88,7 @@ function SelectWithAria(props: SelectWithAriaProps & ReactSelctProps) {
     }
     const onFocus = function (e: React.FocusEvent) {
         toggleOpen(true);
-        props.onFous(e);
+        props.onFous && props.onFous(e);
     }
     function selectNewValue() {
         let newList = list;
@@ -110,7 +111,7 @@ function SelectWithAria(props: SelectWithAriaProps & ReactSelctProps) {
         setIndex(-1);
     }, [inputLabel]);
 
-    return <Select list={elements} onChange={onChange} onKeyDown={onKeyDown} selectedIndex={index}
+    return <Select ref={ref} list={elements} onChange={onChange} onKeyDown={onKeyDown} selectedIndex={index}
         defaultValue={inputLabel} onMoseEvent={onMouseEvent} IsOpen={isOpen} toggleDropDown={toggleDropown} onFous={onFocus}
         onMouseClick={onMouseClick} />
 }

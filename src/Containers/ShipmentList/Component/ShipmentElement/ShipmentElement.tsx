@@ -7,8 +7,6 @@ import { Flavour, ShipmentDTO } from 'Types/DTO';
 import Observer from 'Utilities/Observer';
 import { ProductInfo } from 'Types/Mediator';
 import ReactSelect from 'Components/Select/Select';
-import { observers } from '@politie/sherlock/symbols';
-
 type ShipmentElementProps = {
 	ShipmentEntity: ShipmentDTO;
 	handleChange: (property: ShipmentProperty) => void;
@@ -103,7 +101,7 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 						))}
 					</select> */}
 					<ReactSelect list={ProductList.map(e => { return { label: e.Title, value: e.Id } })} onFous={this.handleProductFocus} 
-					onSelect={this.handleProductSelect} />
+					onSelect={this.handleProductSelect} ref={null}/>
 					<div className='invalid-feedback'>Please, Select a Product!</div>
 				</div>
 				<div className={`form-group ${ShipmentEntity.FlavourId}`}>
@@ -128,7 +126,7 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 				</div>
 				<div className={`form-group`}>
 					<label htmlFor='caretSize'>Quantity</label>
-					<CaretSizeInput Size={caretSize} handleInput={this.setQuantity} MaxLimit={Limit} MinLimit={MinLimit}
+					<CaretSizeInput ref={null} Size={caretSize} handleInput={this.setQuantity} MaxLimit={Limit} MinLimit={MinLimit}
 						Quantity={ShipmentEntity.TotalRecievedPieces} OnFocusIn={this.handleFocusIn} />
 				</div>
 

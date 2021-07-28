@@ -1,30 +1,30 @@
 import React, { ChangeEvent, SyntheticEvent } from 'react';
-import Action from 'Components/Action/Action';
-import ShipmentElement from 'Containers/ShipmentList/Component/ShipmentElement/ShipmentElement';
 import { Product, Flavour, ShipmentDTO, OutOfStock } from 'Types/DTO';
 import MediatorSubject from 'Utilities/MediatorSubject';
-import Observer from 'Utilities/Observer';
 import { addDanger, addWarn } from 'Utilities/AlertUtility';
 import { InitialShipment } from 'Types/Types';
+import { AgGridColumn, AgGridReact } from '@ag-grid-community/react';
+import { GridGetterParams, IRowValue } from 'Components/AgGridComponent/Grid';
+import { GridOptions } from '@ag-grid-community/all-modules';
+import { FlavourCellRenderer, FlavourValueGetter, FlavourValueSetter, ProductCellRenderer, ProductValueGetter, ProductValueSetter } from 'Components/AgGridComponent/Renderer/SelectWithAriaRender';
+import { GridFlavourSelectEditor, GridProductSelectEditor } from 'Components/AgGridComponent/Editors/SelectWithAriaEditor';
+import CaretSizeRender, { CaretSizeValueGetter, CaretSizeValueSetter } from 'Components/AgGridComponent/Renderer/CaretSizeRenderer';
+import { CaretSizeEditor } from 'Components/AgGridComponent/Editors/CaretSizeEditor';
+import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 
 type IShipmentListProps = {
 	handleSubmit: (Shipments: ShipmentDTO[]) => void;
 	Products: Product[];
 	ShouldLimitQuantity: boolean;
 	ResetElement?: OutOfStock[];
-	InitialShipments?:InitialShipment[];
+	InitialShipments?: InitialShipment[];
 };
-type ShipmentInfo = {
-	Shipment: ShipmentDTO;
-	Observer: Observer;
-	MaxLimit?: number;
-	MinLimit?:number;
-}
 type IShipmentListState = {
 	Products: Map<string, Product>;
-	ShipmentInfos: Array<ShipmentInfo>;
+	ShipmentInfos: Array<IRowValue>;
 	SubscriptionId: number;
 	Alert: { Show: boolean, Message: string };
+	GridOptions: GridOptions;
 };
 
 export default class ShipmentList extends React.Component<IShipmentListProps, IShipmentListState> {
@@ -34,6 +34,39 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		super(props);
 		this.state = {
 			ShipmentInfos: [],
+			GridOptions: {
+				columnDefs: [
+					{
+						cellRendererFramework: ProductCellRenderer,
+						cellEditorFramework: GridProductSelectEditor,
+						valueGetter: ProductValueGetter,
+						valueSetter: ProductValueSetter
+					},
+					{
+						cellRendererFramework: FlavourCellRenderer,
+						cellEditorFramework: GridFlavourSelectEditor,
+						valueGetter: FlavourValueGetter,
+						valueSetter: FlavourValueSetter
+					},
+					{
+						valueGetter: (props: GridGetterParams) => props.data.Shipment.CaretSize,
+						editable: false,
+					},
+					{
+						cellEditorFramework: CaretSizeEditor,
+						cellRendererFramework: CaretSizeRender,
+						valueGetter: CaretSizeValueGetter,
+						valueSetter: CaretSizeValueSetter
+					},
+					{
+						cellRendererFramework: ActionCellRenderer,
+						cellRendererParams: {
+							addAChild: this.addAShipment,
+							deleteAChild: this.handleRemove
+						} as ActionCellParams
+					}
+				]
+			},
 			Products: new Map([]), SubscriptionId: Math.random() * 10, Alert: { Message: "", Show: false }
 		};
 		this.products = new Map([]);
@@ -79,19 +112,19 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 
 		const { InitialShipments } = nextProps;
 		if (InitialShipments && InitialShipments != this.props.InitialShipments) {
-			const ShipmentInfos: Array<ShipmentInfo> = [];
-			
+			const ShipmentInfos: Array<IRowValue> = [];
+
 			for (var i = 0; i < InitialShipments.length; i++) {
 				const Id = Math.random();
 				const observer = this.componentListMediator.GetAObserver(this.state.SubscriptionId, Id);
-				const initial = InitialShipments[i];const shipment = initial.Shipment;
+				const initial = InitialShipments[i]; const shipment = initial.Shipment;
 				observer.SetProduct(shipment.ProductId);
 				observer.SetFlavour(shipment.FlavourId);
 				const quantity = shipment.TotalRecievedPieces > observer.GetQuantityLimit() ? 0 : shipment.TotalRecievedPieces;
-                observer.SetQuantity(quantity);
-				ShipmentInfos.push({Observer:observer,Shipment:{...shipment,TotalRecievedPieces:quantity},MaxLimit:initial.MaxLimit,MinLimit:initial.MinLimit});
+				observer.SetQuantity(quantity);
+				ShipmentInfos.push({ Observer: observer, Shipment: { ...shipment, TotalRecievedPieces: quantity }, MaxLimit: initial.MaxLimit, MinLimit: initial.MinLimit });
 			}
-			this.setState({ShipmentInfos:ShipmentInfos});
+			this.setState({ ShipmentInfos: ShipmentInfos });
 		}
 	}
 
@@ -215,28 +248,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 	}
 	render() {
 		const { ShipmentInfos: IncomingShipments } = this.state;
-		return (
-			<div className='add p-3'>
-				<div className='d-flex justify-content-start flex-column'>
-					{IncomingShipments &&
-						IncomingShipments.map((value, index) => {
-							return (
-								<ShipmentElement
-									key={value.Shipment.Id}
-									handleChange={this.handleChange}
-									ShipmentEntity={value.Shipment}
-									SetQuantity={this.setQuantity}
-									handleRemove={this.handleRemove}
-									Observer={value.Observer}
-									MaxLimit={value.MaxLimit}
-									MinLimit={value.MinLimit}
-								/>
-							);
-						})}
-				</div>
-				<Action handleAdd={this.addAShipment} handleProcess={this.handleSubmit} />
-			</div>
-		);
+		return <AgGridReact rowData={this.state.ShipmentInfos} gridOptions={this.state.GridOptions}>
+		</AgGridReact>;
 	}
 
 	componentDidMount() {
