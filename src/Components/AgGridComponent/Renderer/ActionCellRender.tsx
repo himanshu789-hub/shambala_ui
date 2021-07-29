@@ -10,7 +10,7 @@ type ActionCellRendererParams = GridRendererParams<ShipmentDTO['Id']> & ActionCe
 
 export default function ActionCellRenderer(props: ActionCellRendererParams) {
     if (props.node.lastChild) {
-         return <button className="btn btn-danger" onClick={props.addAChild}><i className="fa fa-plus"> + </i></button>;
+         return <button className="btn btn-info" onClick={props.addAChild}><i className="fa fa-plus"> </i></button>;
     }
-    return <button className="btn btn-info" onClick={()=>props.deleteAChild(props.value)}><i className="fa fa-plus"> - </i></button>;
+    return <button className="btn btn-danger" onClick={()=>props.deleteAChild(props.value)}><i className="fa fa-minus">  </i></button>;
 }

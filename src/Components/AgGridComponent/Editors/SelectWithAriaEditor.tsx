@@ -11,7 +11,7 @@ type SelectEditorProps = GridEditorParams<number> & {
     list: ValueContainer[]
 }
 const SelectEditor = forwardRef<Ref<ICellEditor>, SelectEditorProps>((props, ref) => {
-    const { data, value, list } = props;
+    const {  value, list } = props;
     const [selectedValue, setSelectedValue] = useState(value);
     const inputRef = useRef(null);
     useImperativeHandle(ref, () => {

@@ -84,12 +84,11 @@ export default class OutgoingShipmentReturn extends React.Component<IOutgoingShi
 					return this._outgoingService.GetById(Id);
 				}).then(result => {
 					this.setState({
-						InitialShipments: result.data.Status == OutgoingStatus.PENDING ? result.data.OutgoingShipmentDetails.filter(e => e.TotalQuantityReturned > 0).map(e => { return { Shipment: {...OutgoingDetailToShipment(e),TotalRecievedPieces:e.TotalQuantityReturned,TotalDefectedPieces:e.TotalQuantityRejected} } }) : undefined,
+						InitialShipments: result.data.Status == OutgoingStatus.PENDING ? result.data.OutgoingShipmentDetails.filter(e => e.TotalQuantityReturned > 0).map(e => { return { Shipment: {...OutgoingDetailToShipment(e),TotalRecievedPieces:e.TotalQuantityReturned,TotalDefectedPieces:e.TotalQuantityRejected},MinLimit:e.TotalQuantityReturned } }) : undefined,
 						ApiStatus: CallStatus.LOADED
 					});
 				})
 				.catch(() => this.setState({ ApiStatus: CallStatus.ERROR }));
-
 		}
 		else
 			console.error("Outgoing Shipment 'Id' Url Paramater Not Valid");

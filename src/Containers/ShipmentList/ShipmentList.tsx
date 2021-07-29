@@ -4,9 +4,9 @@ import MediatorSubject from 'Utilities/MediatorSubject';
 import { addDanger, addWarn } from 'Utilities/AlertUtility';
 import { InitialShipment } from 'Types/Types';
 import { AgGridReact } from '@ag-grid-community/react';
-import { GridGetterParams, GridRowDataTransaction, IRowValue } from 'Components/AgGridComponent/Grid';
+import { GridGetterParams, GridRowDataTransaction, IRowValue, GridContext } from 'Components/AgGridComponent/Grid';
 import { GridOptions, GridReadyEvent, RowDataTransaction } from '@ag-grid-community/all-modules';
-import { FlavourCellRenderer, FlavourValueGetter, FlavourValueSetter, ProductCellRenderer, ProductValueGetter, ProductValueSetter } from 'Components/AgGridComponent/Renderer/SelectWithAriaRender';
+import { FlavourCellRenderer, FlavourValueGetter, FlavourValueSetter, ProductCellRenderer, ProductValueChangedEvent, ProductValueGetter, ProductValueSetter } from 'Components/AgGridComponent/Renderer/SelectWithAriaRender';
 import { GridFlavourSelectEditor, GridProductSelectEditor } from 'Components/AgGridComponent/Editors/SelectWithAriaEditor';
 import CaretSizeRender, { CaretSizeValueGetter, CaretSizeValueSetter } from 'Components/AgGridComponent/Renderer/CaretSizeRenderer';
 import { CaretSizeEditor } from 'Components/AgGridComponent/Editors/CaretSizeEditor';
@@ -16,7 +16,6 @@ import { AllCommunityModules } from '@ag-grid-community/all-modules';
 import Action from 'Components/Action/Action';
 import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
 import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
-import { setTimeout } from 'node:timers';
 
 
 type IShipmentListProps =
@@ -38,6 +37,8 @@ type IShipmentListState = {
 export default class ShipmentList extends React.Component<IShipmentListProps, IShipmentListState> {
 	products: Map<string, Product>;
 	componentListMediator: MediatorSubject;
+
+
 	constructor(props: IShipmentListProps) {
 		super(props);
 		this.products = new Map([]);
@@ -45,13 +46,19 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		this.state = {
 			ShipmentInfos: [],
 			GridOptions: {
+				defaultColDef: {
+					flex: 1,
+					editable: true
+				},
 				columnDefs: [
 					{
 						cellRendererFramework: ProductCellRenderer,
 						cellEditorFramework: GridProductSelectEditor,
 						valueGetter: ProductValueGetter,
 						valueSetter: ProductValueSetter,
-						headerName: 'Product Name'
+						headerName: 'Product Name',
+						onCellValueChanged:ProductValueChangedEvent
+
 					},
 					{
 						cellRendererFramework: FlavourCellRenderer,
@@ -81,15 +88,33 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						headerName: 'Action'
 					}
 				],
-
+				context: {
+					getCartetSizeByProductId: this.getCaretSizeByProductId,
+					getColumnIndex:this.getColummnIndex
+				} as GridContext
 			},
 			Products: new Map([]),
 			SubscriptionId: Math.random() * 10,
 			Alert: { Message: "", Show: false }
 		};
 		this.addAShipment = this.addAShipment.bind(this);
-		this.handleSubmit = this.handleSubmit.bind(this);
 	}
+	getColummnIndex (name: keyof ShipmentDTO) {
+		let index = null;
+		switch (name) {
+			case 'ProductId': index = 0; break;
+			case 'FlavourId': index = 1; break;
+			case 'CaretSize': index = 2; break;
+			case 'TotalRecievedPieces': index = 3; break;
+			case 'Id': index = 4; break;
+		}
+		return index;
+	}
+	getCaretSizeByProductId = (Id: number) => {
+		const { Products } = this.state;
+		return Products.get(Id + '')?.CaretSize ?? 0;
+	}
+
 	componentWillReceiveProps(nextProps: IShipmentListProps) {
 		if (nextProps.Products != this.props.Products) {
 			const { Products } = nextProps;
@@ -101,7 +126,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				this.products = new Map(products);
 				this.componentListMediator.Unsubscribe(this.state.SubscriptionId);
 				this.componentListMediator = new MediatorSubject(Products);
-					this.setState({ Products: products, ShipmentInfos: [this.createAShipment(getARandomNumber())] });
+				this.setState({ Products: products, ShipmentInfos: [this.createAShipment(getARandomNumber())] });
 			}
 		}
 		if (nextProps.ResetElement && nextProps.ResetElement != this.props.ResetElement) {
@@ -195,7 +220,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		GridOptions.api?.applyTransaction(GridTransaction);
 	}
 	render() {
-		const { ShipmentInfos,GridOptions } = this.state;
+		const { ShipmentInfos, GridOptions } = this.state;
 
 		return (<div className="ag-theme-alpine" style={{ height: '500px', width: '100vw' }}>
 			<AgGridReact modules={AllCommunityModules} singleClickEdit={true} gridOptions={GridOptions}
