@@ -22,10 +22,10 @@ export const ProductValueSetter = (props: GridSetterParams<ShipmentDTO['ProductI
 }
 
 export const FlavourValueSetter = (props: GridSetterParams<ShipmentDTO['FlavourId']>) => {
-    props.data.Shipment.FlavourId = props.data.Shipment.FlavourId;
+    props.data.Shipment.FlavourId = props.newValue;
     return true;
 }
-function isColumnsNull(Columns: Column[]|null) {
+function isColumnsNull(Columns: Column[] | null) {
     if (!Columns) {
         console.error('Grid getAllColumns() is empty');
         return true;
@@ -36,30 +36,34 @@ export const ProductValueChangedEvent = (event: GridCellValueChangeEvent<Shipmen
     const { columnApi, data, context } = event;
     const columns = columnApi.getAllColumns();
     if (!isColumnsNull(columns)) {
+        data.Observer.SetProduct(event.newValue);
         const isFlavourExists = data.Observer.GetFlavours().find(e => e.Id == data.Shipment.FlavourId) != null;
-        const newRowData: IRowValue = { ...data, Shipment: { ...data.Shipment, CaretSize: context.getCartetSizeByProductId(event.newValue), FlavourId: isFlavourExists ? data.Shipment.FlavourId : -1 } };
+        data.Observer.SetProduct(event.newValue);
+        data.Shipment.CaretSize = context.getCartetSizeByProductId(event.newValue);
+        data.Shipment.FlavourId = isFlavourExists ? data.Shipment.FlavourId : -1;
+        data.Shipment.TotalRecievedPieces = isFlavourExists ? data.Shipment.TotalRecievedPieces : 0;
         const transaction: GridRowDataTransaction = {
-            update: [newRowData]
+            update: [data]
         }
         event.api.applyTransaction(transaction);
+        event.api.refreshCells({ rowNodes: [event.node], force: true });
     }
 }
 
 export const FlavourValueChangedEvent = (event: GridCellValueChangeEvent<ShipmentDTO['FlavourId']>) => {
     const { data, columnApi } = event;
     const columns = columnApi.getAllColumns();
-    if (!isColumnsNull(columns)) {
+    const quantityIndex = event.context.getColumnIndex('TotalRecievedPieces');
+    if (!isColumnsNull(columns) && quantityIndex) {
         const observer = data.Observer;
+        let quantity = data.Shipment.TotalRecievedPieces;
         observer.UnsubscribeToQuantity();
         const quantityLimit = observer.GetQuantityLimit();
-        if(data.Shipment.TotalRecievedPieces>quantityLimit){
-            data.Shipment.TotalRecievedPieces = 0;
+        if (data.Shipment.TotalRecievedPieces > quantityLimit) {
+            quantity = 0;
         }
-        observer.SetQuantity(data.Shipment.TotalRecievedPieces);
-        const transaction:GridRowDataTransaction = {
-            update:[data]
-        }
-        event.api.applyTransaction(transaction);
+        observer.SetQuantity(quantity);
+        event.node.setDataValue(columns![quantityIndex].getColId(), quantity);
     }
 
 }

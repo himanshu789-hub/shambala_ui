@@ -126,7 +126,7 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 				</div>
 				<div className={`form-group`}>
 					<label htmlFor='caretSize'>Quantity</label>
-					<CaretSizeInput ref={null} Size={caretSize} handleInput={this.setQuantity} MaxLimit={Limit} MinLimit={MinLimit}
+					<CaretSizeInput  Size={caretSize} handleInput={this.setQuantity} MaxLimit={Limit} MinLimit={MinLimit}
 						Quantity={ShipmentEntity.TotalRecievedPieces} OnFocusIn={this.handleFocusIn} />
 				</div>
 

@@ -5,7 +5,7 @@ import { addDanger, addWarn } from 'Utilities/AlertUtility';
 import { InitialShipment } from 'Types/Types';
 import { AgGridReact } from '@ag-grid-community/react';
 import { GridGetterParams, GridRowDataTransaction, IRowValue, GridContext } from 'Components/AgGridComponent/Grid';
-import { GridOptions, GridReadyEvent, RowDataTransaction } from '@ag-grid-community/all-modules';
+import { GridOptions, GridReadyEvent, RowDataTransaction,CellClickedEvent } from '@ag-grid-community/all-modules';
 import { FlavourCellRenderer, FlavourValueGetter, FlavourValueSetter, ProductCellRenderer, ProductValueChangedEvent, ProductValueGetter, ProductValueSetter } from 'Components/AgGridComponent/Renderer/SelectWithAriaRender';
 import { GridFlavourSelectEditor, GridProductSelectEditor } from 'Components/AgGridComponent/Editors/SelectWithAriaEditor';
 import CaretSizeRender, { CaretSizeValueGetter, CaretSizeValueSetter } from 'Components/AgGridComponent/Renderer/CaretSizeRenderer';
@@ -57,7 +57,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						valueGetter: ProductValueGetter,
 						valueSetter: ProductValueSetter,
 						headerName: 'Product Name',
-						onCellValueChanged:ProductValueChangedEvent
+
+						onCellValueChanged: ProductValueChangedEvent
 
 					},
 					{
@@ -85,12 +86,16 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 							addAChild: this.addAShipment,
 							deleteAChild: this.handleRemove
 						} as ActionCellParams,
-						headerName: 'Action'
+						headerName: 'Action',
+						editable: false,
+						valueGetter: function (params: GridGetterParams) {
+							return params.data.Shipment.Id;
+						}
 					}
 				],
 				context: {
 					getCartetSizeByProductId: this.getCaretSizeByProductId,
-					getColumnIndex:this.getColummnIndex
+					getColumnIndex: this.getColummnIndex
 				} as GridContext
 			},
 			Products: new Map([]),
@@ -99,7 +104,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		};
 		this.addAShipment = this.addAShipment.bind(this);
 	}
-	getColummnIndex (name: keyof ShipmentDTO) {
+	getColummnIndex(name: keyof ShipmentDTO) {
 		let index = null;
 		switch (name) {
 			case 'ProductId': index = 0; break;
@@ -194,7 +199,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		const componentId = getARandomNumber();
 		if (Products.size != 0) {
 			const rowTransations: GridRowDataTransaction = {
-				add: [this.createAShipment(componentId)], addIndex: 0
+				add: [this.createAShipment(componentId)]
 			};
 			this.state.GridOptions.api?.applyTransaction(rowTransations);
 		}
@@ -209,9 +214,6 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		if (product) return product.CaretSize;
 		return 0;
 	};
-	componentWillUpdate() {
-		debugger;
-	}
 	handleRemove = (Id: number) => {
 		const { GridOptions } = this.state;
 		const GridTransaction: GridRowDataTransaction = {

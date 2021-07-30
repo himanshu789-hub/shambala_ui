@@ -1,4 +1,6 @@
-import React, { ChangeEvent, memo, Ref, useEffect, useRef, useState } from 'react';
+import React, { ChangeEvent, memo, MutableRefObject, Ref, RefObject, useEffect, useRef, useState } from 'react';
+import { useImperativeHandle } from 'react';
+import { forwardRef } from 'react';
 import './CaretSize.css';
 
 export interface ICaretSizeProps {
@@ -8,18 +10,19 @@ export interface ICaretSizeProps {
 	OnFocusIn?: () => void;
 	OnFocusOut?: () => void;
 	Quantity: number;
-	ref:Ref<HTMLInputElement>;
 	MinLimit?: number;
 }
 function getTwoDigitValue(num: number): string {
 	return num < 10 ? "0" + num : num + '';
 }
-const CaretSize = memo(function CaretSize(props: ICaretSizeProps) {
+
+const CaretSize = memo(forwardRef<HTMLInputElement, ICaretSizeProps>((props, ref) => {
 	const [inputValue, setInputValue] = useState("00/00");
-	const [quantity, setQuantity] = useState<number>(0);
-	const [caretPosition, setCaretPosition] = useState<number>(0)
+	const [typingTimOut, setTimingOut] = useState<number>(0);
+	const [quantity, setCaretQuantity] = useState<number>(props.Quantity);
+	const [caretPosition, setCaretPosition] = useState<number>(0);
 	const [error, setErrorMessage] = useState<string | null>(null);
-	const inputRef = useRef<HTMLInputElement>(null);
+	let inputRef: HTMLInputElement;
 
 	const { Size, handleInput, MinLimit, Quantity, MaxLimit } = props;
 
@@ -28,7 +31,6 @@ const CaretSize = memo(function CaretSize(props: ICaretSizeProps) {
 			const caret = Math.floor(Quantity / Size);
 			const pieces = Quantity % Size;
 			setInputValue(`${getTwoDigitValue(caret)}/${getTwoDigitValue(pieces)}`);
-			setQuantity(calculateTotalQuantity(caret, pieces));
 		}
 	}, [Quantity])
 	useEffect(() => {
@@ -45,7 +47,16 @@ const CaretSize = memo(function CaretSize(props: ICaretSizeProps) {
 			setErrorMessage('Cannot Be Zero');
 			IsValid = false;
 		}
+
 		IsValid && setErrorMessage(null);
+		if (typingTimOut) {
+			clearTimeout(typingTimOut);
+			setTimingOut(0);
+		}
+		else
+			setTimingOut(setTimeout(() => {
+				handleInput(quantity);
+			}));
 	}, [quantity])
 	const Max_Caret_Allow = 100;
 	const Max_Pieces_Allow = Size - 1;
@@ -55,7 +66,7 @@ const CaretSize = memo(function CaretSize(props: ICaretSizeProps) {
 	};
 
 	const setQuantityByValue = function (value: string) {
-		setQuantity(calculateTotalQuantity(Number.parseInt(value.substr(0, 2)), Number.parseInt(value.substr(3, 2))));
+		setCaretQuantity(calculateTotalQuantity(Number.parseInt(value.substr(0, 2)), Number.parseInt(value.substr(3, 2))));
 	}
 
 	const handleBackspace = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -116,7 +127,7 @@ const CaretSize = memo(function CaretSize(props: ICaretSizeProps) {
 		setCaretPosition(setCaretPos);
 	};
 	const handleFocusEvent = () => {
-		const { OnFocusIn, OnFocusOut } = props;
+		const { OnFocusIn } = props;
 		OnFocusIn && OnFocusIn();
 	}
 	const handleBlurEvent = () => {
@@ -124,23 +135,29 @@ const CaretSize = memo(function CaretSize(props: ICaretSizeProps) {
 	}
 
 	useEffect(() => {
-		if (inputRef && inputRef.current) {
-			inputRef.current.setSelectionRange(caretPosition, caretPosition)
-		}
+		inputRef?.setSelectionRange(caretPosition, caretPosition);
 	}, [caretPosition]);
+	
+	function assignRef(node: HTMLInputElement) {
+			node && (inputRef = node);
+			if (typeof ref === 'function')
+				ref(node);
+			else
+				(ref as MutableRefObject<HTMLInputElement>).current = node!;
+	};
 
 	return (
 		<div className={`form-group ${!props.Size ? 'disabled' : ''}  
 			${error == null ? '' : 'border bg-warning border-danger rounded is-invalid'}`}>
 			<div className="input-group carat-group">
 				<label className="input-group-prepend">Carat/Piece(s)</label>
-				<input ref={inputRef} type="text" onKeyDown={handleKeyDown} onChange={handleChange} value={inputValue}
+				<input ref={assignRef} type="text" onKeyDown={handleKeyDown} onChange={handleChange} value={inputValue}
 					className="form-control" onBlur={handleBlurEvent}
 					onFocus={handleFocusEvent} />
 			</div>
 			<div className='invalid-feedback pl-1'>${error}</div>
 		</div>
 	);
-});
+}));
 
 export default CaretSize;

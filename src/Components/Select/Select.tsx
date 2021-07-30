@@ -1,4 +1,4 @@
-import React, { memo, Ref, useEffect } from 'react';
+import React, { forwardRef, memo, Ref, RefObject, useEffect } from 'react';
 import { useState } from 'react';
 import { KeyCode } from 'Utilities/Utilities';
 import './Select.css';
@@ -13,27 +13,34 @@ type SelectProps = {
     onMouseClick(e: React.MouseEvent<HTMLDivElement>): void;
 } & SelectWithAriaProps;
 
-function Select(props: SelectProps) {
+const Select = forwardRef<HTMLInputElement, SelectProps>((props, ref) => {
     const { list, defaultValue: value, onChange, onFous, onMouseClick, IsOpen, onKeyDown, onMoseEvent, toggleDropDown, selectedIndex } = props;
-    return (<div className="w-100 border rounded select-wrapper">
-        <div className="d-inline-flex justify-content-around select-body"><input className="select-input" value={value || ''} onChange={onChange}
-            onKeyDown={onKeyDown} onFocus={onFous} /> <span className="p-1" onClick={() => toggleDropDown()} tabIndex={0}><i className="fa fa-arrow-down"></i></span>
+
+    return (<div className="myselect w-100 border rounded select-wrapper">
+        <div className="d-inline-flex justify-content-around select-body">
+            <input className="select-input" value={value || ''} onChange={onChange}
+                onKeyDown={onKeyDown} onFocus={onFous} ref={ref} />
+            <span className="p-1" onClick={() => toggleDropDown()} tabIndex={0}><i className="fa fa-arrow-down"></i></span>
         </div>
-        <div className={`select-list ${IsOpen && 'open'}`}>{list.map((e, index) => <div onMouseOver={onMoseEvent} data-index={index} className={`item ${index === selectedIndex ? 'selected' : ''}`} onClick={onMouseClick} key={index}>{e.label}</div>)}</div>
+        <div className={`select-list ${IsOpen && 'open'}`}>
+            {list.map((e, index) =>
+                <div onMouseOver={onMoseEvent} data-index={index} className={`item ${index === selectedIndex ? 'selected' : ''}`}
+                    onClick={onMouseClick} key={index}>{e.label}</div>)}
+        </div>
     </div>);
-}
+});
 export type ValueContainer = { label: string, value: any };
 type SelectWithAriaProps = {
     defaultValue?: any;
     list: ValueContainer[];
     onFous?(e: React.FocusEvent): void;
-    ref:Ref<HTMLInputElement|null>;
+
 }
 type ReactSelctProps = {
     onSelect(value: any): void;
 }
-function SelectWithAria(props: SelectWithAriaProps & ReactSelctProps) {
-    const { list, defaultValue: value, onSelect,ref } = props;
+const SelectWithAria = forwardRef<HTMLInputElement, SelectWithAriaProps & ReactSelctProps>((props, ref) => {
+    const { list, defaultValue: value, onSelect } = props;
     const [inputLabel, setInputLabel] = useState<any>(value);
     const [elements, setElements] = useState<ValueContainer[]>(list);
     const [index, setIndex] = useState<number>(-1);
@@ -100,10 +107,9 @@ function SelectWithAria(props: SelectWithAriaProps & ReactSelctProps) {
     }
     useEffect(() => {
         setIndex(elements.findIndex(e => e.value === (value || -1)));
+        console.log('Select With Aria mounted')
         function hover() { setIndex(-1) };
-        document.getElementsByClassName('select-list')[0].addEventListener('hover', hover);
-        return () => { document.getElementsByClassName('select-list')[0].removeEventListener('hover', hover) };
-
+        //document.getElementsByClassName('select-list')[0].addEventListener('hover', hover);
     }, [])
     useEffect(() => { selectNewValue(); }, [list]);
     useEffect(() => {
@@ -111,10 +117,10 @@ function SelectWithAria(props: SelectWithAriaProps & ReactSelctProps) {
         setIndex(-1);
     }, [inputLabel]);
 
-    return <Select ref={ref} list={elements} onChange={onChange} onKeyDown={onKeyDown} selectedIndex={index}
+    return <Select list={elements} onChange={onChange} onKeyDown={onKeyDown} selectedIndex={index}
         defaultValue={inputLabel} onMoseEvent={onMouseEvent} IsOpen={isOpen} toggleDropDown={toggleDropown} onFous={onFocus}
-        onMouseClick={onMouseClick} />
-}
+        onMouseClick={onMouseClick} ref={ref} />
+});
 
 const ReactSelect = memo(SelectWithAria);
 export default ReactSelect;

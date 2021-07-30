@@ -10,22 +10,34 @@ import { GridEditorParams } from "../Grid"
 type SelectEditorProps = GridEditorParams<number> & {
     list: ValueContainer[]
 }
-const SelectEditor = forwardRef<Ref<ICellEditor>, SelectEditorProps>((props, ref) => {
-    const {  value, list } = props;
+const SelectEditor = forwardRef<ICellEditor, SelectEditorProps>((props, ref) => {
+    const { value, list } = props;
     const [selectedValue, setSelectedValue] = useState(value);
-    const inputRef = useRef(null);
+    const inputRef = useRef<HTMLInputElement>(null);
     useImperativeHandle(ref, () => {
         return {
-            current: {
-                getValue() {
-                    return selectedValue;
-                }
+            getValue() {
+                return selectedValue;
+            },
+            focusIn() {
+                inputRef.current?.focus();
+            },
+            isPopup() {
+                return true;
+            },
+            getPopupPosition:function(){
+                return "over";
             }
         }
     });
-    return <ReactSelect defaultValue={value} onSelect={setSelectedValue} list={list} ref={inputRef} />
+    useEffect(()=>{
+       setTimeout(() => {
+        inputRef.current?.focus();
+       });
+    },[])
+    return <ReactSelect onSelect={setSelectedValue} list={list} ref={inputRef} />
 });
-export const GridProductSelectEditor = forwardRef<Ref<ICellEditor>, GridEditorParams<number>>((props, ref) => {
+export const GridProductSelectEditor = forwardRef<ICellEditor, GridEditorParams<number>>((props, ref) => {
     const [list, setList] = useState<ValueContainer[]>([]);
     useEffect(() => {
         const observer = props.data.Observer;
@@ -36,7 +48,7 @@ export const GridProductSelectEditor = forwardRef<Ref<ICellEditor>, GridEditorPa
     return <SelectEditor {...props} list={list} ref={ref} />
 })
 
-export const GridFlavourSelectEditor = forwardRef<Ref<ICellEditor>, GridEditorParams<number>>((props, ref) => {
+export const GridFlavourSelectEditor = forwardRef<ICellEditor, GridEditorParams<number>>((props, ref) => {
     const [list, setList] = useState<ValueContainer[]>([]);
     useEffect(() => {
         const observer = props.data.Observer;

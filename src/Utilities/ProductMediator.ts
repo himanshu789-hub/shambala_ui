@@ -133,6 +133,7 @@ export default class ComponentProductMediator implements IProductMediator {
 		return this._mapToArray(this._products);
 	}
 	Subscribe(subscriptionId: number, componentId: number, productId: number) {
+		debugger;
 		this._checkArgumentNullException(subscriptionId, componentId, productId);
 		if (this._componentProductMap.has(subscriptionId)) {
 			const ComponentMap = this._componentProductMap.get(subscriptionId) as ProductComponentMap;
