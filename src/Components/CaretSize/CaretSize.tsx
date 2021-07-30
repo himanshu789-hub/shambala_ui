@@ -27,13 +27,6 @@ const CaretSize = memo(forwardRef<HTMLInputElement, ICaretSizeProps>((props, ref
 	const { Size, handleInput, MinLimit, Quantity, MaxLimit } = props;
 
 	useEffect(() => {
-		if (Size) {
-			const caret = Math.floor(Quantity / Size);
-			const pieces = Quantity % Size;
-			setInputValue(`${getTwoDigitValue(caret)}/${getTwoDigitValue(pieces)}`);
-		}
-	}, [Quantity])
-	useEffect(() => {
 		let IsValid = true;
 		if (MinLimit && quantity < MinLimit) {
 			setErrorMessage('Quantity Limit Surpass');
@@ -47,16 +40,7 @@ const CaretSize = memo(forwardRef<HTMLInputElement, ICaretSizeProps>((props, ref
 			setErrorMessage('Cannot Be Zero');
 			IsValid = false;
 		}
-
 		IsValid && setErrorMessage(null);
-		if (typingTimOut) {
-			clearTimeout(typingTimOut);
-			setTimingOut(0);
-		}
-		else
-			setTimingOut(setTimeout(() => {
-				handleInput(quantity);
-			}));
 	}, [quantity])
 	const Max_Caret_Allow = 100;
 	const Max_Pieces_Allow = Size - 1;
@@ -66,7 +50,9 @@ const CaretSize = memo(forwardRef<HTMLInputElement, ICaretSizeProps>((props, ref
 	};
 
 	const setQuantityByValue = function (value: string) {
-		setCaretQuantity(calculateTotalQuantity(Number.parseInt(value.substr(0, 2)), Number.parseInt(value.substr(3, 2))));
+		const q = calculateTotalQuantity(Number.parseInt(value.substr(0, 2)), Number.parseInt(value.substr(3, 2)));
+		setCaretQuantity(q);
+		handleInput(q);
 	}
 
 	const handleBackspace = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -137,13 +123,19 @@ const CaretSize = memo(forwardRef<HTMLInputElement, ICaretSizeProps>((props, ref
 	useEffect(() => {
 		inputRef?.setSelectionRange(caretPosition, caretPosition);
 	}, [caretPosition]);
-	
+	useEffect(() => {
+		if (Size) {
+			const caret = Math.floor(Quantity / Size);
+			const pieces = Quantity % Size;
+			setInputValue(`${getTwoDigitValue(caret)}/${getTwoDigitValue(pieces)}`);
+		}
+	}, [])
 	function assignRef(node: HTMLInputElement) {
-			node && (inputRef = node);
-			if (typeof ref === 'function')
-				ref(node);
-			else
-				(ref as MutableRefObject<HTMLInputElement>).current = node!;
+		node && (inputRef = node);
+		if (typeof ref === 'function')
+			ref(node);
+		else
+			(ref as MutableRefObject<HTMLInputElement>).current = node!;
 	};
 
 	return (

@@ -34,17 +34,17 @@ type SelectWithAriaProps = {
     defaultValue?: any;
     list: ValueContainer[];
     onFous?(e: React.FocusEvent): void;
-
 }
 type ReactSelctProps = {
     onSelect(value: any): void;
 }
 const SelectWithAria = forwardRef<HTMLInputElement, SelectWithAriaProps & ReactSelctProps>((props, ref) => {
-    const { list, defaultValue: value, onSelect } = props;
-    const [inputLabel, setInputLabel] = useState<any>(value);
+    const { list, defaultValue: value} = props;
+    const [inputLabel, setInputLabel] = useState<string>('');
     const [elements, setElements] = useState<ValueContainer[]>(list);
-    const [index, setIndex] = useState<number>(-1);
+    const [index, setIndex] = useState<number>(value||-1);
     const [isOpen, toggleOpen] = useState(false);
+
     const onMouseEvent = function (e: React.MouseEvent<HTMLDivElement>) {
         const index = e.currentTarget.dataset.index;
         setIndex(Number.parseInt(index!));
@@ -106,16 +106,12 @@ const SelectWithAria = forwardRef<HTMLInputElement, SelectWithAriaProps & ReactS
         setIndex(newList.findIndex(e => e.value === value));
     }
     useEffect(() => {
-        setIndex(elements.findIndex(e => e.value === (value || -1)));
-        console.log('Select With Aria mounted')
-        function hover() { setIndex(-1) };
-        //document.getElementsByClassName('select-list')[0].addEventListener('hover', hover);
-    }, [])
-    useEffect(() => { selectNewValue(); }, [list]);
-    useEffect(() => {
         selectNewValue();
-        setIndex(-1);
-    }, [inputLabel]);
+    }, [inputLabel,list]);
+    // useEffect(() => {
+    //     function hover() { setIndex(-1) };    
+    //     document.getElementsByClassName('select-list')[0].addEventListener('hover', hover);
+    // }, [])
 
     return <Select list={elements} onChange={onChange} onKeyDown={onKeyDown} selectedIndex={index}
         defaultValue={inputLabel} onMoseEvent={onMouseEvent} IsOpen={isOpen} toggleDropDown={toggleDropown} onFous={onFocus}

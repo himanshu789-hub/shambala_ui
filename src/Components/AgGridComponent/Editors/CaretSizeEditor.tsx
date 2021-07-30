@@ -34,5 +34,5 @@ export const CaretSizeEditor = forwardRef<ICellEditor, GridEditorParams<number>>
             inputRef.current?.focus()
         });
     }, []);
-    return <CaretSize handleInput={setQuantity} Size={caretSize} Quantity={quanity} MaxLimit={rowValue.MaxLimit} MinLimit={rowValue.MinLimit} />;
+    return <CaretSize ref={inputRef} handleInput={setQuantity} Size={caretSize} Quantity={quanity} MaxLimit={rowValue.MaxLimit} MinLimit={rowValue.MinLimit} />;
 })

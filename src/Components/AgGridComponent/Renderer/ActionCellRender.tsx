@@ -24,6 +24,8 @@ export default function ActionCellRenderer(props: ActionCellRendererParams) {
     }
 
     const eventListener = function (event: KeyboardEvent) {
+        debugger;
+        console.log('event')
         if (event.keyCode === KeyCode.ENTER) {
             inputRef.current?.focus();
         }
@@ -31,17 +33,21 @@ export default function ActionCellRenderer(props: ActionCellRendererParams) {
     function removeEventListener() {
         props.eGridCell.removeEventListener('keyup', eventListener);
     }
+
     useEffect(() => {
         props.eGridCell.addEventListener('keyup', eventListener);
-        return removeEventListener();
+        return () => {
+            removeEventListener();
+        }
     }, [inputRef.current])
 
     useEffect(() => {
-        return removeEventListener();
-    },[]);
-
-    if (isonAdd) {
-        return <button ref={inputRef} className="btn btn-info" onClick={onClick}><i className="fa fa-plus"> </i></button>;
-    }
-    return <button ref={inputRef} className="btn btn-danger" onClick={onClick}><i className="fa fa-minus">  </i></button>;
+        return () => {
+            removeEventListener()
+        }
+    }, []);
+    let button = <button ref={inputRef} className="btn btn-info" onClick={onClick}><i className="fa fa-plus"> </i></button>;
+    if (!isonAdd)
+        button = <button ref={inputRef} className="btn btn-danger" onClick={onClick}><i className="fa fa-minus">  </i></button>;
+    return <div className="text-center">{button}</div>
 }

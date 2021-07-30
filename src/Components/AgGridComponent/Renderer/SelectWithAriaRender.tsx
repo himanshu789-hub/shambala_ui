@@ -38,7 +38,6 @@ export const ProductValueChangedEvent = (event: GridCellValueChangeEvent<Shipmen
     if (!isColumnsNull(columns)) {
         data.Observer.SetProduct(event.newValue);
         const isFlavourExists = data.Observer.GetFlavours().find(e => e.Id == data.Shipment.FlavourId) != null;
-        data.Observer.SetProduct(event.newValue);
         data.Shipment.CaretSize = context.getCartetSizeByProductId(event.newValue);
         data.Shipment.FlavourId = isFlavourExists ? data.Shipment.FlavourId : -1;
         data.Shipment.TotalRecievedPieces = isFlavourExists ? data.Shipment.TotalRecievedPieces : 0;
@@ -54,8 +53,9 @@ export const FlavourValueChangedEvent = (event: GridCellValueChangeEvent<Shipmen
     const { data, columnApi } = event;
     const columns = columnApi.getAllColumns();
     const quantityIndex = event.context.getColumnIndex('TotalRecievedPieces');
+    const observer = data.Observer;
+    observer.SetFlavour(event.newValue);
     if (!isColumnsNull(columns) && quantityIndex) {
-        const observer = data.Observer;
         let quantity = data.Shipment.TotalRecievedPieces;
         observer.UnsubscribeToQuantity();
         const quantityLimit = observer.GetQuantityLimit();

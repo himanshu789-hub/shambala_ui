@@ -33,7 +33,7 @@ export function getARandomNumber(power?: number): number {
 	return Math.floor(Math.random() * Math.pow(10, power ?? 1));
 }
 export function getQuantityInText(quantity: number, caretSize: number) {
-	const pieces = quantity % caretSize;
+	const pieces = (quantity) % caretSize;
 	return `${Math.floor(quantity / caretSize)} Caret ${pieces} Piece${pieces <= 1 ? '' : 's'}`;
 }
 

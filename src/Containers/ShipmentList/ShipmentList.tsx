@@ -5,8 +5,8 @@ import { addDanger, addWarn } from 'Utilities/AlertUtility';
 import { InitialShipment } from 'Types/Types';
 import { AgGridReact } from '@ag-grid-community/react';
 import { GridGetterParams, GridRowDataTransaction, IRowValue, GridContext } from 'Components/AgGridComponent/Grid';
-import { GridOptions, GridReadyEvent, RowDataTransaction,CellClickedEvent } from '@ag-grid-community/all-modules';
-import { FlavourCellRenderer, FlavourValueGetter, FlavourValueSetter, ProductCellRenderer, ProductValueChangedEvent, ProductValueGetter, ProductValueSetter } from 'Components/AgGridComponent/Renderer/SelectWithAriaRender';
+import { GridOptions, GridReadyEvent, RowDataTransaction,CellClickedEvent, ICellEditorParams } from '@ag-grid-community/all-modules';
+import { FlavourCellRenderer, FlavourValueChangedEvent, FlavourValueGetter, FlavourValueSetter, ProductCellRenderer, ProductValueChangedEvent, ProductValueGetter, ProductValueSetter } from 'Components/AgGridComponent/Renderer/SelectWithAriaRender';
 import { GridFlavourSelectEditor, GridProductSelectEditor } from 'Components/AgGridComponent/Editors/SelectWithAriaEditor';
 import CaretSizeRender, { CaretSizeValueGetter, CaretSizeValueSetter } from 'Components/AgGridComponent/Renderer/CaretSizeRenderer';
 import { CaretSizeEditor } from 'Components/AgGridComponent/Editors/CaretSizeEditor';
@@ -47,7 +47,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			ShipmentInfos: [],
 			GridOptions: {
 				defaultColDef: {
-					flex: 1,
+					flex: 2,
 					editable: true
 				},
 				columnDefs: [
@@ -66,7 +66,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						cellEditorFramework: GridFlavourSelectEditor,
 						valueGetter: FlavourValueGetter,
 						valueSetter: FlavourValueSetter,
-						headerName: 'Flavour Name'
+						headerName: 'Flavour Name',
+						onCellValueChanged:FlavourValueChangedEvent
 					},
 					{
 						valueGetter: (props: GridGetterParams) => props.data.Shipment.CaretSize,
@@ -90,7 +91,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						editable: false,
 						valueGetter: function (params: GridGetterParams) {
 							return params.data.Shipment.Id;
-						}
+						},
+						flex:1
 					}
 				],
 				context: {

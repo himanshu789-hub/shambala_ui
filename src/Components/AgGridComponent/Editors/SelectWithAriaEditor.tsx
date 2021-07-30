@@ -8,7 +8,8 @@ import { forwardRef } from "react"
 import { GridEditorParams } from "../Grid"
 
 type SelectEditorProps = GridEditorParams<number> & {
-    list: ValueContainer[]
+    list: ValueContainer[];
+    editable?(): boolean;
 }
 const SelectEditor = forwardRef<ICellEditor, SelectEditorProps>((props, ref) => {
     const { value, list } = props;
@@ -25,17 +26,22 @@ const SelectEditor = forwardRef<ICellEditor, SelectEditorProps>((props, ref) => 
             isPopup() {
                 return true;
             },
-            getPopupPosition:function(){
+            getPopupPosition: function () {
                 return "over";
+            },
+            isCancelBeforeStart: function () {
+                if (props.editable)
+                    return !props.editable();
+                return false;
             }
         }
     });
-    useEffect(()=>{
-       setTimeout(() => {
-        inputRef.current?.focus();
-       });
-    },[])
-    return <ReactSelect onSelect={setSelectedValue} list={list} ref={inputRef} />
+    useEffect(() => {
+        setTimeout(() => {
+            inputRef.current?.focus();
+        });
+    }, [])
+    return <ReactSelect onSelect={setSelectedValue} defaultValue={value} list={list} ref={inputRef} />
 });
 export const GridProductSelectEditor = forwardRef<ICellEditor, GridEditorParams<number>>((props, ref) => {
     const [list, setList] = useState<ValueContainer[]>([]);
@@ -44,7 +50,7 @@ export const GridProductSelectEditor = forwardRef<ICellEditor, GridEditorParams<
         if (observer) {
             setList(observer.GetProduct().map(e => ({ label: e.Title, value: e.Id })));
         }
-    }, [])
+    }, []);
     return <SelectEditor {...props} list={list} ref={ref} />
 })
 
@@ -56,6 +62,9 @@ export const GridFlavourSelectEditor = forwardRef<ICellEditor, GridEditorParams<
             setList(observer.GetFlavours().map(e => ({ label: e.Title, value: e.Id })));
         }
     }, [])
-    return <SelectEditor {...props} list={list} ref={ref} />
+    function editable(){
+        return props.data.Shipment.ProductId!=-1;
+    }
+    return <SelectEditor {...props} list={list} ref={ref}  editable={editable}/>
 })
 
