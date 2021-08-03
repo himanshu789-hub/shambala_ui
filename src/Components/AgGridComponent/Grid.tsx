@@ -1,6 +1,6 @@
 import Observer from "Utilities/Observer";
 import { ShipmentDTO } from 'Types/DTO';
-import { ICellEditorParams, ICellRendererParams, ValueGetterParams, ValueSetterParams, RowDataTransaction, CellValueChangedEvent } from "@ag-grid-community/all-modules";
+import { ICellEditorParams, ICellRendererParams, ValueGetterParams, ValueSetterParams, RowDataTransaction, CellValueChangedEvent, RowNode } from "@ag-grid-community/all-modules";
 export type IRowValue = {
       Shipment: ShipmentDTO;
       Observer: Observer;
@@ -36,3 +36,4 @@ export type GridContext = {
       getCartetSizeByProductId(Id: number): number;
       getColumnIndex(name: keyof ShipmentDTO): number | null;
 }
+export type GridRowNode = GridParamsWithData<RowNode>;

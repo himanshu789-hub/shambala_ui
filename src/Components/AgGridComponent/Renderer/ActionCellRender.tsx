@@ -24,8 +24,6 @@ export default function ActionCellRenderer(props: ActionCellRendererParams) {
     }
 
     const eventListener = function (event: KeyboardEvent) {
-        debugger;
-        console.log('event')
         if (event.keyCode === KeyCode.ENTER) {
             inputRef.current?.focus();
         }

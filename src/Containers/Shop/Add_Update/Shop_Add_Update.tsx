@@ -82,7 +82,7 @@ export default class Add_Update extends React.Component<IAddProps, AddState>
     constructor(props: IAddProps) {
         super(props);
         this.state = {
-            Shop: { Address: '', Id: getARandomNumber(), SchemeId: null, Title: '' },
+            Shop: { Address: '', Id:1, SchemeId: null, Title: '' },
             ErrorMessage: { Address: '', Name: '' },
             RequestInfo: { Status: CallStatus.EMPTY, Message: '' }, ShowSpinner: false, ShouldDisableButton: false
         }

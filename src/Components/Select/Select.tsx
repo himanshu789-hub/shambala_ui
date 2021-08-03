@@ -29,6 +29,7 @@ const Select = forwardRef<HTMLInputElement, SelectProps>((props, ref) => {
         </div>
     </div>);
 });
+
 export type ValueContainer = { label: string, value: any };
 type SelectWithAriaProps = {
     defaultValue?: any;
@@ -68,11 +69,12 @@ const SelectWithAria = forwardRef<HTMLInputElement, SelectWithAriaProps & ReactS
             case KeyCode.ENTER:
                 if (index != -1 && index < elements.length) {
                     setInputLabel(elements[index].label);
+                    makeSelect();
                 }
                 else {
                     setInputLabel('');
+
                 }
-                makeSelect();
                 toggleDropown();
                 break;
             case KeyCode.UP:
@@ -108,10 +110,6 @@ const SelectWithAria = forwardRef<HTMLInputElement, SelectWithAriaProps & ReactS
     useEffect(() => {
         selectNewValue();
     }, [inputLabel,list]);
-    // useEffect(() => {
-    //     function hover() { setIndex(-1) };    
-    //     document.getElementsByClassName('select-list')[0].addEventListener('hover', hover);
-    // }, [])
 
     return <Select list={elements} onChange={onChange} onKeyDown={onKeyDown} selectedIndex={index}
         defaultValue={inputLabel} onMoseEvent={onMouseEvent} IsOpen={isOpen} toggleDropDown={toggleDropown} onFous={onFocus}

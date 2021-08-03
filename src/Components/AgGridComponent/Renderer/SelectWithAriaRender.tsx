@@ -8,6 +8,8 @@ export function ProductCellRenderer(props: GridRendererParams<ShipmentDTO['Produ
 }
 export function FlavourCellRenderer(props: GridRendererParams<ShipmentDTO['FlavourId']>) {
     const { data, value } = props;
+    if(data.Shipment.ProductId==-1)
+    return '--';
     return data.Observer.GetFlavours().find(e => e.Id == value)?.Title ?? '--';
 }
 
@@ -35,8 +37,9 @@ function isColumnsNull(Columns: Column[] | null) {
 export const ProductValueChangedEvent = (event: GridCellValueChangeEvent<ShipmentDTO['ProductId']>) => {
     const { columnApi, data, context } = event;
     const columns = columnApi.getAllColumns();
+    data.Observer.Unubscribe();
     if (!isColumnsNull(columns)) {
-        data.Observer.SetProduct(event.newValue);
+        data.Observer.SetProduct(event.newValue);      
         const isFlavourExists = data.Observer.GetFlavours().find(e => e.Id == data.Shipment.FlavourId) != null;
         data.Shipment.CaretSize = context.getCartetSizeByProductId(event.newValue);
         data.Shipment.FlavourId = isFlavourExists ? data.Shipment.FlavourId : -1;

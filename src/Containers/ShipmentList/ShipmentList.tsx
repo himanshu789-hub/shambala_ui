@@ -5,7 +5,7 @@ import { addDanger, addWarn } from 'Utilities/AlertUtility';
 import { InitialShipment } from 'Types/Types';
 import { AgGridReact } from '@ag-grid-community/react';
 import { GridGetterParams, GridRowDataTransaction, IRowValue, GridContext } from 'Components/AgGridComponent/Grid';
-import { GridOptions, GridReadyEvent, RowDataTransaction,CellClickedEvent, ICellEditorParams } from '@ag-grid-community/all-modules';
+import { GridOptions, GridReadyEvent } from '@ag-grid-community/all-modules';
 import { FlavourCellRenderer, FlavourValueChangedEvent, FlavourValueGetter, FlavourValueSetter, ProductCellRenderer, ProductValueChangedEvent, ProductValueGetter, ProductValueSetter } from 'Components/AgGridComponent/Renderer/SelectWithAriaRender';
 import { GridFlavourSelectEditor, GridProductSelectEditor } from 'Components/AgGridComponent/Editors/SelectWithAriaEditor';
 import CaretSizeRender, { CaretSizeValueGetter, CaretSizeValueSetter } from 'Components/AgGridComponent/Renderer/CaretSizeRenderer';
@@ -14,9 +14,9 @@ import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent
 import { getARandomNumber } from 'Utilities/Utilities';
 import { AllCommunityModules } from '@ag-grid-community/all-modules';
 import Action from 'Components/Action/Action';
+import {GridRowNode} from 'Components/AgGridComponent/Grid';
 import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
 import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
-
 
 type IShipmentListProps =
 	{
@@ -57,7 +57,6 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						valueGetter: ProductValueGetter,
 						valueSetter: ProductValueSetter,
 						headerName: 'Product Name',
-
 						onCellValueChanged: ProductValueChangedEvent
 
 					},
@@ -133,7 +132,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				this.products = new Map(products);
 				this.componentListMediator.Unsubscribe(this.state.SubscriptionId);
 				this.componentListMediator = new MediatorSubject(Products);
-				this.setState({ Products: products, ShipmentInfos: [this.createAShipment(getARandomNumber())] });
+				this.setState({ Products: products, ShipmentInfos: [this.createAShipment(1)] });
 			}
 		}
 		if (nextProps.ResetElement && nextProps.ResetElement != this.props.ResetElement) {
@@ -198,7 +197,9 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 	}
 	addAShipment = () => {
 		const { Products } = this.state;
-		const componentId = getARandomNumber();
+        const shipments:ShipmentDTO[] = [];
+		this.state.GridOptions.api?.forEachNode(e=>(shipments.push((e as GridRowNode).data.Shipment)));
+		const componentId = getARandomNumber(shipments);
 		if (Products.size != 0) {
 			const rowTransations: GridRowDataTransaction = {
 				add: [this.createAShipment(componentId)]

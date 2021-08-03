@@ -29,8 +29,10 @@ export function deepCloneProducts(products: Product[]) {
 	}
 	return CloneProducts;
 }
-export function getARandomNumber(power?: number): number {
-	return Math.floor(Math.random() * Math.pow(10, power ?? 1));
+export function getARandomNumber<T extends { Id: number }>(arr: T[]): number {
+	if (arr.length == 0)
+		return 1;
+	return Math.max(...arr.map(e => e.Id)) + 1;
 }
 export function getQuantityInText(quantity: number, caretSize: number) {
 	const pieces = (quantity) % caretSize;
