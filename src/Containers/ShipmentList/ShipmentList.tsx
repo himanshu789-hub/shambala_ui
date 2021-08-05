@@ -5,7 +5,7 @@ import { addDanger, addWarn } from 'Utilities/AlertUtility';
 import { InitialShipment } from 'Types/Types';
 import { AgGridReact } from '@ag-grid-community/react';
 import { GridGetterParams, GridRowDataTransaction, IRowValue, GridContext } from 'Components/AgGridComponent/Grid.d';
-import { GridOptions, GridReadyEvent, RowNode, ITooltipParams } from '@ag-grid-community/all-modules';
+import { GridOptions, GridReadyEvent, RowNode, ITooltipParams, Column } from '@ag-grid-community/all-modules';
 import { FlavourCellRenderer, FlavourValueChangedEvent, FlavourValueGetter, FlavourValueSetter, ProductCellRenderer, ProductValueChangedEvent, ProductValueGetter, ProductValueSetter } from 'Components/AgGridComponent/Renderer/SelectWithAriaRender';
 import { GridFlavourSelectEditor, GridProductSelectEditor } from 'Components/AgGridComponent/Editors/SelectWithAriaEditor';
 import CaretSizeRender, { CaretSizeValueGetter, CaretSizeValueSetter } from 'Components/AgGridComponent/Renderer/CaretSizeRenderer';
@@ -63,7 +63,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						onCellValueChanged: ProductValueChangedEvent,
 						// @ts-ignore
 						tooltipValueGetter: (params) => ToolTipGetter('ProductId', params),
-						cellStyle:(params)=>ShipmentStyleSpecifier('ProductId',params)
+						cellStyle: (params) => ShipmentStyleSpecifier('ProductId', params)
 					},
 					{
 						cellRendererFramework: FlavourCellRenderer,
@@ -71,7 +71,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						valueGetter: FlavourValueGetter,
 						valueSetter: FlavourValueSetter,
 						headerName: 'Flavour Name',
-						cellStyle:(params)=>ShipmentStyleSpecifier('FlavourId',params),
+						cellStyle: (params) => ShipmentStyleSpecifier('FlavourId', params),
 						onCellValueChanged: FlavourValueChangedEvent,
 						// @ts-ignore
 						tooltipValueGetter: (params) => ToolTipGetter('FlavourId', params)
@@ -82,7 +82,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						headerName: 'Caret Size',
 						//@ts-ignore
 						tooltipValueGetter: (params) => ToolTipGetter('CaretSize', params),
-						cellStyle:(params)=>ShipmentStyleSpecifier('CaretSize',params)
+						cellStyle: (params) => ShipmentStyleSpecifier('CaretSize', params)
 					},
 					{
 						cellEditorFramework: CaretSizeEditor,
@@ -92,7 +92,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						headerName: 'Quantity',
 						// @ts-ignore
 						tooltipValueGetter: (params) => ToolTipGetter('TotalRecievedPieces', params),
-						cellStyle:(params)=>ShipmentStyleSpecifier('TotalRecievedPieces',params)
+						cellStyle: (params) => ShipmentStyleSpecifier('TotalRecievedPieces', params)
 					},
 					{
 						cellRendererFramework: ActionCellRenderer,
@@ -100,8 +100,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 							addAChild: this.addAShipment,
 							deleteAChild: this.handleRemove
 						} as ActionCellParams,
+						editable:false,
 						headerName: 'Action',
-						editable: false,
 						valueGetter: function (params: GridGetterParams) {
 							return params.data.Id;
 						},
@@ -109,7 +109,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						tooltipComponentFramework: undefined
 					}
 				],
-				tooltipShowDelay:0,
+				tooltipShowDelay: 0,
 				context: {
 					getCartetSizeByProductId: this.getCaretSizeByProductId,
 					getColumnIndex: this.getColummnIndex
@@ -230,13 +230,17 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 	private OnGridReady = (params: GridReadyEvent) => {
 		this.setState((prevState) => ({ GridOptions: { ...prevState.GridOptions, api: params.api, columnApi: params.columnApi } }));
 	}
-
 	handleRemove = (Id: string) => {
 		const { GridOptions } = this.state;
 		const GridTransaction: GridRowDataTransaction = {
 			remove: [{ Id }]
 		};
+		const curentRowIndex = GridOptions.api?.getRowNode(Id)?.rowIndex;
 		GridOptions.api?.applyTransaction(GridTransaction);
+		if (curentRowIndex) {
+		  const column = GridOptions.columnApi?.getAllDisplayedColumns()[this.getColummnIndex('Id')!];
+          GridOptions.api?.setFocusedCell(curentRowIndex-1,column!);
+		}
 	}
 	render() {
 		const { ShipmentInfos, GridOptions } = this.state;
