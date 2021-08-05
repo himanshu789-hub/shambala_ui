@@ -4,8 +4,8 @@ import MediatorSubject from 'Utilities/MediatorSubject';
 import { addDanger, addWarn } from 'Utilities/AlertUtility';
 import { InitialShipment } from 'Types/Types';
 import { AgGridReact } from '@ag-grid-community/react';
-import { GridGetterParams, GridRowDataTransaction, IRowValue, GridContext } from 'Components/AgGridComponent/Grid';
-import { GridOptions, GridReadyEvent } from '@ag-grid-community/all-modules';
+import { GridGetterParams, GridRowDataTransaction, IRowValue, GridContext } from 'Components/AgGridComponent/Grid.d';
+import { GridOptions, GridReadyEvent, RowNode, ITooltipParams } from '@ag-grid-community/all-modules';
 import { FlavourCellRenderer, FlavourValueChangedEvent, FlavourValueGetter, FlavourValueSetter, ProductCellRenderer, ProductValueChangedEvent, ProductValueGetter, ProductValueSetter } from 'Components/AgGridComponent/Renderer/SelectWithAriaRender';
 import { GridFlavourSelectEditor, GridProductSelectEditor } from 'Components/AgGridComponent/Editors/SelectWithAriaEditor';
 import CaretSizeRender, { CaretSizeValueGetter, CaretSizeValueSetter } from 'Components/AgGridComponent/Renderer/CaretSizeRenderer';
@@ -14,9 +14,10 @@ import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent
 import { getARandomNumber } from 'Utilities/Utilities';
 import { AllCommunityModules } from '@ag-grid-community/all-modules';
 import Action from 'Components/Action/Action';
-import {GridRowNode} from 'Components/AgGridComponent/Grid';
+import { GridRowNode } from 'Components/AgGridComponent/Grid.d';
 import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
 import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
+import { ToolTipComponent, ToolTipGetter } from 'Components/AgGridComponent/Renderer/ToolTipRenderer';
 
 type IShipmentListProps =
 	{
@@ -48,6 +49,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			GridOptions: {
 				defaultColDef: {
 					flex: 2,
+					tooltipComponentFramework: ToolTipComponent,
 					editable: true
 				},
 				columnDefs: [
@@ -57,8 +59,10 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						valueGetter: ProductValueGetter,
 						valueSetter: ProductValueSetter,
 						headerName: 'Product Name',
-						onCellValueChanged: ProductValueChangedEvent
+						onCellValueChanged: ProductValueChangedEvent,
+						// @ts-ignore
 
+						tooltipValueGetter: (params) => ToolTipGetter('ProductId', params)
 					},
 					{
 						cellRendererFramework: FlavourCellRenderer,
@@ -66,19 +70,25 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						valueGetter: FlavourValueGetter,
 						valueSetter: FlavourValueSetter,
 						headerName: 'Flavour Name',
-						onCellValueChanged:FlavourValueChangedEvent
+						onCellValueChanged: FlavourValueChangedEvent,
+						// @ts-ignore
+						tooltipValueGetter: (params) => ToolTipGetter('FlavourId', params)
 					},
 					{
 						valueGetter: (props: GridGetterParams) => props.data.Shipment.CaretSize,
 						editable: false,
-						headerName: 'Caret Size'
+						headerName: 'Caret Size',
+						//@ts-ignore
+						tooltipValueGetter: (params) => ToolTipGetter('CaretSize', params)
 					},
 					{
 						cellEditorFramework: CaretSizeEditor,
 						cellRendererFramework: CaretSizeRender,
 						valueGetter: CaretSizeValueGetter,
 						valueSetter: CaretSizeValueSetter,
-						headerName: 'Quantity'
+						headerName: 'Quantity',
+						// @ts-ignore
+						tooltipValueGetter: (params) => ToolTipGetter('TotalRecievedPieces', params)
 					},
 					{
 						cellRendererFramework: ActionCellRenderer,
@@ -89,15 +99,17 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						headerName: 'Action',
 						editable: false,
 						valueGetter: function (params: GridGetterParams) {
-							return params.data.Shipment.Id;
+							return params.data.Id;
 						},
-						flex:1
+						flex: 1,
+						tooltipComponentFramework: undefined
 					}
 				],
 				context: {
 					getCartetSizeByProductId: this.getCaretSizeByProductId,
 					getColumnIndex: this.getColummnIndex
-				} as GridContext
+				} as GridContext,
+				getRowNodeId: function (data: IRowValue) { return data.Shipment.Id + '' }
 			},
 			Products: new Map([]),
 			SubscriptionId: Math.random() * 10,
@@ -159,16 +171,15 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		const { InitialShipments } = nextProps;
 		if (InitialShipments && InitialShipments != this.props.InitialShipments) {
 			const ShipmentInfos: Array<IRowValue> = [];
-
 			for (var i = 0; i < InitialShipments.length; i++) {
-				const Id = Math.random();
+				const Id = (i + 1);
 				const observer = this.componentListMediator.GetAObserver(this.state.SubscriptionId, Id);
 				const initial = InitialShipments[i]; const shipment = initial.Shipment;
 				observer.SetProduct(shipment.ProductId);
 				observer.SetFlavour(shipment.FlavourId);
 				const quantity = shipment.TotalRecievedPieces > observer.GetQuantityLimit() ? 0 : shipment.TotalRecievedPieces;
 				observer.SetQuantity(quantity);
-				ShipmentInfos.push({ Observer: observer, Shipment: { ...shipment, TotalRecievedPieces: quantity }, MaxLimit: initial.MaxLimit, MinLimit: initial.MinLimit });
+				ShipmentInfos.push({ Observer: observer, Shipment: { ...shipment, TotalRecievedPieces: quantity }, MaxLimit: initial.MaxLimit, MinLimit: initial.MinLimit, Id: Id + '' });
 			}
 			this.setState({ ShipmentInfos: ShipmentInfos });
 		}
@@ -180,7 +191,6 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			addWarn("Please Fill Detail Properly!");
 		} else {
 			console.log('Valid Form');
-
 			const { handleSubmit } = this.props;
 			const { ShipmentInfos: Shipments } = this.state;
 			if (Shipments.length > 0)
@@ -192,36 +202,35 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 	createAShipment = (Id: number): IRowValue => {
 		return {
 			Shipment: { Id: Id, CaretSize: 0, FlavourId: -1, ProductId: -1, TotalDefectedPieces: 0, TotalRecievedPieces: 0 },
-			Observer: this.componentListMediator.GetAObserver(this.state.SubscriptionId, Id)
+			Observer: this.componentListMediator.GetAObserver(this.state.SubscriptionId, Id), Id: Id + ''
 		};
+	}
+	filterRowNodes = <U, _>(callback: (e: GridRowNode) => U): U[] => {
+		const shipments: U[] = [];
+		this.state.GridOptions.api?.forEachNode(e => (shipments.push(callback(e))));
+		return shipments;
 	}
 	addAShipment = () => {
 		const { Products } = this.state;
-        const shipments:ShipmentDTO[] = [];
-		this.state.GridOptions.api?.forEachNode(e=>(shipments.push((e as GridRowNode).data.Shipment)));
-		const componentId = getARandomNumber(shipments);
-		if (Products.size != 0) {
+		const componentId = getARandomNumber(this.filterRowNodes((e => e.data.Shipment)));
+		if (Products.size !== 0) {
 			const rowTransations: GridRowDataTransaction = {
 				add: [this.createAShipment(componentId)]
 			};
 			this.state.GridOptions.api?.applyTransaction(rowTransations);
 		}
 		else
-			addDanger("Product Not Availabel");
+			addDanger("Product Not Available");
 	};
 	private OnGridReady = (params: GridReadyEvent) => {
 		this.setState((prevState) => ({ GridOptions: { ...prevState.GridOptions, api: params.api, columnApi: params.columnApi } }));
 	}
-	selectProductCaretDetails = (Id: number): number => {
-		let product = this.products.get(Id + '');
-		if (product) return product.CaretSize;
-		return 0;
-	};
-	handleRemove = (Id: number) => {
+
+	handleRemove = (Id: string) => {
 		const { GridOptions } = this.state;
 		const GridTransaction: GridRowDataTransaction = {
-			remove: [{ Id: Id }]
-		}
+			remove: [{ Id }]
+		};
 		GridOptions.api?.applyTransaction(GridTransaction);
 	}
 	render() {

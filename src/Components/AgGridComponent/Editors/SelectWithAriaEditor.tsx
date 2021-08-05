@@ -5,7 +5,7 @@ import { useEffect } from "react"
 import { useState } from "react"
 import { Ref } from "react"
 import { forwardRef } from "react"
-import { GridEditorParams } from "../Grid"
+import { GridEditorParams } from "../Grid.d"
 
 type SelectEditorProps = GridEditorParams<number> & {
     list: ValueContainer[];

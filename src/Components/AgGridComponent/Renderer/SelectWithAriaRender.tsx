@@ -1,6 +1,6 @@
 import { CellValueChangedEvent, Column, ICellRendererParams } from "@ag-grid-community/all-modules";
 import { ShipmentDTO } from "Types/DTO";
-import { GridCellValueChangeEvent, GridGetterParams, GridRendererParams, GridRowDataTransaction, GridSetterParams, IRowValue } from "../Grid";
+import { GridCellValueChangeEvent, GridGetterParams, GridRendererParams, GridRowDataTransaction, GridSetterParams, IRowValue } from "../Grid.d";
 
 export function ProductCellRenderer(props: GridRendererParams<ShipmentDTO['ProductId']>) {
     const { data, value } = props;

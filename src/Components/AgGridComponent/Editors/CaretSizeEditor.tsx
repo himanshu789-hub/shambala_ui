@@ -2,7 +2,7 @@ import CaretSize, { ICaretSizeProps } from 'Components/CaretSize/CaretSize'
 import React, { forwardRef, Ref, useImperativeHandle } from 'react'
 import { useRef } from 'react'
 import { ICellEditor } from '@ag-grid-community/all-modules'
-import { GridEditorParams } from '../Grid';
+import { GridEditorParams } from '../Grid.d';
 import { useState } from 'react';
 import { useEffect } from 'react';
 

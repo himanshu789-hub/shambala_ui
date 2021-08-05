@@ -1,7 +1,7 @@
 import { ICellRendererParams } from '@ag-grid-community/all-modules';
 import { ShipmentDTO } from 'Types/DTO';
 import { getQuantityInText } from 'Utilities/Utilities';
-import { GridGetterParams, GridSetterParams, IRowValue } from '../Grid';
+import { GridGetterParams, GridSetterParams, IRowValue } from '../Grid.d';
 
 export default function CaretSizeValueRenderer(props: ICellRendererParams) {
     const value = props.value as number;

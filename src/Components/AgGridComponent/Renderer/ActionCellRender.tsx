@@ -3,11 +3,11 @@ import { useRef } from "react";
 import { useEffect } from "react";
 import { ShipmentDTO } from "Types/DTO";
 import { KeyCode } from "Utilities/Utilities";
-import { GridRendererParams } from "../Grid";
+import { GridRendererParams } from "../Grid.d";
 
 export type ActionCellParams = {
     addAChild(): void;
-    deleteAChild(Id: number): void;
+    deleteAChild(Id: string): void;
 };
 type ActionCellRendererParams = GridRendererParams<ShipmentDTO['Id']> & ActionCellParams;
 
