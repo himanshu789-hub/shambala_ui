@@ -4,18 +4,19 @@ import { ValidateShipment } from 'Validation/ShipmentValidation';
 import { ValidateResult } from 'Validation/Validation';
 import { GridToolTipParams } from '../Grid.d';
 
-export const ToolTipComponent = forwardRef<{ getReactContainerClasses: () => string[]; }, GridToolTipParams>((props, ref) => {
+export const ToolTipComponent = forwardRef<{  }, GridToolTipParams>((props, ref) => {
     useImperativeHandle(ref, () => {
         return {
-            getReactContainerClasses() {
-                return ['tool-tip-container']
-            }
+            // getReactContainerClasses() {
+            //     return ['tool-tip-container'];
+            // }
         }
     });
+    debugger;
+ 
     if (props.value.length==0)
         return <React.Fragment></React.Fragment>;
-
-    return <span className="tool-tip-container border"><i className="fa fa-info-circle text-danger"></i> {props.value}</span>
+    return <span className="tool-tip-container border p-1"><i className="fa fa-info-circle text-danger"></i> {props.value}</span>
 });
 
 

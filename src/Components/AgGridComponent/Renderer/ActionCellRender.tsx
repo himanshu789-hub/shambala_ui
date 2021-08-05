@@ -9,7 +9,7 @@ export type ActionCellParams = {
     addAChild(): void;
     deleteAChild(Id: string): void;
 };
-type ActionCellRendererParams = GridRendererParams<ShipmentDTO['Id']> & ActionCellParams;
+type ActionCellRendererParams = GridRendererParams<string> & ActionCellParams;
 
 export default function ActionCellRenderer(props: ActionCellRendererParams) {
     const inputRef = useRef<HTMLButtonElement>(null);

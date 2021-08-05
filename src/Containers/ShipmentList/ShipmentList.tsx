@@ -18,6 +18,7 @@ import { GridRowNode } from 'Components/AgGridComponent/Grid.d';
 import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
 import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
 import { ToolTipComponent, ToolTipGetter } from 'Components/AgGridComponent/Renderer/ToolTipRenderer';
+import { ShipmentStyleSpecifier } from 'Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle';
 
 type IShipmentListProps =
 	{
@@ -61,8 +62,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						headerName: 'Product Name',
 						onCellValueChanged: ProductValueChangedEvent,
 						// @ts-ignore
-
-						tooltipValueGetter: (params) => ToolTipGetter('ProductId', params)
+						tooltipValueGetter: (params) => ToolTipGetter('ProductId', params),
+						cellStyle:(params)=>ShipmentStyleSpecifier('ProductId',params)
 					},
 					{
 						cellRendererFramework: FlavourCellRenderer,
@@ -70,6 +71,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						valueGetter: FlavourValueGetter,
 						valueSetter: FlavourValueSetter,
 						headerName: 'Flavour Name',
+						cellStyle:(params)=>ShipmentStyleSpecifier('FlavourId',params),
 						onCellValueChanged: FlavourValueChangedEvent,
 						// @ts-ignore
 						tooltipValueGetter: (params) => ToolTipGetter('FlavourId', params)
@@ -79,7 +81,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						editable: false,
 						headerName: 'Caret Size',
 						//@ts-ignore
-						tooltipValueGetter: (params) => ToolTipGetter('CaretSize', params)
+						tooltipValueGetter: (params) => ToolTipGetter('CaretSize', params),
+						cellStyle:(params)=>ShipmentStyleSpecifier('CaretSize',params)
 					},
 					{
 						cellEditorFramework: CaretSizeEditor,
@@ -88,7 +91,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						valueSetter: CaretSizeValueSetter,
 						headerName: 'Quantity',
 						// @ts-ignore
-						tooltipValueGetter: (params) => ToolTipGetter('TotalRecievedPieces', params)
+						tooltipValueGetter: (params) => ToolTipGetter('TotalRecievedPieces', params),
+						cellStyle:(params)=>ShipmentStyleSpecifier('TotalRecievedPieces',params)
 					},
 					{
 						cellRendererFramework: ActionCellRenderer,
@@ -105,6 +109,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						tooltipComponentFramework: undefined
 					}
 				],
+				tooltipShowDelay:0,
 				context: {
 					getCartetSizeByProductId: this.getCaretSizeByProductId,
 					getColumnIndex: this.getColummnIndex
@@ -238,7 +243,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 
 		return (<div className="ag-theme-alpine" style={{ height: '500px', width: '100vw' }}>
 			<AgGridReact modules={AllCommunityModules} singleClickEdit={true} gridOptions={GridOptions}
-				rowData={ShipmentInfos} onGridReady={this.OnGridReady}>
+				rowData={ShipmentInfos} onGridReady={this.OnGridReady} >
 			</AgGridReact>
 			<Action handleAdd={this.addAShipment} handleProcess={this.handleSubmit} />
 		</div>);
