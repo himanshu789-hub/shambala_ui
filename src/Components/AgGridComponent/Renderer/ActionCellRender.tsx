@@ -41,7 +41,7 @@ export default function ActionCellRenderer(props: ActionCellRendererParams) {
                 minusRef.current?.focus();
             }
             if (IsLastRow && event.key === KeyName.RIGHT && document.activeElement=== minusRef.current ) {
-                 
+                 plusRef.current?.focus();
             }
 
         }
