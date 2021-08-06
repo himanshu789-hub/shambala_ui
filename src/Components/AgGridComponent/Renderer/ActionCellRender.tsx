@@ -1,24 +1,13 @@
-import { CellEditingStartedEvent, CellKeyDownEvent, KeyCode, KeyName } from "@ag-grid-community/all-modules";
-import { forwardRef, MouseEvent, MouseEventHandler, useState } from "react";
+import {KeyName } from "@ag-grid-community/all-modules";
 import { useRef } from "react";
 import { useEffect } from "react";
 import { GridRendererParams } from "../Grid.d";
+import {Button} from 'Components/Miscellaneous/Miscellaneous';
 
 export type ActionCellParams = {
     addAChild(): void;
     deleteAChild(Id: string): void;
 };
-type ButtonProps = {
-    handleClick: (e?: MouseEvent<HTMLButtonElement>) => void;
-    classList?: string[];
-    innerText: string | JSX.Element;
-}
-
-const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
-    const { classList, handleClick, innerText } = props;
-
-    return <button ref={ref} className={`btn btn-info ${classList && classList.toString().replaceAll(',', ' ')}`} onClick={handleClick}>{innerText}</button>
-});
 
 type ActionCellRendererParams = GridRendererParams<string> & ActionCellParams;
 
@@ -52,10 +41,10 @@ export default function ActionCellRenderer(props: ActionCellRendererParams) {
             props.eGridCell.removeEventListener('keyup', onKeyUpEvent);
             props.eGridCell.removeEventListener('keydown',onKeyDownEvent);
         }
-    })
+    });
 
-    let minusButton = <Button classList={["btn-danger"]} handleClick={() => props.deleteAChild(props.value)} innerText={<i className="fa fa-minus"></i>} ref={minusRef}></Button>;
-    let plusButton = <Button handleClick={props.addAChild} classList={["ml-1"]} innerText={<i className="fa fa-plus"></i>} ref={plusRef}></Button>
+    let minusButton = <Button className="btn-danger" handleClick={() => props.deleteAChild(props.value)}  ref={minusRef}><i className="fa fa-minus"></i></Button>;
+    let plusButton = <Button handleClick={props.addAChild} className="btn-warn ml-1" ref={plusRef} ><i className="fa fa-plus"></i></Button>
     if (IsLastRow)
         return (<div className="text-center">{minusButton}{plusButton}</div>);
 

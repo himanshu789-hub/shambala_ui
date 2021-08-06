@@ -1,4 +1,4 @@
-import React, { CSSProperties, Fragment, ReactNode } from 'react';
+import React, { CSSProperties, Fragment, PropsWithChildren, ReactNode } from 'react';
 import { RouteChildrenProps } from 'react-router';
 import './Loader.css';
 
@@ -34,7 +34,7 @@ function Error(props: { msg?: string }) {
 	const Message = props.msg ?? "An Error Occured While Requesting Data";
 	return <div className="d-flex flex-column justify-content-center align-items-center"><RequestError /><small className="text-center text-danger">{Message}</small></div>;
 }
-const Loader = function (props: React.PropsWithChildren<LoaderProps>): JSX.Element {
+const Loader:React.FunctionComponent<PropsWithChildren<LoaderProps>> = function (props: React.PropsWithChildren<LoaderProps>): JSX.Element {
 	const { Size, Status, Overlay } = props;
 	const LoaderProerties = { '--size': (Size ?? 50) + 'px' } as LoaderSizeProperty;
 	const Message = props.Message ?? "Gathering Data . . .";

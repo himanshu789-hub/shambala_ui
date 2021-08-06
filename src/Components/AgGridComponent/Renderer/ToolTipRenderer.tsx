@@ -19,7 +19,6 @@ export const ToolTipComponent = forwardRef<{ getReactContainerClasses: () => str
     return <span className="tool-tip-container border p-1"><i className="fa fa-info-circle text-danger"></i> {props.value}</span>
 });
 
-
 export function ToolTipGetter(name: keyof ShipmentDTO, params: GridToolTipParams): string {
     const ValidationResult = (ValidateShipment(params.data.Shipment) as any)['Is' + name + 'Valid']() as ValidateResult;
     if (ValidationResult.IsValid)

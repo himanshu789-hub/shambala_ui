@@ -22,9 +22,11 @@
     "baseUrl":"src",
   },
   "include": [
-    "src"
+    "src/**/*"
   ],
   "exclude": [
-    "src/discarded"
-  ]
+    "src/discarded/**/*"
+  ],"watchOptions": {
+    "excludeDirectories": ["src/discarded/**/*"]
+  }
 }

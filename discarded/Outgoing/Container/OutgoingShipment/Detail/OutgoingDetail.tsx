@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import { useState } from "react";
-import { OutgoingShipmentFlavourDetail, OutgoingShipmentPriceDetail, OutgoingShipmentProductDetail } from "Types/DTO";
+import {  OutgoingShipmentPriceDetail, OutgoingShipmentProductDetail } from "Types/DTO";
 import OutgoingService from 'Services/OutgoingShipmentService';
-
 import './OutgoingDetail.css';
 import { ApiStatusInfo, CallStatus } from "Components/Loader/Loader";
 
