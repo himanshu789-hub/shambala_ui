@@ -43,12 +43,17 @@ const SelectEditor = forwardRef<ICellEditor, SelectEditorProps>((props, ref) => 
 
 
 
-export const GridSelectEditor = function <DataT, _>(getProductListFromData: (e: DataT) => ValueContainer[],isEditable:(data:DataT)=>boolean) {
+export const GridSelectEditor = function <DataT, _>(getProductListFromData: (e: DataT) => ValueContainer[], isEditable?: (data: DataT) => boolean) {
+
+
     return forwardRef<ICellEditor, ICellEditorParams>((props, ref) => {
         const [list, setList] = useState<ValueContainer[]>([]);
         useEffect(() => {
             setList(getProductListFromData(props.data));
         }, []);
-        return <SelectEditor {...props} list={list} ref={ref} editable={()=>isEditable(props.data)}/>
+        function canEdit() {
+            return isEditable ? isEditable(props.data) : false;
+        }
+        return <SelectEditor {...props} list={list} ref={ref} editable={canEdit} />
     })
 };
