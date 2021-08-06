@@ -4,17 +4,16 @@ import MediatorSubject from 'Utilities/MediatorSubject';
 import { addDanger, addWarn } from 'Utilities/AlertUtility';
 import { InitialShipment } from 'Types/Types';
 import { AgGridReact } from '@ag-grid-community/react';
-import { GridGetterParams, GridRowDataTransaction, IRowValue, GridContext } from 'Components/AgGridComponent/Grid.d';
+import { ShipmentGridGetterParams, ShipmentGridDataTransation, IRowValue, GridContext,ShipmentGridRowNode, ShipmentGridSetter } from './ShipmentList.d';
 import { GridOptions, GridReadyEvent, RowNode, ITooltipParams, Column } from '@ag-grid-community/all-modules';
 import { FlavourCellRenderer, FlavourValueChangedEvent, FlavourValueGetter, FlavourValueSetter, ProductCellRenderer, ProductValueChangedEvent, ProductValueGetter, ProductValueSetter } from 'Components/AgGridComponent/Renderer/SelectWithAriaRender';
-import { GridFlavourSelectEditor, GridProductSelectEditor } from 'Components/AgGridComponent/Editors/SelectWithAriaEditor';
-import CaretSizeRender, { CaretSizeValueGetter, CaretSizeValueSetter } from 'Components/AgGridComponent/Renderer/CaretSizeRenderer';
+import { GridSelectEditor } from 'Components/AgGridComponent/Editors/SelectWithAriaEditor';
+import CaretSizeRenderer from 'Components/AgGridComponent/Renderer/CaretSizeRenderer';
 import { CaretSizeEditor } from 'Components/AgGridComponent/Editors/CaretSizeEditor';
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 import { getARandomNumber } from 'Utilities/Utilities';
 import { AllCommunityModules } from '@ag-grid-community/all-modules';
 import Action from 'Components/Action/Action';
-import { GridRowNode } from 'Components/AgGridComponent/Grid.d';
 import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
 import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
 import { ToolTipComponent, ToolTipGetter } from 'Components/AgGridComponent/Renderer/ToolTipRenderer';
@@ -56,7 +55,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				columnDefs: [
 					{
 						cellRendererFramework: ProductCellRenderer,
-						cellEditorFramework: GridProductSelectEditor,
+						cellEditorFramework: GridSelectEditor<IRowValue,any>(e=>e.Observer?.GetProduct().map(e=>({label:e.Title,value:e.Id})),()=>true),
 						valueGetter: ProductValueGetter,
 						valueSetter: ProductValueSetter,
 						headerName: 'Product Name',
@@ -67,7 +66,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 					},
 					{
 						cellRendererFramework: FlavourCellRenderer,
-						cellEditorFramework: GridFlavourSelectEditor,
+						cellEditorFramework: GridSelectEditor<IRowValue,any>(e=>(e.Observer?.GetFlavours().map(e=>({label:e.Title,value:e.Quantity})??[])),(data)=>data.Shipment.ProductId!=-1),
 						valueGetter: FlavourValueGetter,
 						valueSetter: FlavourValueSetter,
 						headerName: 'Flavour Name',
@@ -77,7 +76,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						tooltipValueGetter: (params) => ToolTipGetter('FlavourId', params)
 					},
 					{
-						valueGetter: (props: GridGetterParams) => props.data.Shipment.CaretSize,
+						valueGetter: (props: ShipmentGridGetterParams) => props.data.Shipment.CaretSize,
 						editable: false,
 						headerName: 'Caret Size',
 						//@ts-ignore
@@ -85,10 +84,13 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						cellStyle: (params) => ShipmentStyleSpecifier('CaretSize', params)
 					},
 					{
-						cellEditorFramework: CaretSizeEditor,
-						cellRendererFramework: CaretSizeRender,
-						valueGetter: CaretSizeValueGetter,
-						valueSetter: CaretSizeValueSetter,
+						cellEditorFramework: CaretSizeEditor<IRowValue,any>(e=>e.Shipment.CaretSize,(data)=>data.Shipment.ProductId!=-1),
+						cellRendererFramework: CaretSizeRenderer,
+						valueGetter: (params:ShipmentGridGetterParams)=>params.data.Shipment.TotalRecievedPieces,
+						valueSetter: (props:ShipmentGridSetter<ShipmentDTO['CaretSize']>) => {
+							props.data.Shipment.TotalRecievedPieces = props.newValue;
+							return true;
+						},
 						headerName: 'Quantity',
 						// @ts-ignore
 						tooltipValueGetter: (params) => ToolTipGetter('TotalRecievedPieces', params),
@@ -99,10 +101,10 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						cellRendererParams: {
 							addAChild: this.addAShipment,
 							deleteAChild: this.handleRemove
-						} as ActionCellParams,
+						} as ActionCellParams<string>,
 						editable: false,
 						headerName: 'Action',
-						valueGetter: function (params: GridGetterParams) {
+						valueGetter: function (params: ShipmentGridGetterParams) {
 							return params.data.Id;
 						},
 						flex: 1,
@@ -213,7 +215,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			Observer: this.componentListMediator.GetAObserver(this.state.SubscriptionId, Id), Id: Id + ''
 		};
 	}
-	filterRowNodes = <U, _>(callback: (e: GridRowNode) => U): U[] => {
+	filterRowNodes = <U, _>(callback: (e: ShipmentGridRowNode) => U): U[] => {
 		const shipments: U[] = [];
 		this.state.GridOptions.api?.forEachNode(e => (shipments.push(callback(e))));
 		return shipments;
@@ -228,7 +230,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		const componentId = getARandomNumber(this.filterRowNodes((e => e.data.Shipment)));
 		if (Products.size !== 0) {
 			const currentRowCount = api?.getDisplayedRowCount();
-			const rowTransations: GridRowDataTransaction = {
+			const rowTransations: ShipmentGridDataTransation = {
 				add: [this.createAShipment(componentId)]
 			};
 			this.state.GridOptions.api?.applyTransaction(rowTransations);
@@ -254,8 +256,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 	}
 	handleRemove = (Id: string) => {
 		const { GridOptions } = this.state;
-		const GridTransaction: GridRowDataTransaction = {
-			remove: [{ Id }]
+		const GridTransaction: ShipmentGridDataTransation = {
+			remove:[{Id}]
 		};
 		const curentRowIndex = GridOptions.api?.getRowNode(Id)?.rowIndex;
 		GridOptions.api?.applyTransaction(GridTransaction);

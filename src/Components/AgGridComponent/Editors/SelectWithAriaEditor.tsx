@@ -1,16 +1,12 @@
 import { ICellEditor, ICellEditorComp, ICellEditorParams } from "@ag-grid-community/all-modules"
 import ReactSelect, { ValueContainer } from "Components/Select/Select"
-import { useImperativeHandle, useRef } from "react"
-import { useEffect } from "react"
-import { useState } from "react"
-import { Ref } from "react"
-import { forwardRef } from "react"
-import { GridEditorParams } from "../Grid.d"
+import { useImperativeHandle, useRef, forwardRef, useState, useEffect } from "react"
 
-type SelectEditorProps = GridEditorParams<number> & {
+type SelectEditorProps = ICellEditorParams & {
     list: ValueContainer[];
     editable?(): boolean;
 }
+
 const SelectEditor = forwardRef<ICellEditor, SelectEditorProps>((props, ref) => {
     const { value, list } = props;
     const [selectedValue, setSelectedValue] = useState(value);
@@ -43,28 +39,16 @@ const SelectEditor = forwardRef<ICellEditor, SelectEditorProps>((props, ref) => 
     }, [])
     return <ReactSelect onSelect={setSelectedValue} defaultValue={value} list={list} ref={inputRef} />
 });
-export const GridProductSelectEditor = forwardRef<ICellEditor, GridEditorParams<number>>((props, ref) => {
-    const [list, setList] = useState<ValueContainer[]>([]);
-    useEffect(() => {
-        const observer = props.data.Observer;
-        if (observer) {
-            setList(observer.GetProduct().map(e => ({ label: e.Title, value: e.Id })));
-        }
-    }, []);
-    return <SelectEditor {...props} list={list} ref={ref} />
-})
 
-export const GridFlavourSelectEditor = forwardRef<ICellEditor, GridEditorParams<number>>((props, ref) => {
-    const [list, setList] = useState<ValueContainer[]>([]);
-    useEffect(() => {
-        const observer = props.data.Observer;
-        if (observer) {
-            setList(observer.GetFlavours().map(e => ({ label: e.Title, value: e.Id })));
-        }
-    }, [])
-    function editable(){
-        return props.data.Shipment.ProductId!=-1;
-    }
-    return <SelectEditor {...props} list={list} ref={ref}  editable={editable}/>
-})
 
+
+
+export const GridSelectEditor = function <DataT, _>(getProductListFromData: (e: DataT) => ValueContainer[],isEditable:(data:DataT)=>boolean) {
+    return forwardRef<ICellEditor, ICellEditorParams>((props, ref) => {
+        const [list, setList] = useState<ValueContainer[]>([]);
+        useEffect(() => {
+            setList(getProductListFromData(props.data));
+        }, []);
+        return <SelectEditor {...props} list={list} ref={ref} editable={()=>isEditable(props.data)}/>
+    })
+};

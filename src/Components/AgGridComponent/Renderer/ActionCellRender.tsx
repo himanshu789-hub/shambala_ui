@@ -1,20 +1,19 @@
-import {KeyName } from "@ag-grid-community/all-modules";
-import { useRef } from "react";
-import { useEffect } from "react";
-import { GridRendererParams } from "../Grid.d";
-import {Button} from 'Components/Miscellaneous/Miscellaneous';
+import { ICellRendererParams, KeyName } from "@ag-grid-community/all-modules";
+import { useRef, useEffect } from "react";
+import { Button } from 'Components/Miscellaneous/Miscellaneous';
+import { GridRendererParams } from "../Grid";
 
-export type ActionCellParams = {
+export type ActionCellParams<V> = {
     addAChild(): void;
-    deleteAChild(Id: string): void;
+    deleteAChild(Id: V): void;
 };
 
-type ActionCellRendererParams = GridRendererParams<string> & ActionCellParams;
+type ActionCellRendererParams<T> = Omit<ICellRendererParams, 'value'> & { value: T } & ActionCellParams<T>;
 
-export default function ActionCellRenderer(props: ActionCellRendererParams) {
+export default function ActionCellRenderer<T>(props: ActionCellRendererParams<T>) {
     const minusRef = useRef<HTMLButtonElement>(null);
     const plusRef = useRef<HTMLButtonElement>(null);
-    const IsLastRow = props.api.getDisplayedRowCount() - 1 === props.rowIndex;
+    const IsLastRow = props.api?.getDisplayedRowCount() - 1 === props.rowIndex;
 
     useEffect(() => {
         function onKeyUpEvent(event: KeyboardEvent) {
@@ -36,15 +35,15 @@ export default function ActionCellRenderer(props: ActionCellRendererParams) {
             }
         }
         props.eGridCell.addEventListener('keyup', onKeyUpEvent);
-        props.eGridCell.addEventListener('keydown',onKeyDownEvent);
+        props.eGridCell.addEventListener('keydown', onKeyDownEvent);
         return () => {
             props.eGridCell.removeEventListener('keyup', onKeyUpEvent);
-            props.eGridCell.removeEventListener('keydown',onKeyDownEvent);
+            props.eGridCell.removeEventListener('keydown', onKeyDownEvent);
         }
     });
 
-    let minusButton = <Button className="btn-danger" handleClick={() => props.deleteAChild(props.value)}  ref={minusRef}><i className="fa fa-minus"></i></Button>;
-    let plusButton = <Button handleClick={props.addAChild} className="btn-warn ml-1" ref={plusRef} ><i className="fa fa-plus"></i></Button>
+    let minusButton = <Button className="btn-danger btn-sm" handleClick={() => props.deleteAChild(props.value)} ref={minusRef}><i className="fa fa-minus"></i></Button>;
+    let plusButton = <Button handleClick={props.addAChild} className="btn-warn ml-1 btn-sm" ref={plusRef} ><i className="fa fa-plus"></i></Button>
     if (IsLastRow)
         return (<div className="text-center">{minusButton}{plusButton}</div>);
 
