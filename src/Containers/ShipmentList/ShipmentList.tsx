@@ -100,7 +100,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 							addAChild: this.addAShipment,
 							deleteAChild: this.handleRemove
 						} as ActionCellParams,
-						editable:false,
+						editable: false,
 						headerName: 'Action',
 						valueGetter: function (params: GridGetterParams) {
 							return params.data.Id;
@@ -114,7 +114,10 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 					getCartetSizeByProductId: this.getCaretSizeByProductId,
 					getColumnIndex: this.getColummnIndex
 				} as GridContext,
-				getRowNodeId: function (data: IRowValue) { return data.Shipment.Id + '' }
+				getRowNodeId: function (data: IRowValue) {
+					debugger;
+					return data.Id + ''
+				}
 			},
 			Products: new Map([]),
 			SubscriptionId: Math.random() * 10,
@@ -215,20 +218,39 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		this.state.GridOptions.api?.forEachNode(e => (shipments.push(callback(e))));
 		return shipments;
 	}
+
+	private OnGridReady = (params: GridReadyEvent) => {
+		this.setState((prevState) => ({ GridOptions: { ...prevState.GridOptions, api: params.api, columnApi: params.columnApi } }));
+	}
+
 	addAShipment = () => {
-		const { Products } = this.state;
+		const { Products, GridOptions: { api } } = this.state;
 		const componentId = getARandomNumber(this.filterRowNodes((e => e.data.Shipment)));
 		if (Products.size !== 0) {
+			const currentRowCount = api?.getDisplayedRowCount();
 			const rowTransations: GridRowDataTransaction = {
 				add: [this.createAShipment(componentId)]
 			};
 			this.state.GridOptions.api?.applyTransaction(rowTransations);
+			if (currentRowCount) {
+				this.refreshRowNodeByIndex(currentRowCount - 1);
+			}
+			this.setFocusToCell(currentRowCount!,this.getColummnIndex('ProductId')!);
 		}
 		else
 			addDanger("Product Not Available");
 	};
-	private OnGridReady = (params: GridReadyEvent) => {
-		this.setState((prevState) => ({ GridOptions: { ...prevState.GridOptions, api: params.api, columnApi: params.columnApi } }));
+	private setFocusToCell = (rowIndex: number, columnIndex: number) => {
+		const { GridOptions: { api, columnApi } } = this.state;
+		const column = columnApi?.getAllDisplayedColumns()![columnIndex];
+		api?.setFocusedCell(rowIndex, column!);
+	}
+	private refreshRowNodeByIndex = (index: number) => {
+		if (index < 0) {
+			return;
+		}
+		const { GridOptions: { api } } = this.state;
+		api?.refreshCells({ rowNodes: [api?.getDisplayedRowAtIndex(index)!], force: true });
 	}
 	handleRemove = (Id: string) => {
 		const { GridOptions } = this.state;
@@ -238,8 +260,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		const curentRowIndex = GridOptions.api?.getRowNode(Id)?.rowIndex;
 		GridOptions.api?.applyTransaction(GridTransaction);
 		if (curentRowIndex) {
-		  const column = GridOptions.columnApi?.getAllDisplayedColumns()[this.getColummnIndex('Id')!];
-          GridOptions.api?.setFocusedCell(curentRowIndex-1,column!);
+			curentRowIndex === ((GridOptions.api?.getDisplayedRowCount()!)) && this.refreshRowNodeByIndex(curentRowIndex - 1);
+			this.setFocusToCell(curentRowIndex - 1,this.getColummnIndex('Id')!);
 		}
 	}
 	render() {

@@ -3,6 +3,7 @@ import { ShipmentDTO } from 'Types/DTO';
 import { ValidateShipment } from 'Validation/ShipmentValidation';
 import { ValidateResult } from 'Validation/Validation';
 import { GridToolTipParams } from '../Grid.d';
+import './ToolTip.css'
 
 export const ToolTipComponent = forwardRef<{ getReactContainerClasses: () => string[] }, GridToolTipParams>((props, ref) => {
     useImperativeHandle(ref, () => {

@@ -28,30 +28,33 @@ export default function ActionCellRenderer(props: ActionCellRendererParams) {
     const IsLastRow = props.api.getDisplayedRowCount() - 1 === props.rowIndex;
 
     useEffect(() => {
-        function onKeyDownEvent(event: KeyboardEvent) {
+        function onKeyUpEvent(event: KeyboardEvent) {
             if (event.key === "Enter") {
                 if (IsLastRow)
-                    plusRef.current?.focus();
+                    setTimeout(() => plusRef.current?.focus());
                 else
-                    minusRef.current?.focus();
+                    setTimeout(() => minusRef.current?.focus());
             }
-            if (IsLastRow && event.key === KeyName.LEFT && document.activeElement === plusRef.current) {
 
+        }
+        function onKeyDownEvent(event: KeyboardEvent) {
+            if (IsLastRow && event.key === KeyName.LEFT && document.activeElement === plusRef.current) {
                 event.preventDefault();
                 minusRef.current?.focus();
             }
-            if (IsLastRow && event.key === KeyName.RIGHT && document.activeElement=== minusRef.current ) {
-                 plusRef.current?.focus();
+            if (IsLastRow && event.key === KeyName.RIGHT && document.activeElement === minusRef.current) {
+                plusRef.current?.focus();
             }
-
         }
-        props.eGridCell.addEventListener('keydown', onKeyDownEvent);
+        props.eGridCell.addEventListener('keyup', onKeyUpEvent);
+        props.eGridCell.addEventListener('keydown',onKeyDownEvent);
         return () => {
-            props.eGridCell.removeEventListener('keydown', onKeyDownEvent);
+            props.eGridCell.removeEventListener('keyup', onKeyUpEvent);
+            props.eGridCell.removeEventListener('keydown',onKeyDownEvent);
         }
     })
 
-    let minusButton = <Button handleClick={() => props.deleteAChild(props.value)} innerText={<i className="fa fa-minus"></i>} ref={minusRef}></Button>;
+    let minusButton = <Button classList={["btn-danger"]} handleClick={() => props.deleteAChild(props.value)} innerText={<i className="fa fa-minus"></i>} ref={minusRef}></Button>;
     let plusButton = <Button handleClick={props.addAChild} classList={["ml-1"]} innerText={<i className="fa fa-plus"></i>} ref={plusRef}></Button>
     if (IsLastRow)
         return (<div className="text-center">{minusButton}{plusButton}</div>);
