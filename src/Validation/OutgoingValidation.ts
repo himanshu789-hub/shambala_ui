@@ -40,6 +40,7 @@ export default class OutgoingValidator implements ValidateMember<IOutgoingShipme
         return { IsValid: true };
     }
     IsTotalQuantityRejectedValid(): ValidateResult {
+
         if (!this.outgoing.TotalQuantityRejected)
             return { IsValid: false, Message: "Invalid" }
         const value = this.outgoing.TotalQuantityRejected;
@@ -61,6 +62,12 @@ export default class OutgoingValidator implements ValidateMember<IOutgoingShipme
         const value = this.outgoing.TotalQuantitySale;
         if (!value)
             return { IsValid: false, Message: "Invalid" };
-        
+        if (!this.outgoing.TotalQuantityShiped)
+            return { IsValid: false, Message: "Taken Quantity Must Have Value" };
+        if (!this.outgoing.TotalQuantityReturned)
+            return { IsValid: false, Message: "Return Quantity Must Have Value" };
+        if (this.outgoing.TotalQuantityShiped - this.outgoing.TotalQuantityReturned < value)
+            return { IsValid: false, Message: "Cannot Be Greater Than Taken-Return Quantity" }
+        return { IsValid: true };
     }
 }
