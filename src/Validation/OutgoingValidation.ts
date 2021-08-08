@@ -1,6 +1,6 @@
 import { IOutgoingShipmentUpdateDetail } from 'Types/DTO';
-import { ValidateMember, ValidateResult } from './Validation';
-
+import { IValidateResultBad, IValidateResultOK, ValidateMember, ValidationCode } from './Validation.d';
+import { ValidateResultBad, ValidationResultOK } from './Validation';
 
 
 export default class OutgoingValidator implements ValidateMember<IOutgoingShipmentUpdateDetail> {
@@ -10,36 +10,35 @@ export default class OutgoingValidator implements ValidateMember<IOutgoingShipme
         this.outgoing = outgoing;
     }
 
-    IsCaretSizeValid(): ValidateResult {
+    IsCaretSizeValid(): IValidateResultOK | IValidateResultBad {
         if (!this.outgoing.CaretSize)
-            return { IsValid: false, Message: 'Cannot Be Empty' };
-        return { IsValid: true };
+            return { IsValid: false, } as IValidateResultBad;
+        return new ValidationResultOK();
     }
-    IsCustomPricesValid(): ValidateResult {
+    IsCustomPricesValid(): IValidateResultOK {
         if (!this.outgoing.CustomPrices || this.outgoing.CustomPrices.length == 0)
-            return { IsValid: false, Message: "Cannot Be Empty" }
-        return { IsValid: true };
+            return { IsValid: false, Message: "Cannot Left Empty" } as IValidateResultBad;
+        return new ValidationResultOK();
     }
-    IsFlavourIdValid(): ValidateResult {
+    IsFlavourIdValid(): IValidateResultOK | IValidateResultBad {
         if (this.outgoing.FlavourId === -1)
-            return { IsValid: false, Message: "Cannot Left Empty" };
-
+            return { IsValid: false, Message: "Cannot Left Empty", Code: ValidationCode.Memeber } as IValidateResultBad;
         return { IsValid: true };
     }
-    IsIdValid(): ValidateResult {
-        return { IsValid: this.outgoing.Id != undefined && typeof this.outgoing.Id === "number" }
+    IsIdValid(): IValidateResultOK | IValidateResultBad {
+        return { IsValid: this.outgoing.Id != undefined && typeof this.outgoing.Id === "number" };
     }
-    IsProductIdValid(): ValidateResult {
+    IsProductIdValid(): IValidateResultOK | IValidateResultBad {
         if (!this.outgoing.ProductId || this.outgoing.ProductId === -1)
             return { IsValid: false, Message: "Cannot Left Empty" };
         return { IsValid: true };
     }
-    IsSchemePriceValid(): ValidateResult {
+    IsSchemePriceValid(): IValidateResultOK | IValidateResultBad {
         if (!this.outgoing.SchemePrice && this.outgoing.SchemePrice !== 0)
             return { IsValid: false, Message: "Invalid" };
         return { IsValid: true };
     }
-    IsTotalQuantityRejectedValid(): ValidateResult {
+    IsTotalQuantityRejectedValid(): IValidateResultOK | IValidateResultBad {
 
         if (!this.outgoing.TotalQuantityRejected)
             return { IsValid: false, Message: "Invalid" }
@@ -49,7 +48,7 @@ export default class OutgoingValidator implements ValidateMember<IOutgoingShipme
         }
         return { IsValid: true };
     }
-    IsTotalQuantityReturnedValid(): ValidateResult {
+    IsTotalQuantityReturnedValid(): IValidateResultOK | IValidateResultBad {
         const value = this.outgoing.TotalQuantityReturned;
         if (!value)
             return { IsValid: false, Message: "Invalid" }
@@ -58,16 +57,30 @@ export default class OutgoingValidator implements ValidateMember<IOutgoingShipme
         }
         return { IsValid: true };
     }
-    IsTotalQuantitySaleValid(): ValidateResult {
+    IsTotalQuantityShipedValid(): IValidateResultOK | IValidateResultBad {
+        const value = this.outgoing.TotalQuantityShiped;
+        if (!value)
+            return new ValidateResultBad("Cannot Be Empty", ValidationCode.Memeber);
+        return { IsValid: true };
+    }
+    IsTotalQuantitySaleValid(): IValidateResultOK | IValidateResultBad {
         const value = this.outgoing.TotalQuantitySale;
         if (!value)
-            return { IsValid: false, Message: "Invalid" };
-        if (!this.outgoing.TotalQuantityShiped)
-            return { IsValid: false, Message: "Taken Quantity Must Have Value" };
+            return { IsValid: false, Message: "Cannot Be Empty" };
+        if (!this.IsTotalQuantityShipedValid().IsValid)
+            return { IsValid: false, Message: "Taken Quantity Must Have Value", Code: ValidationCode.Parameter };
         if (!this.outgoing.TotalQuantityReturned)
-            return { IsValid: false, Message: "Return Quantity Must Have Value" };
+            return { IsValid: false, Message: "Return Quantity Must Have Value", Code: ValidationCode.Parameter };
         if (this.outgoing.TotalQuantityShiped - this.outgoing.TotalQuantityReturned < value)
-            return { IsValid: false, Message: "Cannot Be Greater Than Taken-Return Quantity" }
+            return { IsValid: false, Message: "Cannot Be Greater Than Difference of Taken/Return Quantity", Code: ValidationCode.Memeber };
+        return { IsValid: true };
+    }
+    IsTotalSchemeQuantityValid(): IValidateResultBad | IValidateResultOK {
+        const value = this.outgoing.TotalSchemeQuantity;
+        if (!value)
+            return new ValidateResultBad("Canot Be Empty", ValidationCode.Memeber);
+        if (!this.IsCaretSizeValid().IsValid)
+            return new ValidateResultBad("Caret Size Not Valid", ValidationCode.Parameter);
         return { IsValid: true };
     }
 }

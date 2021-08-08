@@ -1,9 +1,18 @@
 
-export type ValidateResult = {
+
+interface IValidateResult {
     IsValid: boolean;
-    Message?: string;
+}
+export enum ValidationCode {
+ Parameter,Memeber
+}
+export interface IValidateResultOK extends IValidateResult {
+}
+export interface IValidateResultBad extends IValidateResult {
+    Message: string;
+    Code: ValidationCode;
 }
 
 export type ValidateMember<T> = {
-    [Property in keyof T as `Is${Property}Valid`]: () => ValidateResult;
+    [Property in keyof T as `Is${Property}Valid`]: () => IValidateResultOK|IValidateResultBad;
 }

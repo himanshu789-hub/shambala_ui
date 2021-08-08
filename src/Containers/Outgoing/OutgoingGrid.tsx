@@ -4,7 +4,7 @@ import { AgGridReact } from '@ag-grid-community/react';
 import { ColDef, ColGroupDef, GridOptions } from '@ag-grid-community/all-modules';
 import { IOutogingGridRowValue, ValueGetterParams, ValueSetterParams, EditableCallbackParams } from './OutgoingGrid.d';
 import { CustomPrice, IOutgoingShipmentAddDetail, IOutgoingShipmentUpdateDetail } from "Types/DTO";
-import { FlavourCellRenderer, ProductCellRenderer, SaleRenderer } from "./Component/Renderers/Renderers";
+import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer} from "./Component/Renderers/Renderers";
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { GridSelectEditor } from "Components/AgGridComponent/Editors/SelectWithAriaEditor";
 import { Parser } from "Utilities/Utilities";
@@ -112,7 +112,8 @@ const updateColDefs: (ColGroupDef | ColDef)[] = [
         valueSetter: (params: ValueSetterParams<IOutgoingShipmentUpdateDetail['CustomPrices']>) => {
             params.data.Shipment.CustomPrices = params.newValue;
             return true;
-        }
+        },
+        cellRendererFramework:CustomPriceRenderer
     }
 ]
 const getActionColDef = function (cellParams: ActionCellParams<string>): ColDef {
