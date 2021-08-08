@@ -1,5 +1,7 @@
-﻿import { SchemeKey, SchemeType } from "Enums/Enum";
-import { OutgoingShipmentDetail, Product, SchemeDTO, ShipmentDTO } from "Types/DTO";
+﻿import { ValueContainer } from "Components/Select/Select";
+import { SchemeKey, SchemeType } from "Enums/Enum";
+import { Flavour, IOutgoingShipmentAddDetail, Product, SchemeDTO, ShipmentDTO } from "Types/DTO";
+import {ProductInfo} from 'Types/Mediator';
 
 export const IsValidInteger = function (num: string): boolean {
 	if (num.length == 0)
@@ -49,7 +51,14 @@ export function getValidSchemeValue(Type: SchemeKey, val: number) {
 		return (val * 100).toPrecision(2);
 	return (val).toPrecision(0);
 }
-
+export const Parser = {
+	FlavoursToValueContainer: function (flaours: Flavour[]): ValueContainer[] {
+		return flaours.map(e => ({ label: e.Title, value: e.Id }));
+	},
+	ProductsToValueContainer: function (products: ProductInfo[]): ValueContainer[] {
+		return products.map(e => ({ label: e.Title, value: e.Id }));
+	}
+}
 export const KeyCode = {
 	UP: 38,
 	DOWN: 40,
@@ -76,7 +85,7 @@ export function getSchemeText(scheme?: SchemeDTO) {
 	}
 	return result;
 }
-export function OutgoingDetailToShipment(shipment: OutgoingShipmentDetail): ShipmentDTO {
+export function OutgoingDetailToShipment(shipment: IOutgoingShipmentAddDetail): ShipmentDTO {
 	return { CaretSize: shipment.CaretSize, FlavourId: shipment.FlavourId, Id: shipment.Id, ProductId: shipment.ProductId, TotalDefectedPieces: shipment.TotalQuantityRejected, TotalRecievedPieces: shipment.TotalQuantityShiped }
 }
 export function toDateText(date: string) {

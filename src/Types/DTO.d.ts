@@ -31,9 +31,9 @@ export type OutgoingShipment = {
 	DateCreated: string;
 	Salesman: SalesmanDTO;
 	Status: number;
-	OutgoingShipmentDetails: OutgoingShipmentDetail[];
+	OutgoingShipmentDetails: IOutgoingShipmentAddDetail[];
 };
-export type OutgoingShipmentDetail = {
+export interface IOutgoingShipmentAddDetail  {
 	Id: number;
 	ProductId: number;
 	FlavourId: number;
@@ -41,6 +41,10 @@ export type OutgoingShipmentDetail = {
 	TotalQuantityRejected: number;
 	CaretSize: number;
 	TotalQuantityReturned: number;
+}
+export interface IOutgoingShipmentUpdateDetail  extends IOutgoingShipmentAddDetail {
+  SchemePrice:number;
+
 }
 export type OutgoingShipmentInfo = {
 	Id: number;

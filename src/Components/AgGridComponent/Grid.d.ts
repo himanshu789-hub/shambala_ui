@@ -1,4 +1,4 @@
-import { CellClassParams, ICellEditorParams, ICellRendererParams, ITooltipParams, RowDataTransaction, ValueGetterParams, ValueSetterParams } from "@ag-grid-community/all-modules";
+import { CellClassParams, CellValueChangedEvent, ICellEditorParams, ICellRendererParams, ITooltipParams, RowDataTransaction, ValueGetterParams, ValueSetterParams } from "@ag-grid-community/all-modules";
 
 type GridParamsWithContext<T, ContextType> = Omit<T, 'context'> & {
       context: ContextType
