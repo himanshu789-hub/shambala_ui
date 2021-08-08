@@ -1,22 +1,27 @@
 import React from "react";
 import { RouteComponentProps } from "react-router";
 import { AgGridReact } from '@ag-grid-community/react';
-import { ColDef, GridOptions } from '@ag-grid-community/all-modules';
-import { IOutogingGridRowValue, ValueGetterParams, ValueSetterParams } from './OutgoingGrid.d';
-import { IOutgoingShipmentAddDetail } from "Types/DTO";
-import { FlavourCellRenderer, ProductCellRenderer } from "./Component/Renderers/Renderers";
+import { ColDef, ColGroupDef, GridOptions } from '@ag-grid-community/all-modules';
+import { IOutogingGridRowValue, ValueGetterParams, ValueSetterParams, EditableCallbackParams } from './OutgoingGrid.d';
+import { CustomPrice, IOutgoingShipmentAddDetail, IOutgoingShipmentUpdateDetail } from "Types/DTO";
+import { FlavourCellRenderer, ProductCellRenderer, SaleRenderer } from "./Component/Renderers/Renderers";
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { GridSelectEditor } from "Components/AgGridComponent/Editors/SelectWithAriaEditor";
 import { Parser } from "Utilities/Utilities";
 import { CaretSizeEditor } from "Components/AgGridComponent/Editors/CaretSizeEditor";
+import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 
 interface OutgoingGridProps extends RouteComponentProps<{ id?: string }> {
 }
 type OutgoingGridState = {
     GridOptions: GridOptions;
+    IsOnUpdate: boolean;
 }
 const CaretRenderer = CaretSizeRenderer<IOutogingGridRowValue>(e => e.Shipment.CaretSize);
-
+const defaultColDef: ColDef = {
+    flex: 1,
+    editable: true
+}
 const commonColDefs: ColDef[] = [
     {
         headerName: 'Product Name',
@@ -54,7 +59,7 @@ const commonColDefs: ColDef[] = [
         cellRendererFramework: CaretRenderer
     },
     {
-        headerName: 'Quantity Shiped',
+        headerName: 'Taken',
         valueGetter: function (params: ValueGetterParams) {
             return params.data.Shipment.TotalQuantityShiped;
         },
@@ -65,17 +70,87 @@ const commonColDefs: ColDef[] = [
         cellRendererFramework: CaretRenderer,
         cellEditorFramework: CaretSizeEditor<IOutogingGridRowValue, any>(e => e.Shipment.CaretSize, (e) => e.Shipment.ProductId !== -1)
     }
-    
+];
+const updateColDefs: (ColGroupDef | ColDef)[] = [
+    {
+        headerName: 'Return',
+        valueGetter: (params: ValueGetterParams) => params.data.Shipment.TotalQuantityReturned,
+        valueSetter: (params: ValueSetterParams<IOutgoingShipmentUpdateDetail['TotalQuantityReturned']>) => {
+            params.data.Shipment.TotalQuantityReturned = params.newValue;
+            return true;
+        },
+        editable: (params: EditableCallbackParams) => {
+            return params.data.Shipment.TotalQuantityShiped > 0;
+        },
+        cellRendererFramework: CaretRenderer,
+        cellEditorFramework: CaretSizeEditor<IOutgoingShipmentUpdateDetail, any>(e => e.CaretSize, (e) => e.TotalQuantityReturned > 0)
+    },
+    {
+        headerName: 'Sale',
+        valueGetter: (params: ValueGetterParams) => {
+            return params.data.Shipment.TotalQuantitySale;
+        },
+        editable: false,
+        cellRendererFramework: CaretSizeRenderer
+    },
+    {
+        headerName: 'Scheme',
+        children: [
+            {
+                headerName: 'Quantity',
+                valueGetter: (params: ValueGetterParams) => params.data.Shipment.TotalSchemeQuantity
+            },
+            {
+                headerName: 'Price',
+                valueGetter: (params: ValueGetterParams) => params.data.Shipment.SchemePrice
+            }
+        ]
+    },
+    {
+        headerName: 'Custom Price',
+        valueGetter: (params: ValueGetterParams) => params.data.Shipment.CustomPrices,
+        valueSetter: (params: ValueSetterParams<IOutgoingShipmentUpdateDetail['CustomPrices']>) => {
+            params.data.Shipment.CustomPrices = params.newValue;
+            return true;
+        }
+    }
 ]
-const actionColDef: ColDef = {
-    headerName: 'Action'
+const getActionColDef = function (cellParams: ActionCellParams<string>): ColDef {
+    return {
+        headerName: 'Action',
+        editable: false,
+        valueGetter: function (params: ValueGetterParams) {
+            return params.data.Shipment.Id;
+        },
+        cellRendererFramework: ActionCellRenderer,
+        cellRendererParams: cellParams
+    };
 }
+
 export default class OutgoingGrid extends React.Component<OutgoingGridProps, OutgoingGridState>{
     constructor(props: OutgoingGridProps) {
         super(props);
-        this.state = {
-
+        const { match: { params: { id } } } = this.props;
+        let colDefs: ColDef[];
+        const actionColDef = getActionColDef({ addAChild: this.addAShipment, deleteAChild: this.deleteAShipment });
+        if (id) {
+            colDefs = [...commonColDefs]
         }
+        else
+            colDefs = [...commonColDefs, actionColDef]
+
+        this.state = {
+            GridOptions: {
+                columnDefs: colDefs
+            },
+            IsOnUpdate: id != undefined
+        }
+    }
+    addAShipment = () => {
+
+    }
+    deleteAShipment = (Id: string) => {
+
     }
     render() {
         const { GridOptions } = this.state;

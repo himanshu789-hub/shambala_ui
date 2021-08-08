@@ -1,4 +1,5 @@
 import { OutgoingStatus, SchemeKey } from 'Enums/Enum';
+import { NumberLiteralType } from 'typescript';
 
 export type OutgoingShipmentPriceDetail = {
 	Id: number;
@@ -33,7 +34,7 @@ export type OutgoingShipment = {
 	Status: number;
 	OutgoingShipmentDetails: IOutgoingShipmentAddDetail[];
 };
-export interface IOutgoingShipmentAddDetail  {
+export interface IOutgoingShipmentAddDetail {
 	Id: number;
 	ProductId: number;
 	FlavourId: number;
@@ -42,9 +43,16 @@ export interface IOutgoingShipmentAddDetail  {
 	CaretSize: number;
 	TotalQuantityReturned: number;
 }
-export interface IOutgoingShipmentUpdateDetail  extends IOutgoingShipmentAddDetail {
-  SchemePrice:number;
-
+export interface IOutgoingShipmentUpdateDetail extends IOutgoingShipmentAddDetail {
+	SchemePrice: number;
+	TotalQuantitySale: number;
+	TotalSchemeQuantity: nunber;
+	CustomPrices: CustomPrice[];
+}
+export type CustomPrice = {
+	Id: number;
+	Quantity: number;
+	Price: number;
 }
 export type OutgoingShipmentInfo = {
 	Id: number;

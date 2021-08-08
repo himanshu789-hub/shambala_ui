@@ -1,4 +1,4 @@
-import { CellClassParams, CellValueChangedEvent, ICellEditorParams, ICellRendererParams, ITooltipParams, RowDataTransaction, ValueGetterParams, ValueSetterParams } from "@ag-grid-community/all-modules";
+import { CellClassParams,EditableCallbackParams, CellValueChangedEvent, ICellEditorParams, ICellRendererParams, ITooltipParams, RowDataTransaction, ValueGetterParams, ValueSetterParams } from "@ag-grid-community/all-modules";
 
 type GridParamsWithContext<T, ContextType> = Omit<T, 'context'> & {
       context: ContextType
@@ -14,7 +14,7 @@ type GridWithOldAndNewValue<T, ValueType> = Omit<T, 'oldValue' | 'newValue'> & {
 
 type GridRowNode = GridParamsWithData<RowNode, IRowValue>;
 
-
+export type GridEditableCallbackParams<DataT> = GridParamsWithData<EditableCallbackParams,DataT>;
 export type GridCellStyleParams<Datatype> = GridParamsWithData<CellClassParams, DataType>;
 export type GridToolTipParams<DataType> = GridParamsWithValue<string, ITooltipParams,DataType>;
 
