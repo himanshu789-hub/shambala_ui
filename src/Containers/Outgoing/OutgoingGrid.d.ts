@@ -15,3 +15,4 @@ export type ValueGetterParams = GridParams.GridGetterParams<IOutogingGridRowValu
 export type ValueSetterParams<V> = GridParams.GridSetterParams<V,IOutogingGridRowValue,GridContext>;
 export type CellRendererParams<V> = GridParams.GridRendererParams<V,IOutogingGridRowValue,GridContext>;
 export type EditableCallbackParams = GridParams.GridEditableCallbackParams<IOutogingGridRowValue>;
+export type CellEditorParams<V> = GridParams.GridEditorParams<C,IOutgoingShipmentUpdateDetail,GridContext>;

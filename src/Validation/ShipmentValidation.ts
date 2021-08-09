@@ -1,5 +1,5 @@
 import { ShipmentDTO } from "Types/DTO";
-import { ValidateResult, ValidateMember } from './Validation';
+import { ValidateMember,IValidateResultBad,IValidateResultOK } from './Validation.d';
 
 type ShipmentValidate = ValidateMember<ShipmentDTO>;
 

@@ -2,14 +2,15 @@ import React from "react";
 import { RouteComponentProps } from "react-router";
 import { AgGridReact } from '@ag-grid-community/react';
 import { ColDef, ColGroupDef, GridOptions } from '@ag-grid-community/all-modules';
-import { IOutogingGridRowValue, ValueGetterParams, ValueSetterParams, EditableCallbackParams } from './OutgoingGrid.d';
+import { IOutogingGridRowValue, ValueGetterParams, ValueSetterParams, EditableCallbackParams, CellRendererParams } from './OutgoingGrid.d';
 import { CustomPrice, IOutgoingShipmentAddDetail, IOutgoingShipmentUpdateDetail } from "Types/DTO";
-import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer} from "./Component/Renderers/Renderers";
+import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer } from "./Component/Renderers/Renderers";
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { GridSelectEditor } from "Components/AgGridComponent/Editors/SelectWithAriaEditor";
 import { Parser } from "Utilities/Utilities";
 import { CaretSizeEditor } from "Components/AgGridComponent/Editors/CaretSizeEditor";
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
+import CustomPriceEditor from "./Component/Editors/CustomPriceEditor";
 
 interface OutgoingGridProps extends RouteComponentProps<{ id?: string }> {
 }
@@ -17,7 +18,7 @@ type OutgoingGridState = {
     GridOptions: GridOptions;
     IsOnUpdate: boolean;
 }
-const CaretRenderer = CaretSizeRenderer<IOutogingGridRowValue>(e => e.Shipment.CaretSize);
+const CaretRenderer = CaretSizeRenderer<CellRendererParams<IOutgoingShipmentAddDetail['CaretSize']>>(e => e.data.Shipment.CaretSize);
 const defaultColDef: ColDef = {
     flex: 1,
     editable: true
@@ -71,7 +72,7 @@ const commonColDefs: ColDef[] = [
         cellEditorFramework: CaretSizeEditor<IOutogingGridRowValue, any>(e => e.Shipment.CaretSize, (e) => e.Shipment.ProductId !== -1)
     }
 ];
-const updateColDefs: (ColGroupDef | ColDef)[] = [
+const updateColDefs: (ColDef | ColGroupDef)[] = [
     {
         headerName: 'Return',
         valueGetter: (params: ValueGetterParams) => params.data.Shipment.TotalQuantityReturned,
@@ -113,7 +114,8 @@ const updateColDefs: (ColGroupDef | ColDef)[] = [
             params.data.Shipment.CustomPrices = params.newValue;
             return true;
         },
-        cellRendererFramework:CustomPriceRenderer
+        cellRendererFramework: CustomPriceRenderer,
+        cellEditorFramework:CustomPriceEditor
     }
 ]
 const getActionColDef = function (cellParams: ActionCellParams<string>): ColDef {
@@ -135,7 +137,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
         let colDefs: ColDef[];
         const actionColDef = getActionColDef({ addAChild: this.addAShipment, deleteAChild: this.deleteAShipment });
         if (id) {
-            colDefs = [...commonColDefs]
+            colDefs = [...commonColDefs,...updateColDefs]
         }
         else
             colDefs = [...commonColDefs, actionColDef]
@@ -148,7 +150,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
         }
     }
     addAShipment = () => {
-
+          
     }
     deleteAShipment = (Id: string) => {
 

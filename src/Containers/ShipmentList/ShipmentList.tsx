@@ -1,12 +1,12 @@
-import React, { ChangeEvent, SyntheticEvent } from 'react';
-import { Product, Flavour, ShipmentDTO, OutOfStock } from 'Types/DTO';
+import React from 'react';
+import { Product, ShipmentDTO, OutOfStock } from 'Types/DTO';
 import MediatorSubject from 'Utilities/MediatorSubject';
 import { addDanger, addWarn } from 'Utilities/AlertUtility';
 import { InitialShipment } from 'Types/Types';
 import { AgGridReact } from '@ag-grid-community/react';
-import { ShipmentGridGetterParams, ShipmentGridDataTransation, IRowValue, GridContext,ShipmentGridRowNode, ShipmentGridSetter } from './ShipmentList.d';
+import { ShipmentGridGetterParams, ShipmentGridDataTransation, IRowValue, GridContext, ShipmentGridRowNode, ShipmentGridSetter } from './ShipmentList.d';
 import { GridOptions, GridReadyEvent, RowNode, ITooltipParams, Column } from '@ag-grid-community/all-modules';
-import { FlavourCellRenderer, FlavourValueChangedEvent, FlavourValueGetter, FlavourValueSetter, ProductCellRenderer, ProductValueChangedEvent, ProductValueGetter, ProductValueSetter } from 'Components/AgGridComponent/Renderer/SelectWithAriaRender';
+import { FlavourCellRenderer, FlavourValueChangedEvent, FlavourValueGetter, FlavourValueSetter, ProductCellRenderer, ProductValueChangedEvent, ProductValueGetter, ProductValueSetter } from './Component/Renderer/Renderer';
 import { GridSelectEditor } from 'Components/AgGridComponent/Editors/SelectWithAriaEditor';
 import CaretSizeRenderer from 'Components/AgGridComponent/Renderer/CaretSizeRenderer';
 import { CaretSizeEditor } from 'Components/AgGridComponent/Editors/CaretSizeEditor';
@@ -17,7 +17,8 @@ import Action from 'Components/Action/Action';
 import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
 import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
 import { ToolTipComponent, ToolTipGetter } from 'Components/AgGridComponent/Renderer/ToolTipRenderer';
-import { ShipmentStyleSpecifier } from 'Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle';
+import { StyleSpecifier } from 'Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle';
+import { ValidateShipment } from './../../Validation/ShipmentValidation';
 
 type IShipmentListProps =
 	{
@@ -34,7 +35,7 @@ type IShipmentListState = {
 	Alert: { Show: boolean, Message: string };
 	GridOptions: GridOptions;
 };
-
+const ToolTipValueGetter = (name: keyof ShipmentDTO) => ToolTipGetter<ShipmentDTO, ReturnType<typeof ValidateShipment>>(ValidateShipment, name);
 export default class ShipmentList extends React.Component<IShipmentListProps, IShipmentListState> {
 	products: Map<string, Product>;
 	componentListMediator: MediatorSubject;
@@ -55,46 +56,46 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				columnDefs: [
 					{
 						cellRendererFramework: ProductCellRenderer,
-						cellEditorFramework: GridSelectEditor<IRowValue,any>(e=>e.Observer?.GetProduct().map(e=>({label:e.Title,value:e.Id})),()=>true),
+						cellEditorFramework: GridSelectEditor<IRowValue, any>(e => e.Observer?.GetProduct().map(e => ({ label: e.Title, value: e.Id })), () => true),
 						valueGetter: ProductValueGetter,
 						valueSetter: ProductValueSetter,
 						headerName: 'Product Name',
 						onCellValueChanged: ProductValueChangedEvent,
 						// @ts-ignore
-						tooltipValueGetter: (params) => ToolTipGetter('ProductId', params),
-						cellStyle: (params) => ShipmentStyleSpecifier('ProductId', params)
+						tooltipValueGetter:ToolTipValueGetter('ProductId') ,
+						cellStyle: (params) => StyleSpecifier('ProductId', params)
 					},
 					{
 						cellRendererFramework: FlavourCellRenderer,
-						cellEditorFramework: GridSelectEditor<IRowValue,any>(e=>(e.Observer?.GetFlavours().map(e=>({label:e.Title,value:e.Quantity})??[])),(data)=>data.Shipment.ProductId!=-1),
+						cellEditorFramework: GridSelectEditor<IRowValue, any>(e => (e.Observer?.GetFlavours().map(e => ({ label: e.Title, value: e.Quantity }) ?? [])), (data) => data.Shipment.ProductId != -1),
 						valueGetter: FlavourValueGetter,
 						valueSetter: FlavourValueSetter,
 						headerName: 'Flavour Name',
-						cellStyle: (params) => ShipmentStyleSpecifier('FlavourId', params),
+						cellStyle: (params) => StyleSpecifier('FlavourId', params),
 						onCellValueChanged: FlavourValueChangedEvent,
 						// @ts-ignore
-						tooltipValueGetter: (params) => ToolTipGetter('FlavourId', params)
+						tooltipValueGetter:ToolTipValueGetter('FlavourId')
 					},
 					{
 						valueGetter: (props: ShipmentGridGetterParams) => props.data.Shipment.CaretSize,
 						editable: false,
 						headerName: 'Caret Size',
 						//@ts-ignore
-						tooltipValueGetter: (params) => ToolTipGetter('CaretSize', params),
-						cellStyle: (params) => ShipmentStyleSpecifier('CaretSize', params)
+						tooltipValueGetter: ToolTipValueGetter('CaretSize'),
+						cellStyle: (params) => StyleSpecifier('CaretSize', params)
 					},
 					{
-						cellEditorFramework: CaretSizeEditor<IRowValue,any>(e=>e.Shipment.CaretSize,(data)=>data.Shipment.ProductId!=-1),
+						cellEditorFramework: CaretSizeEditor<IRowValue, any>(e => e.Shipment.CaretSize, (data) => data.Shipment.ProductId != -1),
 						cellRendererFramework: CaretSizeRenderer,
-						valueGetter: (params:ShipmentGridGetterParams)=>params.data.Shipment.TotalRecievedPieces,
-						valueSetter: (props:ShipmentGridSetter<ShipmentDTO['CaretSize']>) => {
+						valueGetter: (params: ShipmentGridGetterParams) => params.data.Shipment.TotalRecievedPieces,
+						valueSetter: (props: ShipmentGridSetter<ShipmentDTO['CaretSize']>) => {
 							props.data.Shipment.TotalRecievedPieces = props.newValue;
 							return true;
 						},
 						headerName: 'Quantity',
 						// @ts-ignore
-						tooltipValueGetter: (params) => ToolTipGetter('TotalRecievedPieces', params),
-						cellStyle: (params) => ShipmentStyleSpecifier('TotalRecievedPieces', params)
+						tooltipValueGetter: ToolTipValueGetter('TotalRecievedPieces'),
+						cellStyle: (params) => StyleSpecifier('TotalRecievedPieces', params)
 					},
 					{
 						cellRendererFramework: ActionCellRenderer,
@@ -237,7 +238,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			if (currentRowCount) {
 				this.refreshRowNodeByIndex(currentRowCount - 1);
 			}
-			this.setFocusToCell(currentRowCount!,this.getColummnIndex('ProductId')!);
+			this.setFocusToCell(currentRowCount!, this.getColummnIndex('ProductId')!);
 		}
 		else
 			addDanger("Product Not Available");
@@ -257,13 +258,13 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 	handleRemove = (Id: string) => {
 		const { GridOptions } = this.state;
 		const GridTransaction: ShipmentGridDataTransation = {
-			remove:[{Id}]
+			remove: [{ Id }]
 		};
 		const curentRowIndex = GridOptions.api?.getRowNode(Id)?.rowIndex;
 		GridOptions.api?.applyTransaction(GridTransaction);
 		if (curentRowIndex) {
 			curentRowIndex === ((GridOptions.api?.getDisplayedRowCount()!)) && this.refreshRowNodeByIndex(curentRowIndex - 1);
-			this.setFocusToCell(curentRowIndex - 1,this.getColummnIndex('Id')!);
+			this.setFocusToCell(curentRowIndex - 1, this.getColummnIndex('Id')!);
 		}
 	}
 	render() {
