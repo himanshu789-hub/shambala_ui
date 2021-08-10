@@ -17,7 +17,7 @@ import Action from 'Components/Action/Action';
 import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
 import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
 import { ToolTipComponent, ToolTipGetter } from 'Components/AgGridComponent/Renderer/ToolTipRenderer';
-import { StyleSpecifier } from 'Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle';
+import CellClassSpecifier from 'Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle';
 import { ValidateShipment } from './../../Validation/ShipmentValidation';
 
 type IShipmentListProps =
@@ -36,6 +36,8 @@ type IShipmentListState = {
 	GridOptions: GridOptions;
 };
 const ToolTipValueGetter = (name: keyof ShipmentDTO) => ToolTipGetter<ShipmentDTO, ReturnType<typeof ValidateShipment>>(ValidateShipment, name);
+const ClassRuleSpecifier = (name:keyof ShipmentDTO) => CellClassSpecifier<ShipmentDTO,ReturnType<typeof ValidateShipment>>(name,ValidateShipment);
+
 export default class ShipmentList extends React.Component<IShipmentListProps, IShipmentListState> {
 	products: Map<string, Product>;
 	componentListMediator: MediatorSubject;

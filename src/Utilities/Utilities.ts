@@ -1,7 +1,7 @@
 ﻿import { ValueContainer } from "Components/Select/Select";
 import { SchemeKey, SchemeType } from "Enums/Enum";
 import { Flavour, IOutgoingShipmentAddDetail, Product, SchemeDTO, ShipmentDTO } from "Types/DTO";
-import {ProductInfo} from 'Types/Mediator';
+import { ProductInfo } from 'Types/Mediator';
 
 export const IsValidInteger = function (num: string): boolean {
 	if (num.length == 0)
@@ -58,6 +58,17 @@ export const Parser = {
 	ProductsToValueContainer: function (products: ProductInfo[]): ValueContainer[] {
 		return products.map(e => ({ label: e.Title, value: e.Id }));
 	}
+}
+export function IsFuntionOrConstructor(element: (Function | (new (...args: any) => any))) {
+	let IsFunction = false;
+	try {
+		//@ts-ignore
+		(new validator(params.data));
+	}
+	catch (e) {
+		IsFunction = true;
+	}
+	return IsFunction;
 }
 export const KeyCode = {
 	UP: 38,

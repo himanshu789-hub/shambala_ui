@@ -11,6 +11,8 @@ import { Parser } from "Utilities/Utilities";
 import { CaretSizeEditor } from "Components/AgGridComponent/Editors/CaretSizeEditor";
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 import CustomPriceEditor from "./Component/Editors/CustomPriceEditor";
+import CellClassRuleSpecifier from "Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle";
+import OutgoingValidator from 'Validation/OutgoingValidation';
 
 interface OutgoingGridProps extends RouteComponentProps<{ id?: string }> {
 }
@@ -72,6 +74,11 @@ const commonColDefs: ColDef[] = [
         cellEditorFramework: CaretSizeEditor<IOutogingGridRowValue, any>(e => e.Shipment.CaretSize, (e) => e.Shipment.ProductId !== -1)
     }
 ];
+
+const CellClassRule = (name: keyof IOutgoingShipmentUpdateDetail) => CellClassRuleSpecifier<IOutgoingShipmentUpdateDetail, OutgoingValidator>
+    //@ts-ignore
+    (name, OutgoingValidator);
+
 const updateColDefs: (ColDef | ColGroupDef)[] = [
     {
         headerName: 'Return',
@@ -115,7 +122,8 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
             return true;
         },
         cellRendererFramework: CustomPriceRenderer,
-        cellEditorFramework:CustomPriceEditor
+        cellEditorFramework: CustomPriceEditor,
+        cellClassRules:CellClassRule('CustomPrices')
     }
 ]
 const getActionColDef = function (cellParams: ActionCellParams<string>): ColDef {
@@ -137,7 +145,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
         let colDefs: ColDef[];
         const actionColDef = getActionColDef({ addAChild: this.addAShipment, deleteAChild: this.deleteAShipment });
         if (id) {
-            colDefs = [...commonColDefs,...updateColDefs]
+            colDefs = [...commonColDefs, ...updateColDefs]
         }
         else
             colDefs = [...commonColDefs, actionColDef]
@@ -150,7 +158,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
         }
     }
     addAShipment = () => {
-          
+
     }
     deleteAShipment = (Id: string) => {
 

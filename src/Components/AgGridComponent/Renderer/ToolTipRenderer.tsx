@@ -4,7 +4,9 @@ import React, { forwardRef, useImperativeHandle } from 'react';
 import { ShipmentDTO } from 'Types/DTO';
 import { ValidateShipment } from 'Validation/ShipmentValidation';
 import { IValidateResult, IValidateResultBad, IValidateResultOK, ValidateMember } from 'Validation/Validation.d';
-import { GridToolTipParams } from '../Grid.d';
+import { GridToolTipParams, sig } from '../Grid.d';
+import { IsFuntionOrConstructor } from 'Utilities/Utilities';
+
 import './ToolTip.css'
 
 export const ToolTipComponent = forwardRef<{ getReactContainerClasses: () => string[] }, ITooltipParams>((props, ref) => {
@@ -21,20 +23,13 @@ export const ToolTipComponent = forwardRef<{ getReactContainerClasses: () => str
     return <span className="tool-tip-container border p-1"><i className="fa fa-info-circle text-danger"></i> {props.value}</span>
 });
 
-type sig<T, ObjT extends ValidateMember<T>> = (data: T) => ObjT | (new (data: T) => ObjT);
 export function ToolTipGetter<T, V extends ValidateMember<T>>(validator: sig<T, V>, name: keyof T) {
     return function (params: ITooltipParams) {
         //@ts-ignore
         let ValidationResult: IValidateResult = { IsValid: false };
         let validatorObj: V;
-        let IsFunction = false;
-        try {
-            //@ts-ignore
-            (new validator(params.data));
-        }
-        catch (e) {
-            IsFunction = true;
-        }
+        let IsFunction = IsFuntionOrConstructor(validator);
+
         if (IsFunction) {
             //@ts-ignore
             validatorObj = validator(params.data);
