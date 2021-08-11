@@ -1,9 +1,9 @@
 import { ShipmentDTO } from "Types/DTO";
 import { ValidateMember,IValidateResultBad,IValidateResultOK } from './Validation.d';
-
+import {sig} from './../Components/AgGridComponent/Grid.d'
 type ShipmentValidate = ValidateMember<ShipmentDTO>;
 
-export function ValidateShipment(data: ShipmentDTO): ShipmentValidate {
+export const ValidateShipment =   function (data: ShipmentDTO): ShipmentValidate {
 
     return {
         IsCaretSizeValid: function () {
@@ -32,4 +32,4 @@ export function ValidateShipment(data: ShipmentDTO): ShipmentValidate {
             return { IsValid: true }
         }
     };
-}
+} as sig<ShipmentDTO,ShipmentValidate>;

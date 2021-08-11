@@ -36,7 +36,7 @@ type IShipmentListState = {
 	GridOptions: GridOptions;
 };
 const ToolTipValueGetter = (name: keyof ShipmentDTO) => ToolTipGetter<ShipmentDTO, ReturnType<typeof ValidateShipment>>(ValidateShipment, name);
-const ClassRuleSpecifier = (name:keyof ShipmentDTO) => CellClassSpecifier<ShipmentDTO,ReturnType<typeof ValidateShipment>>(name,ValidateShipment);
+const ClassRuleSpecifier = (name: keyof ShipmentDTO) => CellClassSpecifier<ShipmentDTO, ReturnType<typeof ValidateShipment>>(name, ValidateShipment.prototype);
 
 export default class ShipmentList extends React.Component<IShipmentListProps, IShipmentListState> {
 	products: Map<string, Product>;
@@ -64,8 +64,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						headerName: 'Product Name',
 						onCellValueChanged: ProductValueChangedEvent,
 						// @ts-ignore
-						tooltipValueGetter:ToolTipValueGetter('ProductId') ,
-						cellStyle: (params) => StyleSpecifier('ProductId', params)
+						tooltipValueGetter: ToolTipValueGetter('ProductId'),
+						cellStyle: ClassRuleSpecifier('ProductId')
 					},
 					{
 						cellRendererFramework: FlavourCellRenderer,
@@ -73,10 +73,10 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						valueGetter: FlavourValueGetter,
 						valueSetter: FlavourValueSetter,
 						headerName: 'Flavour Name',
-						cellStyle: (params) => StyleSpecifier('FlavourId', params),
+						cellStyle: ClassRuleSpecifier('FlavourId'),
 						onCellValueChanged: FlavourValueChangedEvent,
 						// @ts-ignore
-						tooltipValueGetter:ToolTipValueGetter('FlavourId')
+						tooltipValueGetter: ToolTipValueGetter('FlavourId')
 					},
 					{
 						valueGetter: (props: ShipmentGridGetterParams) => props.data.Shipment.CaretSize,
@@ -84,7 +84,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						headerName: 'Caret Size',
 						//@ts-ignore
 						tooltipValueGetter: ToolTipValueGetter('CaretSize'),
-						cellStyle: (params) => StyleSpecifier('CaretSize', params)
+						cellStyle: ClassRuleSpecifier('CaretSize')
 					},
 					{
 						cellEditorFramework: CaretSizeEditor<IRowValue, any>(e => e.Shipment.CaretSize, (data) => data.Shipment.ProductId != -1),
@@ -97,7 +97,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						headerName: 'Quantity',
 						// @ts-ignore
 						tooltipValueGetter: ToolTipValueGetter('TotalRecievedPieces'),
-						cellStyle: (params) => StyleSpecifier('TotalRecievedPieces', params)
+						cellStyle: ClassRuleSpecifier('TotalRecievedPieces')
 					},
 					{
 						cellRendererFramework: ActionCellRenderer,
