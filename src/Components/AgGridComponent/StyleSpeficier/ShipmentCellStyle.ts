@@ -10,20 +10,12 @@ const CellColors = {
     error: '#ff5959',
     info: ''
 }
-const CellClassRuleSpecifier = function <T, V extends ValidateMember<T>>(name: keyof T, validator: sig<T, V>) {
+const CellClassRuleSpecifier = function <T, V extends ValidateMember<T>>(name: keyof T, validator: new (data:T)=>V) {
     return {
         'is-invalid': (params: CellClassParams) => {
             const isFunction = IsFuntionOrConstructor(validator);
-            let validatorObj: V;
-            if (isFunction) {
-                //@ts-ignore
-                validatorObj = validator(params.data);
-            }
-            else {
-                //@ts-ignore
-                validatorObj = new validator(params.data);
-            }
-            const result = (validatorObj as any)['Is' + name + 'Valid'] as IValidateResult;
+            
+            const result = (new validator(params.data) as any)['Is' + name + 'Valid'] as IValidateResult;
             return !result.IsValid;
         }
     }

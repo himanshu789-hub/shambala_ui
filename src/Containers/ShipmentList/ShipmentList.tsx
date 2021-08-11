@@ -20,14 +20,14 @@ import { ToolTipComponent, ToolTipGetter } from 'Components/AgGridComponent/Rend
 import CellClassSpecifier from 'Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle';
 import { ValidateShipment } from './../../Validation/ShipmentValidation';
 
-type IShipmentListProps =
-	{
-		handleSubmit: (Shipments: ShipmentDTO[]) => void;
-		Products: Product[];
-		ShouldLimitQuantity: boolean;
-		ResetElement?: OutOfStock[];
-		InitialShipments?: InitialShipment[];
-	};
+type IShipmentListProps = {
+	handleSubmit: (Shipments: ShipmentDTO[]) => void;
+	Products: Product[];
+	ShouldLimitQuantity: boolean;
+	ResetElement?: OutOfStock[];
+	InitialShipments?: InitialShipment[];
+};
+
 type IShipmentListState = {
 	Products: Map<string, Product>;
 	ShipmentInfos: Array<IRowValue>;
@@ -35,13 +35,12 @@ type IShipmentListState = {
 	Alert: { Show: boolean, Message: string };
 	GridOptions: GridOptions;
 };
-const ToolTipValueGetter = (name: keyof ShipmentDTO) => ToolTipGetter<ShipmentDTO, ReturnType<typeof ValidateShipment>>(ValidateShipment, name);
-const ClassRuleSpecifier = (name: keyof ShipmentDTO) => CellClassSpecifier<ShipmentDTO, ReturnType<typeof ValidateShipment>>(name, ValidateShipment.prototype);
+const ToolTipValueGetter = (name: keyof ShipmentDTO) => ToolTipGetter<ShipmentDTO, ValidateShipment>(ValidateShipment, name);
+const ClassRuleSpecifier = (name: keyof ShipmentDTO) => CellClassSpecifier<ShipmentDTO, ValidateShipment>(name, ValidateShipment);
 
 export default class ShipmentList extends React.Component<IShipmentListProps, IShipmentListState> {
 	products: Map<string, Product>;
 	componentListMediator: MediatorSubject;
-
 
 	constructor(props: IShipmentListProps) {
 		super(props);
