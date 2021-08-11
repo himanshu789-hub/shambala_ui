@@ -1,6 +1,5 @@
 import { ShipmentDTO } from "Types/DTO";
 import { ValidateMember, IValidateResultBad, IValidateResultOK } from './Validation.d';
-import { sig } from './../Components/AgGridComponent/Grid.d'
 type ShipmentValidate = ValidateMember<ShipmentDTO>;
 
 export  class ValidateShipment implements ShipmentValidate {

@@ -14,10 +14,6 @@ type GridWithOldAndNewValue<T, ValueType> = Omit<T, 'oldValue' | 'newValue'> & {
 
 type GridRowNode = GridParamsWithData<RowNode, IRowValue>;
 
-export interface sig<T, ObjT extends ValidateMember<T>> {
-      (data: T): ObjT,
-      new (data: T): ObjT
-}
 export type GridEditableCallbackParams<DataT> = GridParamsWithData<EditableCallbackParams, DataT>;
 export type GridCellStyleParams<Datatype> = GridParamsWithData<CellClassParams, DataType>;
 export type GridToolTipParams<DataType> = GridParamsWithValue<string, ITooltipParams, DataType>;
