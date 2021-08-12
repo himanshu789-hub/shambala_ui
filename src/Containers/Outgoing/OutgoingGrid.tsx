@@ -13,7 +13,6 @@ import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent
 import CustomPriceEditor from "./Component/Editors/CustomPriceEditor";
 import CellClassRuleSpecifier from "Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle";
 import OutgoingValidator from 'Validation/OutgoingValidation';
-import { GridEditorParams } from "Components/AgGridComponent/Grid";
 
 interface OutgoingGridProps extends RouteComponentProps<{ id?: string }> {
 }

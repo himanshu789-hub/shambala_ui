@@ -1,6 +1,5 @@
-import { CellValueChangedEvent, ColDef, ColumnApi, GridApi, GridOptions, GridParams, GridReadyEvent, ICellEditor } from "@ag-grid-community/all-modules"
+import { ColDef, ColumnApi, GridApi, GridOptions, GridParams, GridReadyEvent, ICellEditor } from "@ag-grid-community/all-modules"
 import { forwardRef, useImperativeHandle, useEffect, useState } from "react"
-import { CustomPrice, IOutgoingShipmentUpdateDetail } from "Types/DTO";
 import { CellEditorParams, CustomPriceRowData, OutgoingUpdateRow } from './../../OutgoingGrid.d';
 import { GridCellValueChangeEvent, GridEditorParams, GridGetterParams, GridRendererParams, GridRowDataTransaction } from 'Components/AgGridComponent/Grid.d';
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
