@@ -22,7 +22,7 @@ export default forwardRef<ICellEditor, CellEditorParams<OutgoingUpdateRow['Custo
             return !isProductIdValid;
         }
     }));
-    return <CustomPriceGrid initialData={{ CaretSize: params.data.CaretSize, Data: data, DefaultPrice:defaultPrice }} setData={setData} />
+    return <CustomPriceGrid initialData={{ CaretSize: params.data.CaretSize, Data: data, DefaultPrice: defaultPrice }} setData={setData} />
 });
 
 type GridData = {
@@ -37,9 +37,10 @@ type CustomPriceProps = {
 type PriceGridContext = {
     getCaretSize: () => number;
 };
-type CustomPriceGridEditorParams<V> = GridEditorParams<V,CustomPriceRowData,PriceGridContext>;
+type CustomPriceGridEditorParams<V> = GridEditorParams<V, CustomPriceRowData, PriceGridContext>;
 type CustomPriceGridCellRendererParams<V> = GridRendererParams<V, CustomPriceRowData, PriceGridContext>;
 type CustomPriceGridValueGetterParams = GridGetterParams<CustomPriceRowData, PriceGridContext>;
+
 const defaultColDef: ColDef = {
     flex: 1,
     editable: true
@@ -52,13 +53,13 @@ const colDefs: ColDef[] = [
     },
     {
         headerName: 'Quantity',
-        field: 'Quantity',
-        cellEditorFramework:CaretSizeEditor<CustomPriceGridEditorParams<CustomPriceRowData['Quantity']>,any>(e=>e.context.getCaretSize(),(e)=>true),
-        cellRendererFramework: CaretSizeRenderer<CustomPriceGridCellRendererParams<CustomPrice['Quantity']>>(e => e.context.getCaretSize())
+        valueGetter: (params: CustomPriceGridValueGetterParams) => params.data.Quantity.Value,
+        cellEditorFramework: CaretSizeEditor<CustomPriceGridEditorParams<CustomPriceRowData['Quantity']['Value']>>(e => e.context.getCaretSize(), (e) => true),
+        cellRendererFramework: CaretSizeRenderer<CustomPriceGridCellRendererParams<CustomPriceRowData['Quantity']>>(e => e.context.getCaretSize())
     },
     {
         headerName: 'Price',
-        field: 'Price',
+        valueGetter: (params: CustomPriceGridValueGetterParams) => params.data.Price.Value,
         cellEditorFramework: NumericOnlyEditor
     }
 ];
@@ -76,7 +77,7 @@ const CustomPriceGrid = function (props: CustomPriceProps) {
         const newPrice: CustomPriceRowData = {
             Id: { IsValid: true, Value: getARandomNumber(data.map(e => ({ 'Id': e.Id.Value }))) },
             Price: { IsValid: true, Value: props.initialData.DefaultPrice },
-            Quantity: { IsValid: false, Value: 0 }
+            Quantity: { IsValid: false, Value: { Value: 0 } }
         };
         const transaction: RowTransactionData = {
             add: [newPrice]
@@ -113,7 +114,7 @@ const CustomPriceGrid = function (props: CustomPriceProps) {
         setApi(params.api);
         setColumnApi(params.columnApi)
     }
- 
+
     useEffect(() => {
         props.setData(list);
     }, [list]);

@@ -3,14 +3,15 @@ import { Flavour, OutOfStock, Product } from 'Types/DTO';
 import FlavourMediator, { IFlavourMediator } from './FlavourMediator';
 import QuantityMediator, { IQuantityMediator } from './QuantityMediator';
 import ComponentProductMediator, { IProductMediator } from './ProductMediator';
-import Observer, { ReactComponent } from './Observer';
+import Observer from './Observer';
 
 export default class MediatorSubject {
 	private _observers: Observer[];
-
+	
 	private _productMediator: IProductMediator;
 	private _flavourMediator: IFlavourMediator;
 	private _quantityMediator: IQuantityMediator;
+
 	constructor(products: Product[]) {
 		this._productMediator = new ComponentProductMediator(products);
 		this._flavourMediator = new FlavourMediator(products);
@@ -28,7 +29,6 @@ export default class MediatorSubject {
 			if (OutofStocks.find(e => e.FlavourId == observer.FlavourId && e.ProductId == observer.ProductId)) {
 				observer.UnsubscribeToQuantity();
 			}
-
 		}
 	}
 	Unsubscribe(subscriptionId: number) {
@@ -54,8 +54,7 @@ export default class MediatorSubject {
 		if (this._quantityMediator.IsQuantitySubscribed(subscriptionId, componentId))
 			this._quantityMediator.Unsubscibe(subscriptionId, componentId);
 	}
-	SetASubscription(subscriptionId: number, componentId: number, productId: number, flavourId?: number, quantity?: number) {
-		
+	SetASubscription(subscriptionId: number, componentId: number, productId: number, flavourId?: number, quantity?: number) {		
 		if (this._productMediator.IsAlreadySubscribed(subscriptionId, componentId)) {
 			if (this._productMediator.ChangeSubscription(subscriptionId, componentId, productId)) {
 				this._flavourMediator.IsSubscribed(subscriptionId, componentId) &&

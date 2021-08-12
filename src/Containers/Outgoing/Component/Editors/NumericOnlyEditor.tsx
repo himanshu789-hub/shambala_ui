@@ -10,5 +10,6 @@ export default forwardRef<ICellEditor, ICellEditorParams>((props, ref) => {
             return inputRef.current?.value;
         }
     }))
-    return <input ref={inputRef} pattern="^[0-9]+(\.[0-9]{1,2})?$" defaultValue={props.value}/>
+    setTimeout(() => (inputRef.current?.focus()));
+    return <input ref={inputRef} pattern="^[0-9]+(\.[0-9]{1,2})?$" defaultValue={props.value} />
 })

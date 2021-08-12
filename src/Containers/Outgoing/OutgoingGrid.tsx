@@ -2,8 +2,8 @@ import React from "react";
 import { RouteComponentProps } from "react-router";
 import { AgGridReact } from '@ag-grid-community/react';
 import { ColDef, ColGroupDef, GridOptions } from '@ag-grid-community/all-modules';
-import { IOutogingGridRowValue, ValueGetterParams, ValueSetterParams, EditableCallbackParams, CellRendererParams ,OutgoingUpdateRow} from './OutgoingGrid.d';
-import { CustomPrice, IOutgoingShipmentAddDetail} from "Types/DTO";
+import { IOutogingGridRowValue, ValueGetterParams, ValueSetterParams, EditableCallbackParams, CellRendererParams, OutgoingUpdateRow, CellEditorParams } from './OutgoingGrid.d';
+import { CustomPrice, IOutgoingShipmentAddDetail } from "Types/DTO";
 import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer } from "./Component/Renderers/Renderers";
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { GridSelectEditor } from "Components/AgGridComponent/Editors/SelectWithAriaEditor";
@@ -13,6 +13,7 @@ import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent
 import CustomPriceEditor from "./Component/Editors/CustomPriceEditor";
 import CellClassRuleSpecifier from "Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle";
 import OutgoingValidator from 'Validation/OutgoingValidation';
+import { GridEditorParams } from "Components/AgGridComponent/Grid";
 
 interface OutgoingGridProps extends RouteComponentProps<{ id?: string }> {
 }
@@ -20,7 +21,7 @@ type OutgoingGridState = {
     GridOptions: GridOptions;
     IsOnUpdate: boolean;
 }
-const CaretRenderer = CaretSizeRenderer<CellRendererParams<IOutgoingShipmentAddDetail['CaretSize']>>(e => e.data.Shipment.CaretSize);
+const CaretRenderer = CaretSizeRenderer<CellRendererParams<number>>(e => e.data.Shipment.CaretSize);
 const defaultColDef: ColDef = {
     flex: 1,
     editable: true
@@ -71,13 +72,11 @@ const commonColDefs: ColDef[] = [
             return true;
         },
         cellRendererFramework: CaretRenderer,
-        cellEditorFramework: CaretSizeEditor<IOutogingGridRowValue, any>(e => e.Shipment.CaretSize, (e) => e.Shipment.ProductId !== -1)
+        cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityShiped']>>(e => e.data.CaretSize, (e) => e.data.ProductId !== -1)
     }
 ];
 
-const CellClassRule = (name: keyof OutgoingUpdateRow) => CellClassRuleSpecifier<OutgoingUpdateRow, OutgoingValidator>
-    //@ts-ignore
-    (name, OutgoingValidator);
+const CellClassRule = (name: keyof OutgoingUpdateRow) => CellClassRuleSpecifier<OutgoingUpdateRow, OutgoingValidator>(name, OutgoingValidator);
 
 const updateColDefs: (ColDef | ColGroupDef)[] = [
     {
@@ -91,7 +90,7 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
             return params.data.Shipment.TotalQuantityShiped > 0;
         },
         cellRendererFramework: CaretRenderer,
-        cellEditorFramework: CaretSizeEditor<OutgoingUpdateRow, any>(e => e.CaretSize, (e) => e.TotalQuantityReturned > 0)
+        cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityReturned']>>(e => e.data.CaretSize, (e) => e.data.TotalQuantitySale > 0)
     },
     {
         headerName: 'Sale',
@@ -99,7 +98,7 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
             return params.data.Shipment.TotalQuantitySale;
         },
         editable: false,
-        cellRendererFramework: CaretSizeRenderer
+        cellRendererFramework: CaretRenderer
     },
     {
         headerName: 'Scheme',
@@ -123,7 +122,7 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
         },
         cellRendererFramework: CustomPriceRenderer,
         cellEditorFramework: CustomPriceEditor,
-        cellClassRules:CellClassRule('CustomPrices')
+        cellClassRules: CellClassRule('CustomPrices')
     }
 ]
 const getActionColDef = function (cellParams: ActionCellParams<string>): ColDef {

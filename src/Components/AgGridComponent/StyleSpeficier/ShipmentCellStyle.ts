@@ -13,8 +13,6 @@ const CellColors = {
 const CellClassRuleSpecifier = function <T, V extends ValidateMember<T>>(name: keyof T, validator: new (data:T)=>V) {
     return {
         'is-invalid': (params: CellClassParams) => {
-            const isFunction = IsFuntionOrConstructor(validator);
-            
             const result = (new validator(params.data) as any)['Is' + name + 'Valid'] as IValidateResult;
             return !result.IsValid;
         }

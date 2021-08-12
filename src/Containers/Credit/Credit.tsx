@@ -1,5 +1,3 @@
-import { RouteComponentProps, useLocation, useParams } from "react-router";
-import queryString from 'query-string';
 import React from "react";
 import './Credit.css';
 import { OutgoingShipment, IShopDTO, InvoiceCreditInfoDTO, CreditDTO } from 'Types/DTO';
@@ -9,8 +7,7 @@ import CreditService from "Services/CreditService";
 import { Invoice_QueryString_HOC, IInvoice_QueryString_Props } from "Components/Invoice/QueryStringWrapper/QueryStringWrapper";
 import IInvoiceService from "Contracts/services/IInvoiceService";
 import InvoiceService from "Services/InvoiceService";
-import { provideValidFloat, provideValidInteger, tocurrencyText } from "Utilities/Utilities";
-import Alert from "Components/Alert/Alert";
+import {  tocurrencyText } from "Utilities/Utilities";
 import { addDanger } from "Utilities/AlertUtility";
 
 export function Credit_Modal_Wrapper(props: { shopId: number, shipmentId: number, handleRemove(): void, show: boolean }) {

@@ -2,11 +2,22 @@ import CaretSize, { ICaretSizeProps } from 'Components/CaretSize/CaretSize'
 import { forwardRef, useImperativeHandle, ComponentType, useState, useRef, useEffect } from 'react';
 import { ICellEditor, ICellEditorParams } from '@ag-grid-community/all-modules'
 
-export const CaretSizeEditor = function <EdiatorParams extends ICellEditorParams,_>(caretSizeFromParams:(e:EdiatorParams)=>number,isEditable:(data:EdiatorParams)=>boolean) {
-    return forwardRef<ICellEditor, EdiatorParams>((props, ref) => {
+export type CaretSizeValue = {
+    Value: number;
+    MinLimit?: number;
+    MaxLimit?: number;
+}
+
+type EditorParams = Omit<ICellEditorParams, 'value'> & {
+    value: CaretSizeValue;
+}
+
+export const CaretSizeEditor = function <T extends (EditorParams)>(caretSizeFromParams: (e: T) => number, isEditable: (data: T) => boolean) {
+    return forwardRef<ICellEditor, T>((props, ref) => {
         const inputRef = useRef<HTMLInputElement>(null);
-        const value = props.value;
-        const rowValue = props.data;
+        const value = props.value.Value;
+        const minValue  =  props.value.MinLimit;
+        const maxValue = props.value.MaxLimit;
         const caretSize = caretSizeFromParams(props);
         const [quanity, setQuantity] = useState<number>(value);
 
@@ -28,6 +39,6 @@ export const CaretSizeEditor = function <EdiatorParams extends ICellEditorParams
                 inputRef.current?.focus()
             });
         }, []);
-        return <CaretSize ref={inputRef} handleInput={setQuantity} Size={caretSize} Quantity={quanity} MaxLimit={rowValue.MaxLimit} MinLimit={rowValue.MinLimit} />;
+        return <CaretSize ref={inputRef} handleInput={setQuantity} Size={caretSize} Quantity={quanity} MaxLimit={maxValue} MinLimit={minValue}/>;
     });
 }

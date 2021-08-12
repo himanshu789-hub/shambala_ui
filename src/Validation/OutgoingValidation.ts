@@ -1,12 +1,13 @@
 import { IOutgoingShipmentUpdateDetail } from 'Types/DTO';
 import { IValidateResultBad, IValidateResultOK, ValidateMember, ValidationCode } from './Validation.d';
 import { ValidateResultBad, ValidationResultOK } from './Validation';
+import { OutgoingUpdateRow } from 'Containers/Outgoing/OutgoingGrid.d';
 
 
-export default class OutgoingValidator implements ValidateMember<IOutgoingShipmentUpdateDetail> {
-    private readonly outgoing: IOutgoingShipmentUpdateDetail;
+export default class OutgoingValidator implements ValidateMember<OutgoingUpdateRow> {
+    private readonly outgoing: OutgoingUpdateRow;
 
-    constructor(outgoing: IOutgoingShipmentUpdateDetail) {
+    constructor(outgoing: OutgoingUpdateRow) {
         this.outgoing = outgoing;
     }
 
@@ -18,6 +19,9 @@ export default class OutgoingValidator implements ValidateMember<IOutgoingShipme
     IsCustomPricesValid(): IValidateResultOK {
         if (!this.outgoing.CustomPrices || this.outgoing.CustomPrices.length == 0)
             return { IsValid: false, Message: "Cannot Left Empty" } as IValidateResultBad;
+        const IsNotValid = this.outgoing.CustomPrices.find(e => !e.Id.IsValid || !e.Price.IsValid || !e.Quantity.IsValid) != null;
+        if (IsNotValid)
+            return new ValidateResultBad("Values Are Not Valid", ValidationCode.Memeber);
         return new ValidationResultOK();
     }
     IsFlavourIdValid(): IValidateResultOK | IValidateResultBad {
