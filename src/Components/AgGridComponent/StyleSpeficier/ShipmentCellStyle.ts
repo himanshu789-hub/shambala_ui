@@ -4,7 +4,7 @@ import { ShipmentDTO } from "Types/DTO";
 import { IsFuntionOrConstructor } from "Utilities/Utilities";
 import { ValidateShipment } from "Validation/ShipmentValidation";
 import { IValidateResult, ValidateMember } from "Validation/Validation.d";
-import { GridCellStyleParams, sig } from "../Grid.d";
+import { GridCellStyleParams } from "../Grid.d";
 
 const CellColors = {
     error: '#ff5959',

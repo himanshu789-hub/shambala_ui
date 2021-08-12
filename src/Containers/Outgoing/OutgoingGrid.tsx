@@ -2,8 +2,8 @@ import React from "react";
 import { RouteComponentProps } from "react-router";
 import { AgGridReact } from '@ag-grid-community/react';
 import { ColDef, ColGroupDef, GridOptions } from '@ag-grid-community/all-modules';
-import { IOutogingGridRowValue, ValueGetterParams, ValueSetterParams, EditableCallbackParams, CellRendererParams } from './OutgoingGrid.d';
-import { CustomPrice, IOutgoingShipmentAddDetail, IOutgoingShipmentUpdateDetail } from "Types/DTO";
+import { IOutogingGridRowValue, ValueGetterParams, ValueSetterParams, EditableCallbackParams, CellRendererParams ,OutgoingUpdateRow} from './OutgoingGrid.d';
+import { CustomPrice, IOutgoingShipmentAddDetail} from "Types/DTO";
 import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer } from "./Component/Renderers/Renderers";
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { GridSelectEditor } from "Components/AgGridComponent/Editors/SelectWithAriaEditor";
@@ -75,7 +75,7 @@ const commonColDefs: ColDef[] = [
     }
 ];
 
-const CellClassRule = (name: keyof IOutgoingShipmentUpdateDetail) => CellClassRuleSpecifier<IOutgoingShipmentUpdateDetail, OutgoingValidator>
+const CellClassRule = (name: keyof OutgoingUpdateRow) => CellClassRuleSpecifier<OutgoingUpdateRow, OutgoingValidator>
     //@ts-ignore
     (name, OutgoingValidator);
 
@@ -83,7 +83,7 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
     {
         headerName: 'Return',
         valueGetter: (params: ValueGetterParams) => params.data.Shipment.TotalQuantityReturned,
-        valueSetter: (params: ValueSetterParams<IOutgoingShipmentUpdateDetail['TotalQuantityReturned']>) => {
+        valueSetter: (params: ValueSetterParams<OutgoingUpdateRow['TotalQuantityReturned']>) => {
             params.data.Shipment.TotalQuantityReturned = params.newValue;
             return true;
         },
@@ -91,7 +91,7 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
             return params.data.Shipment.TotalQuantityShiped > 0;
         },
         cellRendererFramework: CaretRenderer,
-        cellEditorFramework: CaretSizeEditor<IOutgoingShipmentUpdateDetail, any>(e => e.CaretSize, (e) => e.TotalQuantityReturned > 0)
+        cellEditorFramework: CaretSizeEditor<OutgoingUpdateRow, any>(e => e.CaretSize, (e) => e.TotalQuantityReturned > 0)
     },
     {
         headerName: 'Sale',
@@ -117,7 +117,7 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
     {
         headerName: 'Custom Price',
         valueGetter: (params: ValueGetterParams) => params.data.Shipment.CustomPrices,
-        valueSetter: (params: ValueSetterParams<IOutgoingShipmentUpdateDetail['CustomPrices']>) => {
+        valueSetter: (params: ValueSetterParams<OutgoingUpdateRow['CustomPrices']>) => {
             params.data.Shipment.CustomPrices = params.newValue;
             return true;
         },

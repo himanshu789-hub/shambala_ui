@@ -2,12 +2,12 @@ import CaretSize, { ICaretSizeProps } from 'Components/CaretSize/CaretSize'
 import { forwardRef, useImperativeHandle, ComponentType, useState, useRef, useEffect } from 'react';
 import { ICellEditor, ICellEditorParams } from '@ag-grid-community/all-modules'
 
-export const CaretSizeEditor = function <DataT,_>(caretSizeFromDataFunc:(e:DataT)=>number,isEditable:(data:DataT)=>boolean) {
-    return forwardRef<ICellEditor, ICellEditorParams>((props, ref) => {
+export const CaretSizeEditor = function <EdiatorParams extends ICellEditorParams,_>(caretSizeFromParams:(e:EdiatorParams)=>number,isEditable:(data:EdiatorParams)=>boolean) {
+    return forwardRef<ICellEditor, EdiatorParams>((props, ref) => {
         const inputRef = useRef<HTMLInputElement>(null);
         const value = props.value;
         const rowValue = props.data;
-        const caretSize = caretSizeFromDataFunc(props.data);
+        const caretSize = caretSizeFromParams(props);
         const [quanity, setQuantity] = useState<number>(value);
 
         useImperativeHandle(ref, () => {

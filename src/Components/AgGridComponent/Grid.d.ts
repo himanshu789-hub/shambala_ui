@@ -32,3 +32,4 @@ export type GridRowDataTransaction<DataT> = Omit<{ [Property in keyof RowDataTra
 };
 export type GridCellValueChangeEvent<V, DataT, CtxT> = GridWithOldAndNewValue<GridParamsWithContext<GridParamsWithData<CellValueChangedEvent, DataT>, CtxT>, V>;
 
+export type ValidationRowData<T> = { [Property in keyof T]: { Value: T[Property], IsValid: boolean } };

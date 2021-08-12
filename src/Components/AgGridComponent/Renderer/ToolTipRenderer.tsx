@@ -1,7 +1,6 @@
 import { ITooltipParams } from '@ag-grid-community/all-modules';
 import React, { forwardRef, useImperativeHandle } from 'react';
 import { IValidateResult, IValidateResultBad, IValidateResultOK, ValidateMember } from 'Validation/Validation.d';
-
 import './ToolTip.css'
 
 export const ToolTipComponent = forwardRef<{ getReactContainerClasses: () => string[] }, ITooltipParams>((props, ref) => {
@@ -12,7 +11,6 @@ export const ToolTipComponent = forwardRef<{ getReactContainerClasses: () => str
             }
         }
     });
-
     if (props.value.length == 0)
         return <React.Fragment></React.Fragment>;
     return <span className="tool-tip-container border p-1"><i className="fa fa-info-circle text-danger"></i> {props.value}</span>
