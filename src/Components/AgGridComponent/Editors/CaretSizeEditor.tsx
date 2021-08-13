@@ -1,5 +1,5 @@
 import CaretSize from 'Components/CaretSize/CaretSize'
-import { forwardRef, useImperativeHandle, ComponentType, useState, useRef, useEffect } from 'react';
+import { forwardRef, useImperativeHandle, useState, useRef, useEffect } from 'react';
 import { ICellEditor, ICellEditorParams, ValueGetterParams, ValueSetterParams } from '@ag-grid-community/all-modules'
 
 export type CaretSizeValue = {
@@ -14,13 +14,20 @@ type EditorParams = Omit<ICellEditorParams, 'value'> & {
 type CaretSizeGetterParams = Omit<ValueGetterParams, 'value'> & {
     value: CaretSizeValue;
 }
-type CaretSizeSetterParams = Omit<ValueSetterParams, 'value'> & {
-    oldValue: number;
-    newValue: number;
-}
-type CaretSizeGetter = (params: CaretSizeGetterParams) => CaretSizeValue;
-type CaretSizeSetter = (params: CaretSizeSetterParams) => boolean;
+type CaretSizeNewValue = { IsValid: boolean, Value: number };
+// export type CaretSizeSetterParams = Omit<ValueSetterParams, 'newValue' | 'oldValue'> & {
+//     oldValue: CaretSizeValue;
+//     newValue: CaretSizeNewValue;
+// }
 
+// export type CaretSizeGetter = (params: CaretSizeGetterParams) => CaretSizeValue;
+// export type CaretSizeSetter = {
+//     (params: CaretSizeSetterParams): boolean
+// };
+export type CaretSizeEditorValueSetterParams<T extends ValueSetterParams> = Omit<T, 'newValue' | 'oldValue'> & {
+    oldValue: CaretSizeValue,
+    newValue: CaretSizeNewValue
+}
 export const CaretSizeEditor = function <T extends (EditorParams)>(caretSizeFromParams: (e: T) => number, isEditable: (data: T) => boolean) {
     return forwardRef<ICellEditor, T>((props, ref) => {
         const inputRef = useRef<HTMLInputElement>(null);
@@ -28,12 +35,14 @@ export const CaretSizeEditor = function <T extends (EditorParams)>(caretSizeFrom
         const minValue = props.value.MinLimit;
         const maxValue = props.value.MaxLimit;
         const caretSize = caretSizeFromParams(props);
-        const [quanity, setQuantity] = useState<number>(value);
+        const [quantity, setQuantity] = useState<number>(value);
 
         useImperativeHandle(ref, () => {
             return {
                 getValue() {
-                    return quanity;
+                    const isMinValid = minValue ? quantity >= minValue : true;
+                    const isMaxValid = maxValue ? quantity <= maxValue : true;
+                    return { IsValid: isMinValid && isMaxValid, Value: quantity };
                 },
                 isPopup() {
                     return true;
@@ -48,6 +57,6 @@ export const CaretSizeEditor = function <T extends (EditorParams)>(caretSizeFrom
                 inputRef.current?.focus()
             });
         }, []);
-        return <CaretSize ref={inputRef} handleInput={setQuantity} Size={caretSize} Quantity={quanity} MaxLimit={maxValue} MinLimit={minValue} />;
+        return <CaretSize ref={inputRef} handleInput={setQuantity} Size={caretSize} Quantity={quantity} MaxLimit={maxValue} MinLimit={minValue} />;
     });
 }

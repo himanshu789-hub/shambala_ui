@@ -18,6 +18,7 @@ export default class QuantityMediator implements IQuantityMediator {
 	_productsWithFlavourLimit: Map<number, Flavour[]>;
 	_cloneProductWithFlavourList: Map<number, Flavour[]>;
 	_componentQuantity: QuantityInfo;
+	
 	constructor(products: Product[]) {
 		this._componentQuantity = new Map();
 		this._productsWithFlavourLimit = new Map();

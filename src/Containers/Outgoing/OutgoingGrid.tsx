@@ -55,11 +55,7 @@ const commonColDefs: ColDef[] = [
         valueGetter: function (params: ValueGetterParams) {
             return params.data.Shipment.CaretSize;
         },
-        valueSetter: function (params: ValueSetterParams<IOutgoingShipmentAddDetail['CaretSize']>) {
-            params.data.Shipment.FlavourId = params.newValue;
-            return true;
-        },
-        cellRendererFramework: CaretRenderer
+        editable:false
     },
     {
         headerName: 'Taken',

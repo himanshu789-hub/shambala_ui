@@ -1,33 +1,37 @@
 import { ColDef, ColumnApi, GridApi, GridOptions, GridParams, GridReadyEvent, ICellEditor } from "@ag-grid-community/all-modules"
 import { forwardRef, useImperativeHandle, useEffect, useState } from "react"
 import { CellEditorParams, CustomPriceRowData, OutgoingUpdateRow } from './../../OutgoingGrid.d';
-import { GridCellValueChangeEvent, GridEditorParams, GridGetterParams, GridRendererParams, GridRowDataTransaction } from 'Components/AgGridComponent/Grid.d';
+import { GridCellValueChangeEvent, GridEditorParams, GridGetterParams, GridRendererParams, GridRowDataTransaction, GridSetterParams } from 'Components/AgGridComponent/Grid.d';
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { AgGridReact } from "@ag-grid-community/react";
 import NumericOnlyEditor from "./NumericOnlyEditor";
 import ActionCellRenderer, { ActionCellParams } from "Components/AgGridComponent/Renderer/ActionCellRender";
 import { getARandomNumber } from "Utilities/Utilities";
-import { CaretSizeEditor } from "Components/AgGridComponent/Editors/CaretSizeEditor";
+import { Product } from 'Types/DTO'
+import { CaretSizeEditor, CaretSizeEditorValueSetterParams, CaretSizeValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
+import QuantityMediator, { IQuantityMediator } from "Utilities/QuantityMediator";
 
 export default forwardRef<ICellEditor, CellEditorParams<OutgoingUpdateRow['CustomPrices']>>((params, ref) => {
     const [data, setData] = useState<CustomPriceRowData[]>(params.data.CustomPrices || []);
     const isProductIdValid = params.data.ProductId !== -1;
     const defaultPrice = isProductIdValid ? params.context.getProductDefaultPrice(params.data.ProductId) : 0;
+
     useImperativeHandle(ref, () => ({
         getValue() {
             return data;
         },
         isCancelBeforeStart() {
-            return !isProductIdValid;
+            return !isProductIdValid && params.data.TotalQuantitySale > 0;
         }
     }));
-    return <CustomPriceGrid initialData={{ CaretSize: params.data.CaretSize, Data: data, DefaultPrice: defaultPrice }} setData={setData} />
+    return <CustomPriceGrid initialData={{ CaretSize: params.data.CaretSize, Data: data, DefaultPrice: defaultPrice, QuantityLimit: params.data.TotalQuantitySale }} setData={setData} />
 });
 
 type GridData = {
     CaretSize: number;
     Data: CustomPriceRowData[];
     DefaultPrice: number;
+    QuantityLimit: number;
 }
 type CustomPriceProps = {
     setData: (data: CustomPriceRowData[]) => void;
@@ -39,10 +43,21 @@ type PriceGridContext = {
 type CustomPriceGridEditorParams<V> = GridEditorParams<V, CustomPriceRowData, PriceGridContext>;
 type CustomPriceGridCellRendererParams<V> = GridRendererParams<V, CustomPriceRowData, PriceGridContext>;
 type CustomPriceGridValueGetterParams = GridGetterParams<CustomPriceRowData, PriceGridContext>;
+type CustomPriceValueSetterParams<V> = GridSetterParams<V, CustomPriceRowData, PriceGridContext>;
 
 const defaultColDef: ColDef = {
     flex: 1,
     editable: true
+}
+
+const quantityGetter = (params: CustomPriceGridValueGetterParams) => {
+    const quantity: CaretSizeValue = { Value: params.data.Quantity.Value.Value };
+
+};
+
+const quantitySetter = (params: CaretSizeEditorValueSetterParams<CustomPriceValueSetterParams<CustomPriceRowData['Quantity']['Value']>>) => {
+    params.data.Quantity = { IsValid: params.newValue.IsValid, Value: { ...params.oldValue, Value: params.newValue.Value } };
+    return true;
 }
 const colDefs: ColDef[] = [
     {
@@ -52,7 +67,8 @@ const colDefs: ColDef[] = [
     },
     {
         headerName: 'Quantity',
-        valueGetter: (params: CustomPriceGridValueGetterParams) => params.data.Quantity.Value,
+        valueGetter: quantityGetter,
+        valueSetter: quantitySetter,
         cellEditorFramework: CaretSizeEditor<CustomPriceGridEditorParams<CustomPriceRowData['Quantity']['Value']>>(e => e.context.getCaretSize(), (e) => true),
         cellRendererFramework: CaretSizeRenderer<CustomPriceGridCellRendererParams<CustomPriceRowData['Quantity']>>(e => e.context.getCaretSize())
     },
@@ -68,20 +84,24 @@ const CustomPriceGrid = function (props: CustomPriceProps) {
     const [list, setList] = useState<CustomPriceRowData[]>(props.initialData.Data);
     const [api, setApi] = useState<GridApi>();
     const [columnApi, setColumnApi] = useState<ColumnApi>();
+    const [quantityMediator] = useState<IQuantityMediator>(new QuantityMediator([({ CaretSize: 12, Id: 1, Flavours: [{ Id: 1, Title: '', Quantity: props.initialData.QuantityLimit }] } as Product)]))
 
     const addAPrice = () => {
-        const data: CustomPriceRowData[] = []
-
-        api?.forEachNode(e => data.push(e.data));
-        const newPrice: CustomPriceRowData = {
-            Id: { IsValid: true, Value: getARandomNumber(data.map(e => ({ 'Id': e.Id.Value }))) },
-            Price: { IsValid: true, Value: props.initialData.DefaultPrice },
-            Quantity: { IsValid: false, Value: { Value: 0 } }
-        };
-        const transaction: RowTransactionData = {
-            add: [newPrice]
+        const leftQuantity = quantityMediator.GetQuantityLimit(1, 1);
+        if (leftQuantity > 0) {
+            const data: CustomPriceRowData[] = []
+            api?.forEachNode(e => data.push(e.data));
+         
+            const newPrice: CustomPriceRowData = {
+                Id: { IsValid: true, Value: getARandomNumber(data.map(e => ({ 'Id': e.Id.Value }))) },
+                Price: { IsValid: true, Value: props.initialData.DefaultPrice },
+                Quantity: { IsValid: false, Value: { Value: 0,MaxLimit:leftQuantity} }
+            };
+            const transaction: RowTransactionData = {
+                add: [newPrice]
+            }
+            api?.applyTransaction(transaction);
         }
-        api?.applyTransaction(transaction);
     }
     const deleteAChild = (Id: number) => {
         const transaction: RowTransactionData = {

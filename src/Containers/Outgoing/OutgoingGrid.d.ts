@@ -1,14 +1,14 @@
 import Observer from '../../Utilities/Observer';
 import * as GridParams from './../../Components/AgGridComponent/Grid';
 import { CustomPrice, IOutgoingShipmentAddDetail, IOutgoingShipmentUpdateDetail } from './../../Types/DTO';
-import { CaretSizeEditorValue } from 'Components/AgGridComponent/Editors/CaretSizeEditor';
+import { CaretSizeValue } from 'Components/AgGridComponent/Editors/CaretSizeEditor';
 
 type GridContext = {
   getProductDefaultPrice(Id: number): number;
 }
-export type CustomPriceRowData = GridParams.ValidationRowData<Omit<CustomPrice, 'Quantity'> & { Quantity: CaretSizeEditorValue }>;
+export type CustomPriceRowData = GridParams.ValidationRowData<Omit<CustomPrice, 'Quantity'> & { Quantity: CaretSizeValue }>;
 
-type OutgoingUpdateRow = (Exclude<IOutgoingShipmentUpdateDetail, 'CustomPrices', 'TotalQuantityShiped', 'TotalQuantityRejected', 'TotalQuantitySale'>
+type OutgoingUpdateRow = (Omit<IOutgoingShipmentUpdateDetail, 'CustomPrices'| 'TotalQuantityShiped'| 'TotalQuantityRejected'| 'TotalQuantitySale'>
   & {
     CustomPrices: CustomPriceRowData[];
     TotalQuantityShiped: CaretSizeEditorValue;
