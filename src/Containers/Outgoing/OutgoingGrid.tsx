@@ -1,7 +1,7 @@
 import React from "react";
 import { RouteComponentProps } from "react-router";
 import { AgGridReact } from '@ag-grid-community/react';
-import { ColDef, ColGroupDef, GridOptions } from '@ag-grid-community/all-modules';
+import { ColDef, ColGroupDef, ColumnApi, GridApi, GridOptions } from '@ag-grid-community/all-modules';
 import { IOutogingGridRowValue, ValueGetterParams, ValueSetterParams, EditableCallbackParams, CellRendererParams, OutgoingUpdateRow, CellEditorParams, CellValueChangedEvent, QuantityCellValueChangeEvent, GridContext } from './OutgoingGrid.d';
 import { IOutgoingShipmentAddDetail } from "Types/DTO";
 import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer } from "./Component/Renderers/Renderers";
@@ -26,6 +26,10 @@ const defaultColDef: ColDef = {
     flex: 1,
     editable: true
 }
+const calculateSaleColumnValue = function (params: CellValueChangedEvent<CaretSizeValue>) {
+    params.node.setDataValue(params.columnApi.getAllDisplayedColumns()[params.context.getColumnIndex('TotalQuantitySale')!], params.data.Shipment.TotalQuantityShiped.Value - params.data.Shipment.TotalQuantityReturned.Value);
+}
+
 const commonColDefs: ColDef[] = [
     {
         headerName: 'Product Name',
@@ -63,9 +67,12 @@ const commonColDefs: ColDef[] = [
         valueGetter: function (params: ValueGetterParams) {
             return params.data.Shipment.TotalQuantityShiped;
         },
-        valueSetter: function (params: ValueSetterParams<IOutgoingShipmentAddDetail['TotalQuantityShiped']>) {
+        valueSetter: function (params: ValueSetterParams<OutgoingUpdateRow['TotalQuantityShiped']>) {
             params.data.Shipment.TotalQuantityShiped = params.newValue;
             return true;
+        },
+        onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['TotalQuantityShiped']>) {
+
         },
         cellRendererFramework: CaretRenderer,
         cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityShiped']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.ProductId !== -1)
@@ -73,7 +80,6 @@ const commonColDefs: ColDef[] = [
 ];
 
 const CellClassRule = (name: keyof OutgoingUpdateRow) => CellClassRuleSpecifier<OutgoingUpdateRow, OutgoingValidator>(name, OutgoingValidator);
-
 const updateColDefs: (ColDef | ColGroupDef)[] = [
     {
         headerName: 'Return',
@@ -83,11 +89,14 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
             return true;
         },
         editable: (params: EditableCallbackParams) => {
-            return params.data.Shipment.TotalQuantityShiped > 0;
+            return params.data.Shipment.TotalQuantityShiped.Value > 0;
         },
         equals: CaretSizeCellEquals,
         cellRendererFramework: CaretRenderer,
-        cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityReturned']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.TotalQuantitySale > 0)
+        onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['TotalQuantityReturned']>) {
+            calculateSaleColumnValue(params);
+        },
+        cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityReturned']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.TotalQuantitySale.Value > 0)
     },
     {
         headerName: 'Sale',
@@ -115,7 +124,8 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
                 }
             }
             params.data.Shipment.CustomPrices = customPrices;
-            params.api?.refreshCells({ rowNodes: [params.node], force: true });
+            const column = params.columnApi.getAllDisplayedColumns()[params.context.getColumnIndex('CustomPrices')!];
+            params.node.setDataValue(column, customPrices);
         },
     },
     {
@@ -189,18 +199,19 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
         }
         else
             colDefs = [...commonColDefs, actionColDef]
-
+        const IsOnUpdate = id !== undefined;
         this.state = {
             GridOptions: {
                 columnDefs: colDefs,
                 context: {
                     getColumnIndex,
-                    getProductDefaultPrice:function(productId:number){
+                    getProductDefaultPrice: function (productId: number) {
                         return 0;
-                    }
+                    },
+                    IsOnUpdate: () => IsOnUpdate
                 } as GridContext
             },
-            IsOnUpdate: id !== undefined
+            IsOnUpdate
         }
     }
     addAShipment = () => {

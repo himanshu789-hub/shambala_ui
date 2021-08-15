@@ -4,12 +4,12 @@ import MediatorSubject from 'Utilities/MediatorSubject';
 import { addDanger, addWarn } from 'Utilities/AlertUtility';
 import { InitialShipment } from 'Types/Types';
 import { AgGridReact } from '@ag-grid-community/react';
-import { ShipmentGridGetterParams, ShipmentGridDataTransation, IRowValue, GridContext, ShipmentGridRowNode, ShipmentGridSetter } from './ShipmentList.d';
+import { ShipmentGridGetterParams, ShipmentGridDataTransation, IRowValue, GridContext, ShipmentGridRowNode, ShipmentGridSetter, ShipmentRendererParams, ShipmentRowValue, ShipmentGridEditorParams } from './ShipmentList.d';
 import { GridOptions, GridReadyEvent, RowNode, ITooltipParams, Column } from '@ag-grid-community/all-modules';
 import { FlavourCellRenderer, FlavourValueChangedEvent, FlavourValueGetter, FlavourValueSetter, ProductCellRenderer, ProductValueChangedEvent, ProductValueGetter, ProductValueSetter } from './Component/Renderer/Renderer';
 import { GridSelectEditor } from 'Components/AgGridComponent/Editors/SelectWithAriaEditor';
 import CaretSizeRenderer from 'Components/AgGridComponent/Renderer/CaretSizeRenderer';
-import { CaretSizeEditor } from 'Components/AgGridComponent/Editors/CaretSizeEditor';
+import { CaretSizeCellValueChangeEvemt, CaretSizeEditor, CaretSizeEditorValueSetterParams } from 'Components/AgGridComponent/Editors/CaretSizeEditor';
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 import { getARandomNumber } from 'Utilities/Utilities';
 import { AllCommunityModules } from '@ag-grid-community/all-modules';
@@ -86,10 +86,10 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						cellStyle: ClassRuleSpecifier('CaretSize')
 					},
 					{
-						cellEditorFramework: CaretSizeEditor<IRowValue, any>(e => e.Shipment.CaretSize, (data) => data.Shipment.ProductId != -1),
-						cellRendererFramework: CaretSizeRenderer,
+						cellEditorFramework: CaretSizeEditor<ShipmentGridEditorParams<ShipmentRowValue['TotalRecievedPieces']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.ProductId !== -1),
+						cellRendererFramework: CaretSizeRenderer<ShipmentRendererParams<ShipmentRowValue['TotalRecievedPieces']>>(e=>e.data.Shipment.CaretSize),
 						valueGetter: (params: ShipmentGridGetterParams) => params.data.Shipment.TotalRecievedPieces,
-						valueSetter: (props: ShipmentGridSetter<ShipmentDTO['CaretSize']>) => {
+						valueSetter: (props:CaretSizeEditorValueSetterParams<ShipmentGridSetter<ShipmentRowValue['TotalRecievedPieces']>>) => {
 							props.data.Shipment.TotalRecievedPieces = props.newValue;
 							return true;
 						},
@@ -169,15 +169,15 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				if (nextProps.ResetElement.find(e => e.FlavourId == element.FlavourId && e.ProductId == element.ProductId))
 					Ids.push(element.Id);
 			}
-			this.setState(({ ShipmentInfos }) => {
-				return {
-					ShipmentInfos: ShipmentInfos.map(e => {
-						if (Ids.find(i => i == e.Shipment.Id))
-							return { ...e, Shipment: { ...e.Shipment, TotalRecievedPieces: 0, TotalDefectedPieces: 0 } };
-						return e;
-					})
-				}
-			});
+			// this.setState(({ ShipmentInfos }) => {
+			// 	return {
+			// 		ShipmentInfos: ShipmentInfos.map(e => {
+			// 			if (Ids.find(i => i == e.Shipment.Id))
+			// 				return { ...e, Shipment: { ...e.Shipment, TotalRecievedPieces: 0, TotalDefectedPieces: 0 } };
+			// 			return e;
+			// 		})
+			// 	}
+			// });
 		}
 
 		const { InitialShipments } = nextProps;
@@ -191,7 +191,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				observer.SetFlavour(shipment.FlavourId);
 				const quantity = shipment.TotalRecievedPieces > observer.GetQuantityLimit() ? 0 : shipment.TotalRecievedPieces;
 				observer.SetQuantity(quantity);
-				ShipmentInfos.push({ Observer: observer, Shipment: { ...shipment, TotalRecievedPieces: quantity }, MaxLimit: initial.MaxLimit, MinLimit: initial.MinLimit, Id: Id + '' });
+
+				ShipmentInfos.push({ Observer: observer, Shipment: { ...shipment, TotalRecievedPieces: {Value:quantity,MaxLimit: initial.MaxLimit, MinLimit: initial.MinLimit }}, Id: Id+''  });
 			}
 			this.setState({ ShipmentInfos: ShipmentInfos });
 		}
@@ -206,14 +207,14 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			const { handleSubmit } = this.props;
 			const { ShipmentInfos: Shipments } = this.state;
 			if (Shipments.length > 0)
-				handleSubmit(Shipments.map(e => e.Shipment));
+				handleSubmit(Shipments.map(e => ({...e.Shipment,TotalRecievedPieces:e.Shipment.TotalRecievedPieces.Value})));
 			else
 				addWarn("Please, Add Atleast One Item");
 		}
 	}
 	createAShipment = (Id: number): IRowValue => {
 		return {
-			Shipment: { Id: Id, CaretSize: 0, FlavourId: -1, ProductId: -1, TotalDefectedPieces: 0, TotalRecievedPieces: 0 },
+			Shipment: { Id: Id, CaretSize: 0, FlavourId: -1, ProductId: -1, TotalDefectedPieces: 0, TotalRecievedPieces: {Value:0} },
 			Observer: this.componentListMediator.GetAObserver(this.state.SubscriptionId, Id), Id: Id + ''
 		};
 	}

@@ -6,21 +6,22 @@ import { CaretSizeValue ,CaretSizeCellValueChangeEvemt} from 'Components/AgGridC
 type GridContext = {
   getProductDefaultPrice(Id: number): number;
   getColumnIndex(name:keyof OutgoingUpdateRow):number;
+  IsOnUpdate():boolean;
 }
 export type CustomPriceRowData = GridParams.ValidationRowData<Omit<CustomPrice, 'Quantity'> & { Quantity: CaretSizeValue }>;
 
-export type OutgoingUpdateRow = (Omit<IOutgoingShipmentUpdateDetail, 'CustomPrices'| 'TotalQuantityShiped'| 'TotalQuantityRejected'| 'TotalQuantitySale'>
-  & {
+export type OutgoingUpdateRow = Omit<IOutgoingShipmentUpdateDetail, 'CustomPrices'|"TotalQuantityShiped"| 'TotalQuantityRejected'| 'TotalQuantitySale'| 'TotalQuantityReturned'> & {
     CustomPrices: CustomPriceRowData[];
-    TotalQuantityShiped: CaretSizeEditorValue;
-    TotalQuantityRejected: CaretSizeEditorValue;
-    TotalQuantitySale: CaretSizeEditorValue;
-  });
+    TotalQuantityShiped: CaretSizeValue;
+    TotalQuantityRejected: CaretSizeValue;
+    TotalQuantitySale: CaretSizeValue;
+    TotalQuantityReturned:CaretSizeValue;
+  };
 
 interface IOutogingGridRowValue {
   Id: string;
   Observer: Observer,
-  Shipment: (IOutgoingShipmentAddDetail & OutgoingUpdateRow);
+  Shipment: OutgoingUpdateRow;
 }
 export type QuantityCellValueChangeEvent = CaretSizeCellValueChangeEvemt<IOutogingGridRowValue,GridContext>;
 
