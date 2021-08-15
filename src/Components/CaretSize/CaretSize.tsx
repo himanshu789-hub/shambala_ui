@@ -18,7 +18,6 @@ function getTwoDigitValue(num: number): string {
 
 const CaretSize = memo(forwardRef<HTMLInputElement, ICaretSizeProps>((props, ref) => {
 	const [inputValue, setInputValue] = useState("00/00");
-	const [typingTimOut, setTimingOut] = useState<number>(0);
 	const [quantity, setCaretQuantity] = useState<number>(props.Quantity);
 	const [caretPosition, setCaretPosition] = useState<number>(0);
 	const [error, setErrorMessage] = useState<string | null>(null);
@@ -40,7 +39,10 @@ const CaretSize = memo(forwardRef<HTMLInputElement, ICaretSizeProps>((props, ref
 			setErrorMessage('Cannot Be Zero');
 			IsValid = false;
 		}
+		IsValid && handleInput(quantity);
+		!IsValid && handleInput(props.Quantity);
 		IsValid && setErrorMessage(null);
+
 	}, [quantity])
 	const Max_Caret_Allow = 100;
 	const Max_Pieces_Allow = Size - 1;
@@ -52,7 +54,6 @@ const CaretSize = memo(forwardRef<HTMLInputElement, ICaretSizeProps>((props, ref
 	const setQuantityByValue = function (value: string) {
 		const q = calculateTotalQuantity(Number.parseInt(value.substr(0, 2)), Number.parseInt(value.substr(3, 2)));
 		setCaretQuantity(q);
-		handleInput(q);
 	}
 
 	const handleBackspace = (e: React.KeyboardEvent<HTMLInputElement>) => {

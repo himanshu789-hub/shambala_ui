@@ -1,6 +1,8 @@
 import CaretSize from 'Components/CaretSize/CaretSize'
 import { forwardRef, useImperativeHandle, useState, useRef, useEffect } from 'react';
-import { ICellEditor, ICellEditorParams, ValueGetterParams, ValueSetterParams } from '@ag-grid-community/all-modules'
+import { CellValueChangedEvent, ICellEditor, ICellEditorParams, ValueGetterParams, ValueSetterParams } from '@ag-grid-community/all-modules'
+import CustomPriceValidation from 'Validation/CustomPriceValidation';
+import CaretQuantiyValidation from 'Validation/CaretQuantityValidation';
 
 export type CaretSizeValue = {
     Value: number;
@@ -11,8 +13,11 @@ export type CaretSizeValue = {
 type EditorParams = Omit<ICellEditorParams, 'value'> & {
     value: CaretSizeValue;
 }
-type CaretSizeGetterParams = Omit<ValueGetterParams, 'value'> & {
-    value: CaretSizeValue;
+// type CaretSizeGetterParams = Omit<ValueGetterParams, 'value'> & {
+//     value: CaretSizeValue;
+// }
+export const CaretSizeCellEquals = function (previousValue: CaretSizeValue, newValue: CaretSizeNewValue) {
+    return previousValue.Value === newValue.Value;
 }
 type CaretSizeNewValue = { IsValid: boolean, Value: number };
 // export type CaretSizeSetterParams = Omit<ValueSetterParams, 'newValue' | 'oldValue'> & {
@@ -28,6 +33,13 @@ export type CaretSizeEditorValueSetterParams<T extends ValueSetterParams> = Omit
     oldValue: CaretSizeValue,
     newValue: CaretSizeNewValue
 }
+export type CaretSizeCellValueChangeEvemt<DataT, CtxT> = Omit<CellValueChangedEvent, 'newValue' | 'oldValue' | 'value' | 'data' | 'context'> & {
+    newValue: CaretSizeNewValue;
+    oldValue: CaretSizeValue;
+    data: DataT,
+    context: CtxT,
+    value: CaretSizeValue
+}
 export const CaretSizeEditor = function <T extends (EditorParams)>(caretSizeFromParams: (e: T) => number, isEditable: (data: T) => boolean) {
     return forwardRef<ICellEditor, T>((props, ref) => {
         const inputRef = useRef<HTMLInputElement>(null);
@@ -40,9 +52,7 @@ export const CaretSizeEditor = function <T extends (EditorParams)>(caretSizeFrom
         useImperativeHandle(ref, () => {
             return {
                 getValue() {
-                    const isMinValid = minValue ? quantity >= minValue : true;
-                    const isMaxValid = maxValue ? quantity <= maxValue : true;
-                    return { IsValid: isMinValid && isMaxValid, Value: quantity };
+                    return { IsValid:new CaretQuantiyValidation({Value:quantity,MaxLimit:maxValue,MinLimit:minValue}).IsQuantityValid(), Value: quantity };
                 },
                 isPopup() {
                     return true;

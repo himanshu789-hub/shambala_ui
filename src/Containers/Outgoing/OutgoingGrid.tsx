@@ -2,17 +2,18 @@ import React from "react";
 import { RouteComponentProps } from "react-router";
 import { AgGridReact } from '@ag-grid-community/react';
 import { ColDef, ColGroupDef, GridOptions } from '@ag-grid-community/all-modules';
-import { IOutogingGridRowValue, ValueGetterParams, ValueSetterParams, EditableCallbackParams, CellRendererParams, OutgoingUpdateRow, CellEditorParams } from './OutgoingGrid.d';
-import { CustomPrice, IOutgoingShipmentAddDetail } from "Types/DTO";
+import { IOutogingGridRowValue, ValueGetterParams, ValueSetterParams, EditableCallbackParams, CellRendererParams, OutgoingUpdateRow, CellEditorParams, CellValueChangedEvent, QuantityCellValueChangeEvent, GridContext } from './OutgoingGrid.d';
+import { IOutgoingShipmentAddDetail } from "Types/DTO";
 import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer } from "./Component/Renderers/Renderers";
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { GridSelectEditor } from "Components/AgGridComponent/Editors/SelectWithAriaEditor";
 import { Parser } from "Utilities/Utilities";
-import { CaretSizeEditor } from "Components/AgGridComponent/Editors/CaretSizeEditor";
+import { CaretSizeEditor, CaretSizeCellEquals, CaretSizeValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 import CustomPriceEditor from "./Component/Editors/CustomPriceEditor";
 import CellClassRuleSpecifier from "Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle";
 import OutgoingValidator from 'Validation/OutgoingValidation';
+import QuantityMediatorWrapper from './Component/Editors/QuatityMediatorWrapper';
 
 interface OutgoingGridProps extends RouteComponentProps<{ id?: string }> {
 }
@@ -55,7 +56,7 @@ const commonColDefs: ColDef[] = [
         valueGetter: function (params: ValueGetterParams) {
             return params.data.Shipment.CaretSize;
         },
-        editable:false
+        editable: false
     },
     {
         headerName: 'Taken',
@@ -67,7 +68,7 @@ const commonColDefs: ColDef[] = [
             return true;
         },
         cellRendererFramework: CaretRenderer,
-        cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityShiped']>>(e => e.data.CaretSize, (e) => e.data.ProductId !== -1)
+        cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityShiped']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.ProductId !== -1)
     }
 ];
 
@@ -84,8 +85,9 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
         editable: (params: EditableCallbackParams) => {
             return params.data.Shipment.TotalQuantityShiped > 0;
         },
+        equals: CaretSizeCellEquals,
         cellRendererFramework: CaretRenderer,
-        cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityReturned']>>(e => e.data.CaretSize, (e) => e.data.TotalQuantitySale > 0)
+        cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityReturned']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.TotalQuantitySale > 0)
     },
     {
         headerName: 'Sale',
@@ -93,7 +95,28 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
             return params.data.Shipment.TotalQuantitySale;
         },
         editable: false,
-        cellRendererFramework: CaretRenderer
+        equals: CaretSizeCellEquals,
+        cellRendererFramework: CaretRenderer,
+        onCellValueChanged: function (params: QuantityCellValueChangeEvent) {
+            const customPrices = params.data.Shipment.CustomPrices;
+            const quantityMediator = new QuantityMediatorWrapper(params.newValue.Value);
+            for (let i = 0; i < customPrices.length; i++) {
+                if (customPrices[i].Quantity.Value.Value > quantityMediator.GetQuantityLimit()) {
+                    for (let j = i; j < customPrices.length; j++) {
+                        customPrices[j].Quantity.IsValid = false;
+                        customPrices[j].Quantity.Value.MaxLimit = 0;
+                    }
+                    break;
+                }
+                else {
+                    const limit = quantityMediator.GetQuantityLimit();
+                    quantityMediator.Subscribe(i, customPrices[i].Quantity.Value.Value);
+                    customPrices[i].Quantity.Value.MaxLimit = limit;
+                }
+            }
+            params.data.Shipment.CustomPrices = customPrices;
+            params.api?.refreshCells({ rowNodes: [params.node], force: true });
+        },
     },
     {
         headerName: 'Scheme',
@@ -131,7 +154,30 @@ const getActionColDef = function (cellParams: ActionCellParams<string>): ColDef 
         cellRendererParams: cellParams
     };
 }
-
+const getColumnIndex = function (name: keyof OutgoingUpdateRow) {
+    let columnIndex: number | null = null;
+    switch (name) {
+        case 'ProductId':
+            columnIndex = 0; break;
+        case 'FlavourId':
+            columnIndex = 1; break;
+        case 'CaretSize':
+            columnIndex = 2; break;
+        case 'TotalQuantityShiped':
+            columnIndex = 3; break;
+        case 'TotalQuantityReturned':
+            columnIndex = 4; break;
+        case 'TotalQuantitySale':
+            columnIndex = 5; break;
+        case 'SchemePrice':
+            columnIndex = 6; break;
+        case 'CustomPrices':
+            columnIndex = 7; break;
+        case 'Id':
+            columnIndex = 8; break;
+    }
+    return columnIndex;
+}
 export default class OutgoingGrid extends React.Component<OutgoingGridProps, OutgoingGridState>{
     constructor(props: OutgoingGridProps) {
         super(props);
@@ -146,9 +192,15 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
 
         this.state = {
             GridOptions: {
-                columnDefs: colDefs
+                columnDefs: colDefs,
+                context: {
+                    getColumnIndex,
+                    getProductDefaultPrice:function(productId:number){
+                        return 0;
+                    }
+                } as GridContext
             },
-            IsOnUpdate: id != undefined
+            IsOnUpdate: id !== undefined
         }
     }
     addAShipment = () => {
