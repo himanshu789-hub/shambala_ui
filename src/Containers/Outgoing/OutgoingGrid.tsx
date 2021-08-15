@@ -2,18 +2,19 @@ import React from "react";
 import { RouteComponentProps } from "react-router";
 import { AgGridReact } from '@ag-grid-community/react';
 import { ColDef, ColGroupDef, ColumnApi, GridApi, GridOptions } from '@ag-grid-community/all-modules';
-import { IOutogingGridRowValue, ValueGetterParams, ValueSetterParams, EditableCallbackParams, CellRendererParams, OutgoingUpdateRow, CellEditorParams, CellValueChangedEvent, QuantityCellValueChangeEvent, GridContext } from './OutgoingGrid.d';
-import { IOutgoingShipmentAddDetail } from "Types/DTO";
+import { ValueGetterParams, ValueSetterParams, EditableCallbackParams, CellRendererParams, OutgoingUpdateRow, CellEditorParams, CellValueChangedEvent, QuantityCellValueChangeEvent, GridContext, OutgoingRowDataTransaction, IOutgoingGridRowValue } from './OutgoingGrid.d';
+import { IOutgoingShipmentAddDetail, Product } from "Types/DTO";
 import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer } from "./Component/Renderers/Renderers";
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { GridSelectEditor } from "Components/AgGridComponent/Editors/SelectWithAriaEditor";
-import { Parser } from "Utilities/Utilities";
+import { getARandomNumber, Parser } from "Utilities/Utilities";
 import { CaretSizeEditor, CaretSizeCellEquals, CaretSizeValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 import CustomPriceEditor from "./Component/Editors/CustomPriceEditor";
 import CellClassRuleSpecifier from "Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle";
 import OutgoingValidator from 'Validation/OutgoingValidation';
 import QuantityMediatorWrapper from './Component/Editors/QuatityMediatorWrapper';
+import MediatorSubject from 'Utilities/MediatorSubject';
 
 interface OutgoingGridProps extends RouteComponentProps<{ id?: string }> {
 }
@@ -41,7 +42,10 @@ const commonColDefs: ColDef[] = [
             return true;
         },
         cellRendererFramework: ProductCellRenderer,
-        cellEditorFramework: GridSelectEditor<IOutogingGridRowValue, any>(e => Parser.ProductsToValueContainer(e.Observer.GetProduct()))
+        cellEditorFramework: GridSelectEditor<IOutgoingGridRowValue, any>(e => Parser.ProductsToValueContainer(e.Observer.GetProduct())),
+        onCellValueChanged:function(params:CellValueChangedEvent<OutgoingUpdateRow['ProductId']>){
+              
+        } 
     },
     {
         headerName: 'Flavour Name',
@@ -53,7 +57,7 @@ const commonColDefs: ColDef[] = [
             return true;
         },
         cellRendererFramework: FlavourCellRenderer,
-        cellEditorFramework: GridSelectEditor<IOutogingGridRowValue, any>(e => e.Observer.GetFlavours().map(e => ({ label: e.Title, value: e.Id })), (e) => e.Shipment.ProductId !== -1)
+        cellEditorFramework: GridSelectEditor<IOutgoingGridRowValue, any>(e => e.Observer.GetFlavours().map(e => ({ label: e.Title, value: e.Id })), (e) => e.Shipment.ProductId !== -1)
     },
     {
         headerName: 'Caret Size',
@@ -189,11 +193,16 @@ const getColumnIndex = function (name: keyof OutgoingUpdateRow) {
     return columnIndex;
 }
 export default class OutgoingGrid extends React.Component<OutgoingGridProps, OutgoingGridState>{
+    private mediatorSubject: MediatorSubject;
+    private products:Product[];
+
     constructor(props: OutgoingGridProps) {
         super(props);
         const { match: { params: { id } } } = this.props;
         let colDefs: ColDef[];
         const actionColDef = getActionColDef({ addAChild: this.addAShipment, deleteAChild: this.deleteAShipment });
+        this.mediatorSubject = new MediatorSubject([]);
+        this.products = [];
         if (id) {
             colDefs = [...commonColDefs, ...updateColDefs]
         }
@@ -205,24 +214,46 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                 columnDefs: colDefs,
                 context: {
                     getColumnIndex,
-                    getProductDefaultPrice: function (productId: number) {
-                        return 0;
-                    },
+                    getProductDetails: (Id:number)=>this.products.find(e=>e.Id===Id)!,
                     IsOnUpdate: () => IsOnUpdate
-                } as GridContext
+                } as GridContext,
+                getRowNodeId: (data: IOutgoingGridRowValue) => data.Id
             },
             IsOnUpdate
         }
     }
+    getProductDetails=(Id:number)=>{
+      return this.products.find(e=>e.Id===Id)!;
+    }
+    createAShipment = (componentId: number): IOutgoingGridRowValue => {
+        return {
+            Id: componentId + '',
+            Observer: this.mediatorSubject.GetAObserver(1, componentId),
+            Shipment: {
+                CaretSize: 0, CustomPrices: [], FlavourId: -1, Id: componentId, ProductId: -1, SchemePrice: 0,
+                TotalQuantityRejected: { Value: 0 }, TotalQuantityReturned: { Value: 0 }, TotalQuantitySale: { Value: 0 }, TotalQuantityShiped: { Value: 0 },
+                TotalSchemeQuantity: 0
+            }
+        }
+    }
     addAShipment = () => {
-
+        const { GridOptions: { api } } = this.state;
+        const componentId = getARandomNumber();
+        const transaction: OutgoingRowDataTransaction = {
+            add: [this.createAShipment(componentId)]
+        }
+        api?.applyTransaction(transaction);
     }
     deleteAShipment = (Id: string) => {
-
+        const { GridOptions: { api } } = this.state;
+        this.mediatorSubject.UnsubscribeAComponent(1, Number.parseInt(Id));
+        const transaction: OutgoingRowDataTransaction = {
+            remove: [{ Id }]
+        }
+        api?.applyTransaction(transaction);
     }
     render() {
         const { GridOptions } = this.state;
-
         return (<div className="ag-theme-alpine">
             <AgGridReact gridOptions={GridOptions}></AgGridReact>
         </div>);

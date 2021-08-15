@@ -1,10 +1,10 @@
 import Observer from '../../Utilities/Observer';
 import * as GridParams from './../../Components/AgGridComponent/Grid';
-import { CustomPrice, IOutgoingShipmentAddDetail, IOutgoingShipmentUpdateDetail } from './../../Types/DTO';
+import { CustomPrice, IOutgoingShipmentAddDetail, IOutgoingShipmentUpdateDetail, Product } from './../../Types/DTO';
 import { CaretSizeValue ,CaretSizeCellValueChangeEvemt} from 'Components/AgGridComponent/Editors/CaretSizeEditor';
 
 type GridContext = {
-  getProductDefaultPrice(Id: number): number;
+  getProductDetails(Id: number): Product;
   getColumnIndex(name:keyof OutgoingUpdateRow):number;
   IsOnUpdate():boolean;
 }
@@ -18,16 +18,17 @@ export type OutgoingUpdateRow = Omit<IOutgoingShipmentUpdateDetail, 'CustomPrice
     TotalQuantityReturned:CaretSizeValue;
   };
 
-interface IOutogingGridRowValue {
+interface IOutgoingGridRowValue {
   Id: string;
   Observer: Observer,
   Shipment: OutgoingUpdateRow;
 }
-export type QuantityCellValueChangeEvent = CaretSizeCellValueChangeEvemt<IOutogingGridRowValue,GridContext>;
+ type QuantityCellValueChangeEvent = CaretSizeCellValueChangeEvemt<IOutgoingGridRowValue,GridContext>;
 
-export type ValueGetterParams = GridParams.GridGetterParams<IOutogingGridRowValue, GridContext>;
-export type ValueSetterParams<V> = GridParams.GridSetterParams<V, IOutogingGridRowValue, GridContext>;
-export type CellRendererParams<V> = GridParams.GridRendererParams<V, IOutogingGridRowValue, GridContext>;
-export type EditableCallbackParams = GridParams.GridEditableCallbackParams<IOutogingGridRowValue>;
-export type CellEditorParams<V> = GridParams.GridEditorParams<C, IOutogingGridRowValue, GridContext>;
-export type CellValueChangedEvent<V> = GridParams.GridCellValueChangeEvent<V,IOutogingGridRowValue,GridContext>;
+ type ValueGetterParams = GridParams.GridGetterParams<IOutgoingGridRowValue, GridContext>;
+ type ValueSetterParams<V> = GridParams.GridSetterParams<V, IOutgoingGridRowValue, GridContext>;
+ type CellRendererParams<V> = GridParams.GridRendererParams<V, IOutgoingGridRowValue, GridContext>;
+ type EditableCallbackParams = GridParams.GridEditableCallbackParams<IOutgoingGridRowValue>;
+ type CellEditorParams<V> = GridParams.GridEditorParams<C, IOutgoingGridRowValue, GridContext>;
+ type CellValueChangedEvent<V> = GridParams.GridCellValueChangeEvent<V,IOutgoingGridRowValue,GridContext>;
+ type OutgoingRowDataTransaction = GridParams.GridRowDataTransaction<IOutgoingGridRowValue>;

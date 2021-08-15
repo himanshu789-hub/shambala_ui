@@ -12,19 +12,19 @@ import QuantityMediatorWrapper, { IQuantityMediatorWrapper } from './QuatityMedi
 import { addWarn } from "Utilities/AlertUtility";
 
 export default forwardRef<ICellEditor, CellEditorParams<OutgoingUpdateRow['CustomPrices']>>((params, ref) => {
-    const [data, setData] = useState<CustomPriceRowData[]>(params.data.CustomPrices || []);
-    const isProductIdValid = params.data.ProductId !== -1;
-    const defaultPrice = isProductIdValid ? params.context.getProductDefaultPrice(params.data.ProductId) : 0;
+    const [data, setData] = useState<CustomPriceRowData[]>(params.data.Shipment.CustomPrices || []);
+    const isProductIdValid = params.data.Shipment.ProductId !== -1;
+    const defaultPrice:number = isProductIdValid ? params.context.getProductDetails(params.data.Shipment.ProductId).Price : 0;
 
     useImperativeHandle(ref, () => ({
         getValue() {
             return data;
         },
         isCancelBeforeStart() {
-            return !isProductIdValid && params.data.TotalQuantitySale > 0;
+            return !isProductIdValid && params.data.Shipment.TotalQuantitySale.Value > 0;
         }
     }));
-    return <CustomPriceGrid initialData={{ CaretSize: params.data.CaretSize, Data: data, DefaultPrice: defaultPrice, QuantityLimit: params.data.TotalQuantitySale }} setData={setData} />
+    return <CustomPriceGrid initialData={{ CaretSize: params.data.Shipment.CaretSize, Data: data, DefaultPrice: defaultPrice, QuantityLimit: params.data.Shipment.TotalQuantitySale.Value }} setData={setData} />
 });
 
 type GridData = {

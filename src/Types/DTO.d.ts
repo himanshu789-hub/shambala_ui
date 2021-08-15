@@ -106,6 +106,7 @@ export type Product = {
 	Name: string;
 	CaretSize: number;
 	Flavours: Flavour[];
+	Price:number;
 };
 
 export type SchemeDTO = {

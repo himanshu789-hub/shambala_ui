@@ -31,11 +31,13 @@ export function deepCloneProducts(products: Product[]) {
 	}
 	return CloneProducts;
 }
-export function getARandomNumber<T extends { Id: number }>(arr: T[]): number {
-	if (arr.length == 0)
-		return 1;
-	return Math.max(...arr.map(e => e.Id)) + 1;
+
+getARandomNumber.num = 1;
+
+export function getARandomNumber(): number {
+	return getARandomNumber.num++;
 }
+
 export function getQuantityInText(quantity: number, caretSize: number) {
 	const pieces = (quantity) % caretSize;
 	return `${Math.floor(quantity / caretSize)} Caret ${pieces} Piece${pieces <= 1 ? '' : 's'}`;
