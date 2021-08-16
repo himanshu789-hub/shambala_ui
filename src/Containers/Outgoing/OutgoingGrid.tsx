@@ -7,7 +7,7 @@ import { IOutgoingShipmentAddDetail, Product } from "Types/DTO";
 import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer } from "./Component/Renderers/Renderers";
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { GridSelectEditor } from "Components/AgGridComponent/Editors/SelectWithAriaEditor";
-import { getARandomNumber, Parser } from "Utilities/Utilities";
+import { doFlavourExists, getARandomNumber, Parser } from "Utilities/Utilities";
 import { CaretSizeEditor, CaretSizeCellEquals, CaretSizeValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 import CustomPriceEditor from "./Component/Editors/CustomPriceEditor";
@@ -44,7 +44,10 @@ const commonColDefs: ColDef[] = [
         cellRendererFramework: ProductCellRenderer,
         cellEditorFramework: GridSelectEditor<IOutgoingGridRowValue, any>(e => Parser.ProductsToValueContainer(e.Observer.GetProduct())),
         onCellValueChanged:function(params:CellValueChangedEvent<OutgoingUpdateRow['ProductId']>){
-              
+            const {data:{Observer,Shipment}} = params;
+            const isFlavourExists = doFlavourExists(Observer.GetFlavours(),Shipment.FlavourId);
+            Observer.SetProduct(params.newValue);
+             
         } 
     },
     {

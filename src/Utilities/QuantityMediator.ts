@@ -10,7 +10,9 @@ export interface IQuantityMediator {
 	Unsubscibe(subscriptionId: number, componentId: number): void;
 	ChangeQuantity(subscriptionId: number, componentId: number, productId: number, flavourId: number, quantity: number): boolean;
 	Subscribe(subscriptionId: number, componentId: number, productId: number, flavourId: number, quantity: number): void;
-	IsQuantitySubscribed(subscriptionId: number, componentId: number): boolean; UnsubscribeASubscription(subscriptionId: number): boolean;
+	IsQuantitySubscribed(subscriptionId: number, componentId: number): boolean;
+	UnsubscribeASubscription(subscriptionId: number): boolean;
+	GetQuantitySubscribed(subscriptionId:number,componentId:number):number|undefined;
 }
 type QuantityInfo = Map<number, Map<number, QuantityFlavourInfo>>;
 
@@ -30,6 +32,9 @@ export default class QuantityMediator implements IQuantityMediator {
 			this._productsWithFlavourLimit.set(Product.Id, CloneFlavours);
 			this._cloneProductWithFlavourList.set(Product.Id, [...CloneFlavours]);
 		}
+	}
+	GetQuantitySubscribed(subscriptionId: number, componentId: number): number|undefined {
+		return this._componentQuantity.get(subscriptionId)?.get(componentId)?.Quantity;
 	}
 	UnsubscribeASubscription(subscriptionId: number): boolean {
 		try {

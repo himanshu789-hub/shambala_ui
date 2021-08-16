@@ -7,8 +7,8 @@ export type ReactComponent = Component<any, any>;
 
 export default class Observer {
 	public ProductId?: number;
-	private _componentId: number;
-	private _subscriptionId: number;
+	public _componentId: number;
+	public _subscriptionId: number;
 	private _subject: MediatorSubject;
 	private _component?: ReactComponent;
 	public FlavourId?: number;
@@ -23,6 +23,7 @@ export default class Observer {
 	SetComponent(component: ReactComponent) {
 		this._component = component;
 	}
+	
 	GetProduct(): ProductInfo[] {
 		return this._subject.GetProducts(this._subscriptionId, this._componentId);
 	}
@@ -56,7 +57,6 @@ export default class Observer {
 	}
 	SetProduct(Id: number): void {
 		this._subject.SetASubscription(this._subscriptionId, this._componentId, Id);
-		this.ProductId = Id;
 	}
 	SetFlavour(Id: number) {
 		if (!this.ProductId) {
@@ -64,7 +64,6 @@ export default class Observer {
 			return;
 		}
 		this._subject.SetASubscription(this._subscriptionId, this._componentId, this.ProductId as number, Id);
-		this.FlavourId = Id;
 	}
 	SetQuantity(quantity: number) {
 		if (!this.ProductId) {

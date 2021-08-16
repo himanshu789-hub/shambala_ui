@@ -230,7 +230,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 
 	addAShipment = () => {
 		const { Products, GridOptions: { api } } = this.state;
-		const componentId = getARandomNumber(this.filterRowNodes((e => e.data.Shipment)));
+		const componentId = getARandomNumber();
 		if (Products.size !== 0) {
 			const currentRowCount = api?.getDisplayedRowCount();
 			const rowTransations: ShipmentGridDataTransation = {

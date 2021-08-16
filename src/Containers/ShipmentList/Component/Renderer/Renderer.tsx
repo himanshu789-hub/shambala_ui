@@ -1,6 +1,7 @@
 import { CellValueChangedEvent, Column, ICellRendererParams } from "@ag-grid-community/all-modules";
 import { SelectWithAriaRenderer } from "Components/AgGridComponent/Renderer/SelectWithAriaRenderer";
 import { ShipmentDTO } from "Types/DTO";
+import { doFlavourExists } from "Utilities/Utilities";
 import { ShipmentCellValueChangeEvent, ShipmentGridDataTransation, ShipmentGridGetterParams, ShipmentGridSetter, ShipmentRendererParams } from "../../ShipmentList.d"
 
 
@@ -38,10 +39,10 @@ export const ProductValueChangedEvent = (event: ShipmentCellValueChangeEvent<Shi
     data.Observer.Unubscribe();
     if (!isColumnsNull(columns)) {
         data.Observer.SetProduct(event.newValue);
-        const isFlavourExists = data.Observer.GetFlavours().find(e => e.Id == data.Shipment.FlavourId) != null;
+        const isFlavourExists = doFlavourExists(data.Observer.GetFlavours(),data.Shipment.FlavourId);
         data.Shipment.CaretSize = context.getCartetSizeByProductId(event.newValue);
         data.Shipment.FlavourId = isFlavourExists ? data.Shipment.FlavourId : -1;
-        data.Shipment.TotalRecievedPieces = isFlavourExists ? data.Shipment.TotalRecievedPieces : 0;
+        data.Shipment.TotalRecievedPieces.Value = isFlavourExists ? data.Shipment.TotalRecievedPieces.Value : 0;
         const transaction: ShipmentGridDataTransation = {
             update: [data]
         }
@@ -60,10 +61,10 @@ export const FlavourValueChangedEvent = (event: ShipmentCellValueChangeEvent<Shi
         let quantity = data.Shipment.TotalRecievedPieces;
         observer.UnsubscribeToQuantity();
         const quantityLimit = observer.GetQuantityLimit();
-        if (data.Shipment.TotalRecievedPieces > quantityLimit) {
-            quantity = 0;
+        if (data.Shipment.TotalRecievedPieces.Value > quantityLimit) {
+            quantity.Value = 0;
         }
-        observer.SetQuantity(quantity);
+        observer.SetQuantity(quantity.Value);
         event.node.setDataValue(columns![quantityIndex].getColId(), quantity);
     }
 

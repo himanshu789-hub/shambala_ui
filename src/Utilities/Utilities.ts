@@ -33,7 +33,9 @@ export function deepCloneProducts(products: Product[]) {
 }
 
 getARandomNumber.num = 1;
-
+export function doFlavourExists(flavours:Flavour[],Id:number){
+	return flavours.find(e=>e.Id===Id)!==null;
+}
 export function getARandomNumber(): number {
 	return getARandomNumber.num++;
 }
