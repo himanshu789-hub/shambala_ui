@@ -4,7 +4,7 @@ import FlavourMediator, { IFlavourMediator } from './FlavourMediator';
 import QuantityMediator, { IQuantityMediator } from './QuantityMediator';
 import ComponentProductMediator, { IProductMediator } from './ProductMediator';
 import Observer from './Observer';
-import { UnkownObserver } from 'Errors/Error';
+import { FlavourOccupiedError, QuantityLimitExceeded, UnIdentityFlavourError, UnkownObserver } from 'Errors/Error';
 import { observers } from '@politie/sherlock/symbols';
 
 type SubscribedInfo = {
@@ -67,28 +67,40 @@ export default class MediatorSubject {
 			this._quantityMediator.Unsubscibe(subscriptionId, componentId);
 	}
 	SetASubscription(subscriptionId: number, componentId: number, productId: number, flavourId?: number, quantity?: number) {
+		const IsFlavourNull = !flavourId;
+		const IsQuantityNull = !quantity;
 
 		if (this._productMediator.IsAlreadySubscribed(subscriptionId, componentId)) {
 			if (this._productMediator.ChangeSubscription(subscriptionId, componentId, productId)) {
-				this._flavourMediator.IsSubscribed(subscriptionId, componentId) && this._flavourMediator.Unsubscribe(subscriptionId, componentId);
-				this._quantityMediator.IsQuantitySubscribed(subscriptionId, componentId) && this._quantityMediator.Unsubscibe(subscriptionId, componentId);
+				flavourId = flavourId || this._flavourMediator.IsSubscribed(subscriptionId, componentId) ? this._flavourMediator.GetSubscribedFlavourId(subscriptionId, componentId) : undefined;
 			}
 		} else {
 			this._productMediator.Subscribe(subscriptionId, componentId, productId);
 		}
 		if (flavourId) {
 			if (this._flavourMediator.IsSubscribed(subscriptionId, componentId)) {
-				if (this._flavourMediator.ChangeSubscription(subscriptionId, componentId, productId, flavourId)) {
-					// this._flavourMediator.IsFlavourExhausted(subscriptionId,productId) &&
-					// 	this._flavourMediator.RestoreFlavour(productId, previoudFlavourId) &&
-					// 	this._productMediator.IsProductDeleted(productId) &&
-					// 	this._productMediator.RestoreProduct(productId);
-					this._quantityMediator.IsQuantitySubscribed(subscriptionId, componentId) &&
-						this._quantityMediator.Unsubscibe(subscriptionId, componentId);
+				try {
+					if (this._flavourMediator.ChangeSubscription(subscriptionId, componentId, productId, flavourId)) {
+						// this._flavourMediator.IsFlavourExhausted(subscriptionId,productId) &&
+						// 	this._flavourMediator.RestoreFlavour(productId, previoudFlavourId) &&
+						// 	this._productMediator.IsProductDeleted(productId) &&
+						// 	this._productMediator.RestoreProduct(productId);
+						this._quantityMediator.IsQuantitySubscribed(subscriptionId, componentId) &&
+							this._quantityMediator.Unsubscibe(subscriptionId, componentId);
+					}
+					// if (this._flavourMediator.IsFlavourExhausted(productId)) {
+					// 	//this._productMediator.DeleteProduct(productId);
+					// }
+
 				}
-				// if (this._flavourMediator.IsFlavourExhausted(productId)) {
-				// 	//this._productMediator.DeleteProduct(productId);
-				// }
+				catch (e) {
+					if (e instanceof UnIdentityFlavourError || e instanceof FlavourOccupiedError && IsFlavourNull) {
+						this._flavourMediator.Unsubscribe(subscriptionId, componentId);
+						flavourId = undefined;
+					}
+					else
+						throw e;
+				}
 
 			} else {
 				this._flavourMediator.Subscribe(subscriptionId, componentId, productId, flavourId);
@@ -96,7 +108,17 @@ export default class MediatorSubject {
 		}
 		if (quantity) {
 			if (this._quantityMediator.IsQuantitySubscribed(subscriptionId, componentId)) {
-				this._quantityMediator.ChangeQuantity(subscriptionId, componentId, productId, flavourId!, quantity);
+				try {
+					this._quantityMediator.ChangeQuantity(subscriptionId, componentId, productId, flavourId!, quantity);
+				}
+				catch (e) {
+					if (IsQuantityNull && e instanceof QuantityLimitExceeded) {
+						this._quantityMediator.Unsubscibe(subscriptionId, componentId);
+						quantity = undefined;
+					}
+					else
+						throw e;
+				}
 			} else {
 				this._quantityMediator.Subscribe(subscriptionId, componentId, productId, flavourId!, quantity);
 			}
@@ -105,6 +127,5 @@ export default class MediatorSubject {
 		observer.ProductId = productId;
 		observer.FlavourId = flavourId;
 		observer.Quantity = quantity;
-
 	}
 }

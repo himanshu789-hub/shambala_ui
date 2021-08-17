@@ -43,12 +43,14 @@ const commonColDefs: ColDef[] = [
         },
         cellRendererFramework: ProductCellRenderer,
         cellEditorFramework: GridSelectEditor<IOutgoingGridRowValue, any>(e => Parser.ProductsToValueContainer(e.Observer.GetProduct())),
-        onCellValueChanged:function(params:CellValueChangedEvent<OutgoingUpdateRow['ProductId']>){
-            const {data:{Observer,Shipment}} = params;
-            const isFlavourExists = doFlavourExists(Observer.GetFlavours(),Shipment.FlavourId);
+        onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['ProductId']>) {
+            const { data: { Observer, Shipment } } = params;
+            const isFlavourExists = doFlavourExists(Observer.GetFlavours(), Shipment.FlavourId);
             Observer.SetProduct(params.newValue);
-             
-        } 
+            const { FlavourId, Quantity } = Observer.GetObserverInfo();
+            Shipment.FlavourId = FlavourId || -1;
+            
+        }
     },
     {
         headerName: 'Flavour Name',
@@ -197,7 +199,7 @@ const getColumnIndex = function (name: keyof OutgoingUpdateRow) {
 }
 export default class OutgoingGrid extends React.Component<OutgoingGridProps, OutgoingGridState>{
     private mediatorSubject: MediatorSubject;
-    private products:Product[];
+    private products: Product[];
 
     constructor(props: OutgoingGridProps) {
         super(props);
@@ -217,7 +219,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                 columnDefs: colDefs,
                 context: {
                     getColumnIndex,
-                    getProductDetails: (Id:number)=>this.products.find(e=>e.Id===Id)!,
+                    getProductDetails: (Id: number) => this.products.find(e => e.Id === Id)!,
                     IsOnUpdate: () => IsOnUpdate
                 } as GridContext,
                 getRowNodeId: (data: IOutgoingGridRowValue) => data.Id
@@ -225,8 +227,8 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
             IsOnUpdate
         }
     }
-    getProductDetails=(Id:number)=>{
-      return this.products.find(e=>e.Id===Id)!;
+    getProductDetails = (Id: number) => {
+        return this.products.find(e => e.Id === Id)!;
     }
     createAShipment = (componentId: number): IOutgoingGridRowValue => {
         return {

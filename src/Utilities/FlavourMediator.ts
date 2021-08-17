@@ -188,17 +188,18 @@ export default class FlavourMediator implements IFlavourMediator {
 		}
 		this._deductFlavour(subscriptionId, productId, flavourId);
 	}
-	private _checkFlavourExists(productId: number, flavourId: number): void {
+	private _checkFlavourValid(productId: number, flavourId: number): void {
 		if (this._flavours.get(productId)!.find(e => e.Id === flavourId) == null)
 			throw new UnIdentityFlavourError(productId, flavourId)
 	}
-	private _checkFlavourNotExhausted(productId: number, flavourId: number, subscriptionId: number): void {
+	private _checkFlavourNotAlreadyOccupied(productId: number, flavourId: number, subscriptionId: number): void {
 		if (this._deletedSubscriptionFlavour.get(subscriptionId)?.find(e => e.ProductId === productId && e.Id === flavourId) !== null)
 			throw new FlavourOccupiedError(flavourId, productId, subscriptionId);
 	}
 	ChangeSubscription(subscriptionId: number, componentId: number, productId: number, flavourId: number): boolean {
 		this._checkSubscription(subscriptionId);
-		this._checkFlavourExists(productId, flavourId);
+		this._checkFlavourValid(productId, flavourId);
+
 		const SubscriptionComponentMapFlavour = this._componentFlavourChoosen.get(subscriptionId) as Map<number, FlavourWithProductKey>;
 		if (SubscriptionComponentMapFlavour.has(componentId)) {
 			const FlavourWithProductKey = SubscriptionComponentMapFlavour.get(componentId) as FlavourWithProductKey;
@@ -210,7 +211,7 @@ export default class FlavourMediator implements IFlavourMediator {
 				IsSubcribed = false;
 			}
 			if (IsSubcribed) {
-				this._checkFlavourNotExhausted(productId, flavourId, subscriptionId);
+				this._checkFlavourNotAlreadyOccupied(productId, flavourId, subscriptionId);
 				FlavourWithProductKey.Id = flavourId;
 				FlavourWithProductKey.ProductId = productId;
 				this._restoreFlavour(subscriptionId, OldFlavour.ProductId, OldFlavour.Id);

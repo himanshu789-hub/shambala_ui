@@ -91,32 +91,43 @@ export default class QuantityMediator implements IQuantityMediator {
 	}
 	ChangeQuantity(subscriptionId: number, componentId: number, productId: number, flavourId: number, quantity: number): boolean {
 		this._checkComponentExists(subscriptionId, componentId);
-		this._isFlavourExists(flavourId, productId);
-		this._willQuantityExhausted(flavourId,productId,quantity,this._componentQuantity.get(subscriptionId)!.get(componentId)!.Quantity);
+		this._isFlavourValid(flavourId, productId);
 
 		const QuantityAssigned = this._componentQuantity.get(subscriptionId) as Map<number, QuantityFlavourInfo>;
 		const QuantityFlavourInfo = QuantityAssigned.get(componentId) as QuantityFlavourInfo;
+		let IsProductOrFlavourChnage = false;
+		if (QuantityFlavourInfo.ProductId !== productId)
+			IsProductOrFlavourChnage = true;
+		else
+			QuantityFlavourInfo.FlavourId !== flavourId && (IsProductOrFlavourChnage = true);
+
+		if (IsProductOrFlavourChnage)
+			this._willQuantityExceeded(flavourId, productId, quantity);
+		else {
+			this._willQuantityExceeded(flavourId, productId, quantity, QuantityFlavourInfo.Quantity);
+		}
 		this._restoreQuantity(QuantityFlavourInfo.ProductId, QuantityFlavourInfo.FlavourId, QuantityFlavourInfo.Quantity);
-		const QuantityFlavourInfoNew = QuantityAssigned.get(componentId)?.Quantity as number;
-		if (QuantityFlavourInfoNew && quantity <= QuantityFlavourInfoNew) this._deductQuantity(productId, flavourId, quantity);
+		// const NewQuantity = QuantityAssigned.get(componentId)?.Quantity as number;
+		// if (NewQuantity && quantity <= NewQuantity)
+		this._deductQuantity(productId, flavourId, quantity);
 
 		return true;
 	}
-	private _isFlavourExists(flavourId: number, productId: number) {
+	private _isFlavourValid(flavourId: number, productId: number) {
 		let IsValid = this._productsWithFlavourLimit.has(productId);
 		IsValid && (IsValid = this._productsWithFlavourLimit.get(productId)!.find(e => e.Id === flavourId) !== null)
 		if (!IsValid)
 			throw new UnIdentityFlavourError(productId, flavourId);
 	}
-	private _willQuantityExhausted(flavourId: number, productId: number, quantity: number,previousQuantity?:number) {
+	private _willQuantityExceeded(flavourId: number, productId: number, quantity: number, previousQuantity?: number) {
 		const limitQuantity = this.GetQuantityLimit(productId, flavourId) + (previousQuantity || 0);
-	
+
 		if (quantity > limitQuantity)
 			throw new QuantityLimitExceeded(productId, flavourId);
 	}
 	Subscribe(subscriptionId: number, componentId: number, productId: number, flavourId: number, quantity: number) {
-		this._isFlavourExists(flavourId, productId);
-        this._willQuantityExhausted(flavourId,componentId,quantity);
+		this._isFlavourValid(flavourId, productId);
+		this._willQuantityExceeded(flavourId, componentId, quantity);
 
 		if (this._componentQuantity.has(subscriptionId)) {
 			const ComponentMapQuantity = this._componentQuantity.get(subscriptionId) as Map<number, QuantityFlavourInfo>;
