@@ -6,19 +6,19 @@ import MediatorSubject from './MediatorSubject';
 export type ReactComponent = Component<any, any>;
 
 export default class Observer {
-	public ProductId?: number;
+	private ProductId?: number;
 	public _componentId: number;
 	public _subscriptionId: number;
 	private _subject: MediatorSubject;
 	private _component?: ReactComponent;
-	public FlavourId?: number;
+	private FlavourId?: number;
 	constructor(subscriptionId: number, componentId: number, subject: MediatorSubject) {
 		this._subscriptionId = subscriptionId;
 		this._componentId = componentId;
 		this._subject = subject;
 	}
 	GetObserverInfo() {
-		return { SubscriptionId: this._subscriptionId, ComponentId: this._componentId };
+		return { SubscriptionId: this._subscriptionId, ComponentId: this._componentId,ProductId:this.ProductId,FlavourId:this.FlavourId };
 	}
 	SetComponent(component: ReactComponent) {
 		this._component = component;

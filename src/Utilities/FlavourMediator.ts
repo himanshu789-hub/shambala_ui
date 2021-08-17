@@ -1,3 +1,4 @@
+import { AlreadySubscribedError, FlavourOccupiedError, UnIdentifyComponentError, UnIdentityFlavourError, UnknownSubscription } from 'Errors/Error';
 import { Flavour, Product } from 'Types/DTO';
 
 type FlavourWithProductKey = {
@@ -11,16 +12,16 @@ export interface IFlavourMediator {
 	Subscribe(subscriptionId: number, componentId: number, productId: number, flavourId: number): void;
 	IsFlavourExhausted(productId: number): boolean;
 	ChangeSubscription(subscriptionId: number, componentId: number, productId: number, flavourId: number): boolean;
-	Unsubscribe(subscriptionId: number, componentId: number): boolean;
+	Unsubscribe(subscriptionId: number, componentId: number): void;
 	IsFlavourDeleted(productId: number, flavourId: number): boolean;
 	DeductFlavour(productId: number, flavourId: number): void;
 	IsSubscribed(subcriptionId: number, componentId: number): boolean;
 	RestoreFlavour(productId: number, flavourId: number): boolean;
-	GetSUbscribedFlavourId(subscriptionId: number, componentId: number): number;
-	UnsubscribeASubscription(subscriptionId:number):boolean;
+	GetSubscribedFlavourId(subscriptionId: number, componentId: number): number;
+	UnsubscribeASubscription(subscriptionId: number): boolean;
 }
 
-export default class FlavourMediator  implements IFlavourMediator{
+export default class FlavourMediator implements IFlavourMediator {
 	private _cloneFlavours: Map<number, Flavour[]>;
 	private _flavours: Map<number, Flavour[]>;
 	private _deletedFlavour: FlavourWithProductKey[];
@@ -65,7 +66,7 @@ export default class FlavourMediator  implements IFlavourMediator{
 		let FlavoursDeleted = this._deletedSubscriptionFlavour.get(subscriptionId);
 		if (FlavoursDeleted) {
 			FlavoursDeleted = FlavoursDeleted.filter(e => e.Id !== flavourId && e.ProductId === productId);
-			this._deletedSubscriptionFlavour.set(subscriptionId,FlavoursDeleted);
+			this._deletedSubscriptionFlavour.set(subscriptionId, FlavoursDeleted);
 			return;
 		}
 		throw new Error('Unknown Subscription');
@@ -73,7 +74,8 @@ export default class FlavourMediator  implements IFlavourMediator{
 	private _deductFlavour(subscritpionId: number, ProductId: number, flavourId: number) {
 		if (!this._deletedSubscriptionFlavour.has(subscritpionId)) {
 			this._deletedSubscriptionFlavour.set(subscritpionId, [{ Id: flavourId, ProductId }]);
-		} else this._deletedSubscriptionFlavour.get(subscritpionId)?.push({ Id: flavourId, ProductId: ProductId });
+		} else
+			this._deletedSubscriptionFlavour.get(subscritpionId)?.push({ Id: flavourId, ProductId: ProductId });
 	}
 	private _checkArgumentNullException(...params: number[]) {
 		for (let i = 0; i < params.length; i++) if (!params[i]) throw new Error('Argument Not Set');
@@ -117,17 +119,17 @@ export default class FlavourMediator  implements IFlavourMediator{
 		return Flavours;
 	}
 	private _checkSubscription(subscribeId: number) {
-		if (!this._componentFlavourChoosen.has(subscribeId)) return false;
-		return true;
+		if (!this._componentFlavourChoosen.has(subscribeId))
+			throw new UnknownSubscription();
 	}
 
-	GetSUbscribedFlavourId(subscriptionId: number, componentId: number): number {
+	GetSubscribedFlavourId(subscriptionId: number, componentId: number): number {
+		this._checkComponentExists(subscriptionId,componentId);
 		const ComponentMapFlavour = this._componentFlavourChoosen.get(subscriptionId);
-		if (!ComponentMapFlavour) throw new Error('Unkwnown Subscription');
-		const FlavourInfo = ComponentMapFlavour.get(componentId);
-		if (!FlavourInfo) throw new Error('Unkwnown Component');
-		return FlavourInfo.Id as number;
+		const FlavourInfo = ComponentMapFlavour!.get(componentId);
+		return FlavourInfo!.Id as number;
 	}
+
 	GetFlavours(subscriptionId: number, componentId: number, productId: number): Flavour[] {
 		this._checkArgumentNullException(subscriptionId, componentId, productId);
 		if (this._componentFlavourChoosen.has(subscriptionId)) {
@@ -138,7 +140,7 @@ export default class FlavourMediator  implements IFlavourMediator{
 				const FlavourID = (SubscriptionComponentMapFlavour.get(componentId) as FlavourWithProductKey).Id as number;
 
 				if (
-					this._isFlavourDeletedForSubscriptionId(subscriptionId, productId, FlavourID) ||
+					FlavourID && this._isFlavourDeletedForSubscriptionId(subscriptionId, productId, FlavourID) ||
 					this.IsFlavourDeleted(productId, FlavourID)
 				) {
 					return [
@@ -158,12 +160,23 @@ export default class FlavourMediator  implements IFlavourMediator{
 			}
 		} else return this._cloneFlavoursArray(this._flavours.get(productId) as Flavour[]);
 	}
+	IsFlavourExhausted(productId: number): boolean {
+		const Flavours = this._flavours.get(productId) as Flavour[];
+
+		return !Flavours.length;
+	}
+
 	Subscribe(subscriptionId: number, componentId: number, productId: number, flavourId: number) {
 		this._checkArgumentNullException(subscriptionId, componentId, flavourId, productId);
 		this._checkSubscription(subscriptionId);
 
 		if (this._componentFlavourChoosen.has(subscriptionId)) {
 			const SubscriptionComponentMapFlavour = this._componentFlavourChoosen.get(subscriptionId);
+
+			if (SubscriptionComponentMapFlavour?.get(componentId)) {
+				throw new AlreadySubscribedError(componentId, subscriptionId);
+			}
+
 			SubscriptionComponentMapFlavour?.set(componentId, { Id: flavourId, ProductId: productId });
 		} else {
 			const NewSubscriptionComponentMapFlavour = new Map<number, FlavourWithProductKey>();
@@ -172,49 +185,54 @@ export default class FlavourMediator  implements IFlavourMediator{
 		}
 		this._deductFlavour(subscriptionId, productId, flavourId);
 	}
-	IsFlavourExhausted(productId: number): boolean {
-		const Flavours = this._flavours.get(productId) as Flavour[];
-		
-		return !Flavours.length;
+	private _checkFlavourExists(productId: number, flavourId: number): void {
+		if (this._flavours.get(productId)!.find(e => e.Id === flavourId) == null)
+			throw new UnIdentityFlavourError(productId, flavourId)
+	}
+	private _checkFlavourNotExhausted(productId: number, flavourId: number, subscriptionId: number): void {
+		if (this._deletedSubscriptionFlavour.get(subscriptionId)?.find(e => e.ProductId === productId && e.Id === flavourId) !== null)
+			throw new FlavourOccupiedError(flavourId, productId, subscriptionId);
 	}
 	ChangeSubscription(subscriptionId: number, componentId: number, productId: number, flavourId: number): boolean {
 		this._checkSubscription(subscriptionId);
-		const SubscriptionComponentMapFlavour = this._componentFlavourChoosen.get(subscriptionId) as Map<
-			number,
-			FlavourWithProductKey
-		>;
+		this._checkFlavourExists(productId, flavourId);
+		const SubscriptionComponentMapFlavour = this._componentFlavourChoosen.get(subscriptionId) as Map<number, FlavourWithProductKey>;
 		if (SubscriptionComponentMapFlavour.has(componentId)) {
 			const FlavourWithProductKey = SubscriptionComponentMapFlavour.get(componentId) as FlavourWithProductKey;
-            const OldFlavour = {...FlavourWithProductKey};
+			const OldFlavour = { ...FlavourWithProductKey };
+
 			let IsSubcribed = true;
-			if (FlavourWithProductKey.ProductId === productId) {
-				if (FlavourWithProductKey.Id === flavourId) IsSubcribed = false;
-				 else FlavourWithProductKey.Id = flavourId;
-			} else {
-				FlavourWithProductKey.Id = flavourId;
-				FlavourWithProductKey.ProductId = productId;
+
+			if (FlavourWithProductKey.ProductId === productId && FlavourWithProductKey.Id === flavourId) {
+				IsSubcribed = false;
 			}
 			if (IsSubcribed) {
+				this._checkFlavourNotExhausted(productId, flavourId, subscriptionId);
+				FlavourWithProductKey.Id = flavourId;
+				FlavourWithProductKey.ProductId = productId;
 				this._restoreFlavour(subscriptionId, OldFlavour.ProductId, OldFlavour.Id);
 				this._deductFlavour(subscriptionId, productId, flavourId);
 			}
 			return IsSubcribed;
 		}
-		throw new Error('Changing Subscription For Unregister Component');
+		throw new UnIdentifyComponentError(componentId, subscriptionId);
 	}
-	Unsubscribe(subscriptionId: number, componentId: number): boolean {
+	private _checkComponentExists(subscribeId: number, componentId: number) {
+		this._checkSubscription(subscribeId);
+		if (!this._componentFlavourChoosen.get(subscribeId)!.has(componentId))
+			throw new UnIdentifyComponentError(componentId, subscribeId);
+	}
+	Unsubscribe(subscriptionId: number, componentId: number) {
 		this._checkArgumentNullException(subscriptionId, componentId);
+		this._checkComponentExists(subscriptionId, componentId);
 
-		if (this._checkSubscription(subscriptionId)) {
-			const SubscriptionComponentMapFlavour = this._componentFlavourChoosen.get(subscriptionId) as FlavourInfo;
-			if (SubscriptionComponentMapFlavour.has(componentId)) {
-				const FlavourWithProductKey = SubscriptionComponentMapFlavour.get(componentId) as FlavourWithProductKey;
-				SubscriptionComponentMapFlavour.delete(componentId);
-				this._restoreFlavour(subscriptionId, FlavourWithProductKey.ProductId, FlavourWithProductKey.Id);
-				return true;
-			} 
+		const SubscriptionComponentMapFlavour = this._componentFlavourChoosen.get(subscriptionId) as FlavourInfo;
+		if (SubscriptionComponentMapFlavour.has(componentId)) {
+			const FlavourWithProductKey = SubscriptionComponentMapFlavour.get(componentId) as FlavourWithProductKey;
+			SubscriptionComponentMapFlavour.delete(componentId);
+			this._restoreFlavour(subscriptionId, FlavourWithProductKey.ProductId, FlavourWithProductKey.Id);
+			return;
 		}
-		return false;
 	}
 	IsSubscribed(subcriptionId: number, componentId: number): boolean {
 		const ComponentMapFlavour = this._componentFlavourChoosen.get(subcriptionId);

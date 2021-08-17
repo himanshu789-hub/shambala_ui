@@ -4,9 +4,14 @@ import FlavourMediator, { IFlavourMediator } from './FlavourMediator';
 import QuantityMediator, { IQuantityMediator } from './QuantityMediator';
 import ComponentProductMediator, { IProductMediator } from './ProductMediator';
 import Observer from './Observer';
+import { UnkownObserver } from 'Errors/Error';
+import { observers } from '@politie/sherlock/symbols';
 
+type SubscribedInfo = {
+	FlavourId?: number; ProductId?: number; Quantity?: number; SubscriptonId: number, ComponentId: number
+}
 export default class MediatorSubject {
-	private _observers: Observer[];
+	private _observersInfo: SubscribedInfo[];
 
 	private _productMediator: IProductMediator;
 	private _flavourMediator: IFlavourMediator;
@@ -16,7 +21,7 @@ export default class MediatorSubject {
 		this._productMediator = new ComponentProductMediator(products);
 		this._flavourMediator = new FlavourMediator(products);
 		this._quantityMediator = new QuantityMediator(products);
-		this._observers = [];
+		this._observersInfo = [];
 	}
 	UnsubscribeAComponent(subscriptionId: number, componentId: number) {
 		this._quantityMediator.Unsubscibe(subscriptionId, componentId);
@@ -24,12 +29,19 @@ export default class MediatorSubject {
 		this._productMediator.Unsubscribe(subscriptionId, componentId);
 	}
 	UnregisteredObserverWithQuantities(OutofStocks: OutOfStock[]) {
-		for (var i = 0; i < this._observers.length; i++) {
-			const observer = this._observers[i];
+		for (var i = 0; i < this._observersInfo.length; i++) {
+			const observer = this._observersInfo[i];
 			if (OutofStocks.find(e => e.FlavourId === observer.FlavourId && e.ProductId === observer.ProductId)) {
-				observer.UnsubscribeToQuantity();
+				this._quantityMediator.Unsubscibe(observer.SubscriptonId, observer.ComponentId);
 			}
 		}
+	}
+	GetSubscribedInfo(subscribeId: number, componentId: number): SubscribedInfo {
+		const info = this._observersInfo.find(e => e.ComponentId === componentId && e.SubscriptonId === subscribeId);
+		if (info) {
+			return info;
+		}
+		throw new UnkownObserver(subscribeId, componentId);
 	}
 	Unsubscribe(subscriptionId: number) {
 		this._flavourMediator.UnsubscribeASubscription(subscriptionId);
@@ -38,7 +50,7 @@ export default class MediatorSubject {
 	}
 	GetAObserver(subscriptionId: number, componentId: number) {
 		const observer = new Observer(subscriptionId, componentId, this);
-		this._observers.push(observer);
+		this._observersInfo.push({ ComponentId: componentId, SubscriptonId: subscriptionId });
 		return observer;
 	}
 	GetProducts(subscriptionId: number, componentId: number): ProductInfo[] {
@@ -57,8 +69,8 @@ export default class MediatorSubject {
 	SetASubscription(subscriptionId: number, componentId: number, productId: number, flavourId?: number, quantity?: number) {
 		if (this._productMediator.IsAlreadySubscribed(subscriptionId, componentId)) {
 			if (this._productMediator.ChangeSubscription(subscriptionId, componentId, productId)) {
-				const previoudFlavourId = this._flavourMediator.GetSUbscribedFlavourId(subscriptionId, componentId);
-				const previousQuantityLimit = this._quantityMediator.GetQuantitySubscribed(subscriptionId, componentId);
+				const previoudFlavourId = this._flavourMediator.IsSubscribed(subscriptionId, componentId) ? this._flavourMediator.GetSubscribedFlavourId(subscriptionId, componentId) : undefined;
+				const previousQuantityLimit = this._quantityMediator.IsQuantitySubscribed(subscriptionId, componentId) ? this._quantityMediator.GetQuantitySubscribed(subscriptionId, componentId) : undefined;
 				flavourId = flavourId || previoudFlavourId;
 				quantity = quantity || previousQuantityLimit;
 			}
@@ -90,8 +102,10 @@ export default class MediatorSubject {
 				this._quantityMediator.Subscribe(subscriptionId, componentId, productId, flavourId!, quantity);
 			}
 		}
-		this._observers.find(e=>{
-			
-		})
+		const observer = this._observersInfo.find(e => e.SubscriptonId === subscriptionId && e.ComponentId === componentId)!;
+		observer.ProductId = productId;
+		observer.FlavourId = flavourId;
+		observer.Quantity = quantity;
+
 	}
 }
