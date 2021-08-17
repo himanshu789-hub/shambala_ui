@@ -41,3 +41,6 @@ export class QuantityLimitExceeded extends Error{
         super();
     }
 }
+export class DeterminantsNotSetError extends Error{
+
+}
