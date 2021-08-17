@@ -72,7 +72,10 @@ export default class MediatorSubject {
 
 		if (this._productMediator.IsAlreadySubscribed(subscriptionId, componentId)) {
 			if (this._productMediator.ChangeSubscription(subscriptionId, componentId, productId)) {
-				flavourId = flavourId || this._flavourMediator.IsSubscribed(subscriptionId, componentId) ? this._flavourMediator.GetSubscribedFlavourId(subscriptionId, componentId) : undefined;
+				if (this._flavourMediator.IsSubscribed(subscriptionId, componentId)) {
+					flavourId = flavourId ||  this._flavourMediator.GetSubscribedFlavourId(subscriptionId, componentId) ;
+					quantity = quantity || this._quantityMediator.IsQuantitySubscribed(subscriptionId,componentId) ? this._quantityMediator.GetQuantitySubscribed(subscriptionId,componentId):undefined;
+				}
 			}
 		} else {
 			this._productMediator.Subscribe(subscriptionId, componentId, productId);
