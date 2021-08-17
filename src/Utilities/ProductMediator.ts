@@ -1,3 +1,4 @@
+import { UnIdentifyComponentError, UnknownSubscription } from 'Errors/Error';
 import { Product } from 'Types/DTO';
 import { ProductInfo } from 'Types/Mediator';
 
@@ -8,6 +9,7 @@ export interface IProductMediator {
 	RestoreProduct(productId: number): void;
 	GetDefaultProductList(subscriptionId: number, componentId: number): ProductInfo[];
 	Subscribe(subscriptionId: number, componentId: number, productId: number): void;
+	GetSubscribedProduct(subscriptionId: number, componentId: number):number;
 	Unsubscribe(subscriptionId: number, componentId: number): boolean;
 	IsAlreadySubscribed(subcriptionId: number, componentId: number): boolean;
 	ChangeSubscription(subscriptionId: number, componentId: number, productId: number): boolean; UnsubscribeASubscription(subscriptionId: number): boolean;
@@ -55,7 +57,8 @@ export default class ComponentProductMediator implements IProductMediator {
 	}
 
 	private _checkSubscription(subscribeId: number) {
-		if (!this._componentProductMap.has(subscribeId)) throw new Error('Subscription Id Not Set');
+		if (!this._componentProductMap.has(subscribeId))
+			throw new UnknownSubscription();
 	}
 
 	private _mapToArray(map: Map<number, string>) {
@@ -99,7 +102,16 @@ export default class ComponentProductMediator implements IProductMediator {
 		const ComponentMapProduct = this._componentProductMap.get(subcriptionId) as ProductComponentMap;
 		return ComponentMapProduct.has(componentId);
 	}
-
+	private _checkComponentSubscribed(subscriptionId: number, componentId: number) {
+		this._checkSubscription(subscriptionId);
+		if (!this._componentProductMap.get(subscriptionId)!.has(componentId)) {
+			throw new UnIdentifyComponentError(componentId, subscriptionId);
+		}
+	}
+	GetSubscribedProduct(subscriptionId: number, componentId: number) {
+		this._checkComponentSubscribed(subscriptionId,componentId);
+		return this._componentProductMap.get(subscriptionId)!.get(componentId)!;
+	}
 	IsProductDeleted(productId: number): boolean {
 		return this._deletedProducts.has(productId);
 	}

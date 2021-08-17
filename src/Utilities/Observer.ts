@@ -9,7 +9,9 @@ export default class Observer {
 	public _componentId: number;
 	public _subscriptionId: number;
 	private _subject: MediatorSubject;
-//	private _component?: ReactComponent;
+	private flavourId?: number;
+	private productId?: number;
+	//	private _component?: ReactComponent;
 	constructor(subscriptionId: number, componentId: number, subject: MediatorSubject) {
 		this._subscriptionId = subscriptionId;
 		this._componentId = componentId;
@@ -38,11 +40,12 @@ export default class Observer {
 			return;
 		}
 		this._subject.UnsubscribeAComponent(this._subscriptionId, this._componentId);
+		this.productId = undefined;
 	}
 	UnsubscribeToQuantity() {
-		if (!(this._subscriptionId && this._componentId)) {
-			console.error('Product or Flavour Not Set');
-			return;
+		const info = this.GetObserverInfo();
+		if (!(info.ProductId && info.FlavourId)) {
+			throw new DeterminantsNotSetError();
 		}
 		this._subject.UnsubscribeToQuantity(this._subscriptionId as number, this._componentId as number);
 	}
@@ -50,7 +53,7 @@ export default class Observer {
 	GetFlavours(): Flavour[] {
 		const info = this.GetObserverInfo();
 		if (!info.ProductId) {
-			return [];
+			throw new DeterminantsNotSetError()
 		}
 		return this._subject.GetFlavours(this._subscriptionId, this._componentId, info.ProductId!);
 	}

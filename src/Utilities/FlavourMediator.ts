@@ -19,6 +19,7 @@ export interface IFlavourMediator {
 	RestoreFlavour(productId: number, flavourId: number): boolean;
 	GetSubscribedFlavourId(subscriptionId: number, componentId: number): number;
 	UnsubscribeASubscription(subscriptionId: number): boolean;
+	IsFlavourExists(subscribeId:number,productId:number,flavourId:number):boolean;
 }
 
 export default class FlavourMediator implements IFlavourMediator {
@@ -41,6 +42,9 @@ export default class FlavourMediator implements IFlavourMediator {
 		}
 		this._componentFlavourChoosen = new Map();
 		this._deletedSubscriptionFlavour = new Map();
+	}
+	IsFlavourExists(subscribeId: number, productId: number, flavourId: number): boolean {
+		return !this._isFlavourDeletedForSubscriptionId(subscribeId,productId,flavourId);
 	}
 	UnsubscribeASubscription(subscriptionId: number): boolean {
 		try {
@@ -162,7 +166,6 @@ export default class FlavourMediator implements IFlavourMediator {
 	}
 	IsFlavourExhausted(productId: number): boolean {
 		const Flavours = this._flavours.get(productId) as Flavour[];
-
 		return !Flavours.length;
 	}
 
