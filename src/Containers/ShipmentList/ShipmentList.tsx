@@ -19,6 +19,7 @@ import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
 import { ToolTipComponent, ToolTipGetter } from 'Components/AgGridComponent/Renderer/ToolTipRenderer';
 import CellClassSpecifier from 'Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle';
 import { ValidateShipment } from './../../Validation/ShipmentValidation';
+import { FlavourOccupiedError, QuantityLimitExceeded } from 'Errors/Error';
 
 type IShipmentListProps = {
 	handleSubmit: (Shipments: ShipmentDTO[]) => void;
@@ -87,9 +88,9 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 					},
 					{
 						cellEditorFramework: CaretSizeEditor<ShipmentGridEditorParams<ShipmentRowValue['TotalRecievedPieces']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.ProductId !== -1),
-						cellRendererFramework: CaretSizeRenderer<ShipmentRendererParams<ShipmentRowValue['TotalRecievedPieces']>>(e=>e.data.Shipment.CaretSize),
+						cellRendererFramework: CaretSizeRenderer<ShipmentRendererParams<ShipmentRowValue['TotalRecievedPieces']>>(e => e.data.Shipment.CaretSize),
 						valueGetter: (params: ShipmentGridGetterParams) => params.data.Shipment.TotalRecievedPieces,
-						valueSetter: (props:CaretSizeEditorValueSetterParams<ShipmentGridSetter<ShipmentRowValue['TotalRecievedPieces']>>) => {
+						valueSetter: (props: CaretSizeEditorValueSetterParams<ShipmentGridSetter<ShipmentRowValue['TotalRecievedPieces']>>) => {
 							props.data.Shipment.TotalRecievedPieces = props.newValue;
 							return true;
 						},
@@ -187,12 +188,24 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				const Id = (i + 1);
 				const observer = this.componentListMediator.GetAObserver(this.state.SubscriptionId, Id);
 				const initial = InitialShipments[i]; const shipment = initial.Shipment;
-				observer.SetProduct(shipment.ProductId);
-				observer.SetFlavour(shipment.FlavourId);
-				const quantity = shipment.TotalRecievedPieces > observer.GetQuantityLimit() ? 0 : shipment.TotalRecievedPieces;
-				observer.SetQuantity(quantity);
-
-				ShipmentInfos.push({ Observer: observer, Shipment: { ...shipment, TotalRecievedPieces: {Value:quantity,MaxLimit: initial.MaxLimit, MinLimit: initial.MinLimit }}, Id: Id+''  });
+				let quantity = 0;
+				try {
+					observer.SetProduct(shipment.ProductId);
+					observer.SetFlavour(shipment.FlavourId);
+					quantity = shipment.TotalRecievedPieces > observer.GetQuantityLimit() ? 0 : shipment.TotalRecievedPieces;
+					observer.SetQuantity(quantity);
+				}
+				catch (e) {
+					if (e instanceof FlavourOccupiedError) {
+						addWarn('List Obtained Is Not Valid');
+						break;
+					}
+					if (e instanceof QuantityLimitExceeded) {
+						addWarn('Quantity Limit Excceded In Provided List');
+						break;
+					}
+				}
+				ShipmentInfos.push({ Observer: observer, Shipment: { ...shipment, TotalRecievedPieces: { Value: quantity, MaxLimit: initial.MaxLimit, MinLimit: initial.MinLimit } }, Id: Id + '' });
 			}
 			this.setState({ ShipmentInfos: ShipmentInfos });
 		}
@@ -207,14 +220,14 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			const { handleSubmit } = this.props;
 			const { ShipmentInfos: Shipments } = this.state;
 			if (Shipments.length > 0)
-				handleSubmit(Shipments.map(e => ({...e.Shipment,TotalRecievedPieces:e.Shipment.TotalRecievedPieces.Value})));
+				handleSubmit(Shipments.map(e => ({ ...e.Shipment, TotalRecievedPieces: e.Shipment.TotalRecievedPieces.Value })));
 			else
 				addWarn("Please, Add Atleast One Item");
 		}
 	}
 	createAShipment = (Id: number): IRowValue => {
 		return {
-			Shipment: { Id: Id, CaretSize: 0, FlavourId: -1, ProductId: -1, TotalDefectedPieces: 0, TotalRecievedPieces: {Value:0} },
+			Shipment: { Id: Id, CaretSize: 0, FlavourId: -1, ProductId: -1, TotalDefectedPieces: 0, TotalRecievedPieces: { Value: 0 } },
 			Observer: this.componentListMediator.GetAObserver(this.state.SubscriptionId, Id), Id: Id + ''
 		};
 	}
