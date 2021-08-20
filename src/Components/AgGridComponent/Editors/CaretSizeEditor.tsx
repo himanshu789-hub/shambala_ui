@@ -1,6 +1,6 @@
 import CaretSize from 'Components/CaretSize/CaretSize'
 import { forwardRef, useImperativeHandle, useState, useRef, useEffect } from 'react';
-import { CellValueChangedEvent, ICellEditor, ICellEditorParams, ValueGetterParams, ValueSetterParams } from '@ag-grid-community/all-modules'
+import { CellValueChangedEvent, ICellEditor, ICellEditorParams, ValueGetterParams, ValueParserParams, ValueSetterParams } from '@ag-grid-community/all-modules'
 import CustomPriceValidation from 'Validation/CustomPriceValidation';
 import CaretQuantiyValidation from 'Validation/CaretQuantityValidation';
 
@@ -16,10 +16,7 @@ type EditorParams = Omit<ICellEditorParams, 'value'> & {
 // type CaretSizeGetterParams = Omit<ValueGetterParams, 'value'> & {
 //     value: CaretSizeValue;
 // }
-export const CaretSizeCellEquals = function (previousValue: CaretSizeValue, newValue: CaretSizeNewValue) {
-    return previousValue.Value === newValue.Value;
-}
-type CaretSizeNewValue = { IsValid: boolean, Value: number };
+export type CaretSizeNewValue = { IsValid: boolean, Value: number };
 // export type CaretSizeSetterParams = Omit<ValueSetterParams, 'newValue' | 'oldValue'> & {
 //     oldValue: CaretSizeValue;
 //     newValue: CaretSizeNewValue;
@@ -29,16 +26,13 @@ type CaretSizeNewValue = { IsValid: boolean, Value: number };
 // export type CaretSizeSetter = {
 //     (params: CaretSizeSetterParams): boolean
 // };
-export type CaretSizeEditorValueSetterParams<T extends ValueSetterParams> = Omit<T, 'newValue' | 'oldValue'> & {
-    oldValue: CaretSizeValue,
-    newValue: CaretSizeNewValue
+export type CaretSizeValueParserParams<T extends ValueParserParams> = Omit<T, 'newValue' | 'oldValue'> & {
+    newValue: CaretSizeNewValue,
+    oldValue: CaretSizeValue
 }
-export type CaretSizeCellValueChangeEvemt<DataT, CtxT> = Omit<CellValueChangedEvent, 'newValue' | 'oldValue' | 'value' | 'data' | 'context'> & {
-    newValue: CaretSizeNewValue;
-    oldValue: CaretSizeValue;
-    data: DataT,
-    context: CtxT,
-    value: CaretSizeValue
+export function CaretSizeValueParser(params: ValueParserParams) {
+    const value = params.newValue as CaretSizeNewValue;
+    return { Value: value.IsValid ? value.Value : 0 } as CaretSizeValue;
 }
 export const CaretSizeEditor = function <T extends (EditorParams)>(caretSizeFromParams: (e: T) => number, isEditable: (data: T) => boolean) {
     return forwardRef<ICellEditor, T>((props, ref) => {
@@ -52,7 +46,7 @@ export const CaretSizeEditor = function <T extends (EditorParams)>(caretSizeFrom
         useImperativeHandle(ref, () => {
             return {
                 getValue() {
-                    return { IsValid:new CaretQuantiyValidation({Value:quantity,MaxLimit:maxValue,MinLimit:minValue}).IsQuantityValid(), Value: quantity };
+                    return { IsValid: new CaretQuantiyValidation({ Value: quantity, MaxLimit: maxValue, MinLimit: minValue }).IsQuantityValid(), Value: quantity };
                 },
                 isPopup() {
                     return true;

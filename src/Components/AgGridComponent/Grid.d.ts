@@ -3,9 +3,9 @@ import { CellClassParams, EditableCallbackParams, CellValueChangedEvent, ICellEd
 type GridParamsWithContext<T, CTx> = Omit<T, 'context'> & {
       context: CTx
 }
-type GridParamsWithData<T, DataType> = Omit<T, 'data'> & { data: DataType }
-type GridParamsWithValue<ValueType, T, DataType> = Omit<GridParamsWithData<T, DataType>, 'value'> & {
-      value: ValueType;
+type GridParamsWithData<T, DataT> = Omit<T, 'data'> & { data: DataT }
+type GridParamsWithValue<V, T, DataT> = Omit<GridParamsWithData<T, DataT>, 'value'> & {
+      value: V;
 }
 type GridWithOldAndNewValue<T, VType> = Omit<T, "oldValue" | "newValue"> & {
       oldValue: VType,
@@ -15,8 +15,8 @@ type GridWithOldAndNewValue<T, VType> = Omit<T, "oldValue" | "newValue"> & {
 type GridRowNode = GridParamsWithData<RowNode, IRowValue>;
 
 export type GridEditableCallbackParams<DataT> = GridParamsWithData<EditableCallbackParams, DataT>;
-export type GridCellStyleParams<Datatype> = GridParamsWithData<CellClassParams, DataType>;
-export type GridToolTipParams<DataType> = GridParamsWithValue<string, ITooltipParams, DataType>;
+export type GridCellClassParams<DataT> = GridParamsWithData<CellClassParams, DataT>;
+export type GridToolTipParams<DataT> = GridParamsWithValue<string, ITooltipParams, DataT>;
 
 export type GridEditorParams<ValueType, DataT, CtxT> = GridParamsWithContext<GridParamsWithValue<ValueType, ICellEditorParams, DataT>, CtxT>;
 export type GridRendererParams<ValueType, DataT, CtxT> = GridParamsWithContext<GridParamsWithValue<ValueType, ICellRendererParams, DataT>, CtxT>;
@@ -32,5 +32,5 @@ export type GridRowDataTransaction<DataT> = Omit<{ [Property in keyof RowDataTra
       remove?: Ids[]
 };
 export type GridCellValueChangeEvent<V, DataT, CtxT> = GridWithOldAndNewValue<GridParamsWithContext<GridParamsWithData<CellValueChangedEvent, DataT>, CtxT>, V>;
-
+export type GridValueParserParams<V,DataT,CtxT> = GridParamsWithContext<GridParamsWithData<GridWithOldAndNewValue<ValueSetterParams,V>,DataT>,CTxT>;
 export type ValidationRowData<T> = { [Property in keyof T]: { Value: T[Property], IsValid: boolean } };

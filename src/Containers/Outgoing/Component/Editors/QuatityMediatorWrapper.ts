@@ -10,7 +10,7 @@ export interface IQuantityMediatorWrapper {
 export default class OutgoingMediator implements IQuantityMediatorWrapper  {
     private quantityMediator:IQuantityMediator;
     constructor(quantityLimit:number) {
-            this.quantityMediator = new QuantityMediator([{CaretSize:12,Flavours:[{Id:1,Quantity:quantityLimit,Title:''}],Id:1,Name:''}]);
+            this.quantityMediator = new QuantityMediator([{CaretSize:12,Flavours:[{Id:1,Quantity:quantityLimit,Title:''}],Id:1,Name:'',Price:0,SchemeQuantity:0}]);
     }
     GetQuantityLimit(): number {
      return this.quantityMediator.GetQuantityLimit(1,1);

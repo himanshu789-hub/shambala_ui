@@ -1,5 +1,4 @@
 import { OutgoingStatus, SchemeKey } from 'Enums/Enum';
-import { NumberLiteralType } from 'typescript';
 
 export type OutgoingShipmentPriceDetail = {
 	Id: number;
@@ -106,7 +105,8 @@ export type Product = {
 	Name: string;
 	CaretSize: number;
 	Flavours: Flavour[];
-	Price:number;
+	Price: number;
+	SchemeQuantity?:number;
 };
 
 export type SchemeDTO = {

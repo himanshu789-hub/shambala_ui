@@ -1,6 +1,4 @@
-
 import { SelectWithAriaRenderer } from 'Components/AgGridComponent/Renderer/SelectWithAriaRenderer';
-import React from 'react';
 import { IOutgoingShipmentAddDetail, IOutgoingShipmentUpdateDetail } from 'Types/DTO';
 import { getQuantityInText } from 'Utilities/Utilities';
 import { CellRendererParams } from '../../OutgoingGrid.d';

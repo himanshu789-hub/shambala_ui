@@ -4,12 +4,12 @@ import MediatorSubject from 'Utilities/MediatorSubject';
 import { addDanger, addWarn } from 'Utilities/AlertUtility';
 import { InitialShipment } from 'Types/Types';
 import { AgGridReact } from '@ag-grid-community/react';
-import { ShipmentGridGetterParams, ShipmentGridDataTransation, IRowValue, GridContext, ShipmentGridRowNode, ShipmentGridSetter, ShipmentRendererParams, ShipmentRowValue, ShipmentGridEditorParams } from './ShipmentList.d';
+import { ShipmentGridGetterParams, ShipmentGridDataTransation, IRowValue, GridContext, ShipmentGridRowNode, ShipmentGridSetter, ShipmentRendererParams, ShipmentRowValue, ShipmentGridEditorParams, ShipmentValueSetter } from './ShipmentList.d';
 import { GridOptions, GridReadyEvent, RowNode, ITooltipParams, Column } from '@ag-grid-community/all-modules';
 import { FlavourCellRenderer, FlavourValueChangedEvent, FlavourValueGetter, FlavourValueSetter, ProductCellRenderer, ProductValueChangedEvent, ProductValueGetter, ProductValueSetter } from './Component/Renderer/Renderer';
 import { GridSelectEditor } from 'Components/AgGridComponent/Editors/SelectWithAriaEditor';
 import CaretSizeRenderer from 'Components/AgGridComponent/Renderer/CaretSizeRenderer';
-import { CaretSizeCellValueChangeEvemt, CaretSizeEditor, CaretSizeEditorValueSetterParams } from 'Components/AgGridComponent/Editors/CaretSizeEditor';
+import {  CaretSizeEditor, CaretSizeValue, CaretSizeValueParser,  } from 'Components/AgGridComponent/Editors/CaretSizeEditor';
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 import { getARandomNumber } from 'Utilities/Utilities';
 import { AllCommunityModules } from '@ag-grid-community/all-modules';
@@ -90,10 +90,11 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						cellEditorFramework: CaretSizeEditor<ShipmentGridEditorParams<ShipmentRowValue['TotalRecievedPieces']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.ProductId !== -1),
 						cellRendererFramework: CaretSizeRenderer<ShipmentRendererParams<ShipmentRowValue['TotalRecievedPieces']>>(e => e.data.Shipment.CaretSize),
 						valueGetter: (params: ShipmentGridGetterParams) => params.data.Shipment.TotalRecievedPieces,
-						valueSetter: (props: CaretSizeEditorValueSetterParams<ShipmentGridSetter<ShipmentRowValue['TotalRecievedPieces']>>) => {
+						valueSetter: (props: ShipmentValueSetter<ShipmentRowValue['TotalRecievedPieces']>) => {
 							props.data.Shipment.TotalRecievedPieces = props.newValue;
 							return true;
 						},
+						valueParser:CaretSizeValueParser,
 						headerName: 'Quantity',
 						// @ts-ignore
 						tooltipValueGetter: ToolTipValueGetter('TotalRecievedPieces'),
