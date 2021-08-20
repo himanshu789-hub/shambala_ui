@@ -120,7 +120,7 @@ export default class QuantityMediator implements IQuantityMediator {
 			throw new UnIdentityFlavourError(productId, flavourId);
 	}
 	private _willQuantityExceeded(flavourId: number, productId: number, quantity: number, previousQuantity?: number) {
-		const limitQuantity = this.GetQuantityLimit(productId, flavourId) + (previousQuantity || 0);
+		const limitQuantity = this.GetQuantityLimit(productId, flavourId) - (previousQuantity || 0);
 
 		if (quantity > limitQuantity)
 			throw new QuantityLimitExceeded(productId, flavourId);
@@ -137,6 +137,7 @@ export default class QuantityMediator implements IQuantityMediator {
 			ComponentMapQuantity.set(componentId, { FlavourId: flavourId, Quantity: quantity, ProductId: productId });
 		} else {
 			const ComponentMapQuantity = new Map<number, QuantityFlavourInfo>();
+			
 			ComponentMapQuantity.set(componentId, { FlavourId: flavourId, ProductId: productId, Quantity: quantity });
 			this._componentQuantity.set(subscriptionId, ComponentMapQuantity);
 		}

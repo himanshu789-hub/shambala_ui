@@ -45,11 +45,12 @@ const commonColDefs: ColDef[] = [
         cellEditorFramework: GridSelectEditor<IOutgoingGridRowValue, any>(e => Parser.ProductsToValueContainer(e.Observer.GetProduct())),
         onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['ProductId']>) {
             const { data: { Observer, Shipment } } = params;
-            const isFlavourExists = doFlavourExists(Observer.GetFlavours(), Shipment.FlavourId);
             Observer.SetProduct(params.newValue);
             const { FlavourId, Quantity } = Observer.GetObserverInfo();
             Shipment.FlavourId = FlavourId || -1;
-            
+            if (!Quantity) {
+                Shipment.TotalQuantityShiped = { Value: 0};
+            }
         }
     },
     {

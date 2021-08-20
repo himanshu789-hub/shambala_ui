@@ -19,7 +19,8 @@ export interface IFlavourMediator {
 	RestoreFlavour(productId: number, flavourId: number): boolean;
 	GetSubscribedFlavourId(subscriptionId: number, componentId: number): number;
 	UnsubscribeASubscription(subscriptionId: number): boolean;
-	IsFlavourExists(subscribeId:number,productId:number,flavourId:number):boolean;
+	IsFlavourExists(productId: number, flavourId: number): boolean;
+	IsFlavourAvailable(subscibeId:number,productId:number,flavourId:number):boolean;
 }
 
 export default class FlavourMediator implements IFlavourMediator {
@@ -43,8 +44,13 @@ export default class FlavourMediator implements IFlavourMediator {
 		this._componentFlavourChoosen = new Map();
 		this._deletedSubscriptionFlavour = new Map();
 	}
-	IsFlavourExists(subscribeId: number, productId: number, flavourId: number): boolean {
-		return !this._isFlavourDeletedForSubscriptionId(subscribeId,productId,flavourId);
+	IsFlavourExists(productId: number, flavourId: number): boolean {
+		return this._flavours.get(productId)?.find(e => e.Id === flavourId) !== undefined;
+	}
+	IsFlavourAvailable(subscibeId: number,productId: number, flavourId: number) {
+		if (!this.IsFlavourExists(productId, flavourId))
+			throw new UnIdentityFlavourError(productId, flavourId);
+		return !this._isFlavourDeletedForSubscriptionId(subscibeId,productId,flavourId);
 	}
 	UnsubscribeASubscription(subscriptionId: number): boolean {
 		try {
@@ -128,7 +134,7 @@ export default class FlavourMediator implements IFlavourMediator {
 	}
 
 	GetSubscribedFlavourId(subscriptionId: number, componentId: number): number {
-		this._checkComponentExists(subscriptionId,componentId);
+		this._checkComponentExists(subscriptionId, componentId);
 		const ComponentMapFlavour = this._componentFlavourChoosen.get(subscriptionId);
 		const FlavourInfo = ComponentMapFlavour!.get(componentId);
 		return FlavourInfo!.Id as number;
@@ -199,7 +205,7 @@ export default class FlavourMediator implements IFlavourMediator {
 	ChangeSubscription(subscriptionId: number, componentId: number, productId: number, flavourId: number): boolean {
 		this._checkSubscription(subscriptionId);
 		this._checkFlavourValid(productId, flavourId);
-
+                 
 		const SubscriptionComponentMapFlavour = this._componentFlavourChoosen.get(subscriptionId) as Map<number, FlavourWithProductKey>;
 		if (SubscriptionComponentMapFlavour.has(componentId)) {
 			const FlavourWithProductKey = SubscriptionComponentMapFlavour.get(componentId) as FlavourWithProductKey;

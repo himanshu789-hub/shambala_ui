@@ -6,10 +6,11 @@ type ProductComponentMap = Map<number, number>;
 export interface IProductMediator {
 	IsProductDeleted(productId: number): boolean;
 	DeleteProduct(productId: number): void;
+	IsProductExists(productId: number): boolean;
 	RestoreProduct(productId: number): void;
 	GetDefaultProductList(subscriptionId: number, componentId: number): ProductInfo[];
 	Subscribe(subscriptionId: number, componentId: number, productId: number): void;
-	GetSubscribedProduct(subscriptionId: number, componentId: number):number;
+	GetSubscribedProduct(subscriptionId: number, componentId: number): number;
 	Unsubscribe(subscriptionId: number, componentId: number): boolean;
 	IsAlreadySubscribed(subcriptionId: number, componentId: number): boolean;
 	ChangeSubscription(subscriptionId: number, componentId: number, productId: number): boolean; UnsubscribeASubscription(subscriptionId: number): boolean;
@@ -31,6 +32,9 @@ export default class ComponentProductMediator implements IProductMediator {
 		}
 		this._deletedProducts = new Set();
 		this._componentProductMap = new Map();
+	}
+	IsProductExists(productId: number): boolean {
+		return this._cloneProduct.has(productId);
 	}
 	UnsubscribeASubscription(subscriptionId: number): boolean {
 		try {
@@ -109,7 +113,7 @@ export default class ComponentProductMediator implements IProductMediator {
 		}
 	}
 	GetSubscribedProduct(subscriptionId: number, componentId: number) {
-		this._checkComponentSubscribed(subscriptionId,componentId);
+		this._checkComponentSubscribed(subscriptionId, componentId);
 		return this._componentProductMap.get(subscriptionId)!.get(componentId)!;
 	}
 	IsProductDeleted(productId: number): boolean {
@@ -146,6 +150,7 @@ export default class ComponentProductMediator implements IProductMediator {
 	}
 	Subscribe(subscriptionId: number, componentId: number, productId: number) {
 		this._checkArgumentNullException(subscriptionId, componentId, productId);
+		
 		if (this._componentProductMap.has(subscriptionId)) {
 			const ComponentMap = this._componentProductMap.get(subscriptionId) as ProductComponentMap;
 			ComponentMap.set(componentId, productId);
@@ -176,20 +181,21 @@ export default class ComponentProductMediator implements IProductMediator {
 		}
 		return false;
 	}
+
 	ChangeSubscription(subscriptionId: number, componentId: number, productId: number): boolean {
 		this._checkSubscription(subscriptionId);
 		this._checkArgumentNullException(componentId, productId);
 		const ComponentProductMap = this._componentProductMap.get(subscriptionId) as ProductComponentMap;
 		if (ComponentProductMap.has(componentId)) {
-			const ProductId = ComponentProductMap.get(componentId) as number;
+			const previousProductId = ComponentProductMap.get(componentId) as number;
 			let IsSubscribedChange = false;
-			if (ProductId != productId) {
+			if (previousProductId !== productId) {
 				IsSubscribedChange = true;
 				this.Unsubscribe(subscriptionId, componentId);
 				this.Subscribe(subscriptionId, componentId, productId);
 			}
 			return IsSubscribedChange;
 		}
-		throw new Error('Unknown Component');
+		throw new UnIdentifyComponentError(componentId,subscriptionId);
 	}
 }

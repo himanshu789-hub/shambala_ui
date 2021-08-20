@@ -4,7 +4,7 @@ import FlavourMediator, { IFlavourMediator } from './FlavourMediator';
 import QuantityMediator, { IQuantityMediator } from './QuantityMediator';
 import ComponentProductMediator, { IProductMediator } from './ProductMediator';
 import Observer from './Observer';
-import { FlavourOccupiedError, QuantityLimitExceeded, UnIdentityFlavourError, UnkownObserver } from 'Errors/Error';
+import { DeterminantsNotSetError, FlavourOccupiedError, QuantityLimitExceeded, UnIdentityFlavourError, UnkownObserver } from 'Errors/Error';
 import { observers } from '@politie/sherlock/symbols';
 
 type SubscribedInfo = {
@@ -66,69 +66,152 @@ export default class MediatorSubject {
 		if (this._quantityMediator.IsQuantitySubscribed(subscriptionId, componentId))
 			this._quantityMediator.Unsubscibe(subscriptionId, componentId);
 	}
-	SetASubscription(subscriptionId: number, componentId: number, productId: number, flavourId?: number, quantity?: number) {
-		const IsFlavourNull = !flavourId;
-		const IsQuantityNull = !quantity;
-
+	SetAProduct(subscriptionId: number, componentId: number, productId: number) {
+		let flavourId, quantity, previousProductId;
+         
 		if (this._productMediator.IsAlreadySubscribed(subscriptionId, componentId)) {
+			previousProductId = this._productMediator.GetSubscribedProduct(subscriptionId, componentId);
 			if (this._productMediator.ChangeSubscription(subscriptionId, componentId, productId)) {
 				if (this._flavourMediator.IsSubscribed(subscriptionId, componentId)) {
-					flavourId = flavourId ||  this._flavourMediator.GetSubscribedFlavourId(subscriptionId, componentId) ;
-					quantity = quantity || this._quantityMediator.IsQuantitySubscribed(subscriptionId,componentId) ? this._quantityMediator.GetQuantitySubscribed(subscriptionId,componentId):undefined;
+					flavourId = this._flavourMediator.GetSubscribedFlavourId(subscriptionId, componentId);
+					quantity = this._quantityMediator.IsQuantitySubscribed(subscriptionId, componentId) ? this._quantityMediator.GetQuantitySubscribed(subscriptionId, componentId) : undefined;
+					this._flavourMediator.Unsubscribe(subscriptionId, componentId);
+					quantity && this._quantityMediator.Unsubscibe(subscriptionId, componentId);
+				}
+				if (flavourId) {
+					let IsFlavourExists = true;
+					try {
+						IsFlavourExists = this._flavourMediator.IsFlavourAvailable(subscriptionId, productId, flavourId)
+					}
+					catch (e) {
+						if (e instanceof UnIdentityFlavourError) { }
+						else
+							throw e;
+					}
+					if (IsFlavourExists) {
+						this._flavourMediator.Subscribe(subscriptionId, componentId, productId, flavourId);
+						if (quantity) {
+							const limit = this._quantityMediator.GetQuantityLimit(productId, flavourId);
+							if (quantity <= limit) {
+								this._quantityMediator.Subscribe(subscriptionId, componentId, productId, flavourId, quantity);
+							}
+						}
+					}
 				}
 			}
 		} else {
 			this._productMediator.Subscribe(subscriptionId, componentId, productId);
 		}
-		if (flavourId) {
-			if (this._flavourMediator.IsSubscribed(subscriptionId, componentId)) {
-				try {
-					if (this._flavourMediator.ChangeSubscription(subscriptionId, componentId, productId, flavourId)) {
-						// this._flavourMediator.IsFlavourExhausted(subscriptionId,productId) &&
-						// 	this._flavourMediator.RestoreFlavour(productId, previoudFlavourId) &&
-						// 	this._productMediator.IsProductDeleted(productId) &&
-						// 	this._productMediator.RestoreProduct(productId);
-						this._quantityMediator.IsQuantitySubscribed(subscriptionId, componentId) &&
-							this._quantityMediator.Unsubscibe(subscriptionId, componentId);
-					}
-					// if (this._flavourMediator.IsFlavourExhausted(productId)) {
-					// 	//this._productMediator.DeleteProduct(productId);
-					// }
-
-				}
-				catch (e) {
-					if (e instanceof UnIdentityFlavourError || e instanceof FlavourOccupiedError && IsFlavourNull) {
-						this._flavourMediator.Unsubscribe(subscriptionId, componentId);
-						flavourId = undefined;
-					}
-					else
-						throw e;
-				}
-
-			} else {
-				this._flavourMediator.Subscribe(subscriptionId, componentId, productId, flavourId);
-			}
-		}
-		if (quantity) {
-			if (this._quantityMediator.IsQuantitySubscribed(subscriptionId, componentId)) {
-				try {
-					this._quantityMediator.ChangeQuantity(subscriptionId, componentId, productId, flavourId!, quantity);
-				}
-				catch (e) {
-					if (IsQuantityNull && e instanceof QuantityLimitExceeded) {
-						this._quantityMediator.Unsubscibe(subscriptionId, componentId);
-						quantity = undefined;
-					}
-					else
-						throw e;
-				}
-			} else {
-				this._quantityMediator.Subscribe(subscriptionId, componentId, productId, flavourId!, quantity);
-			}
-		}
-		const observer = this._observersInfo.find(e => e.SubscriptonId === subscriptionId && e.ComponentId === componentId)!;
-		observer.ProductId = productId;
-		observer.FlavourId = flavourId;
-		observer.Quantity = quantity;
+		const subscriptionInfo = this._observersInfo.find(e => e.SubscriptonId === subscriptionId && e.ComponentId === componentId)!;
+		subscriptionInfo.ProductId = productId;
+		subscriptionInfo.FlavourId = flavourId;
+		subscriptionInfo.Quantity = quantity;
 	}
+	private _findObserver(subscibeId: number, componentId: number): SubscribedInfo {
+		const observer = this._observersInfo.find(e => e.SubscriptonId === subscibeId && componentId === componentId);
+		if (observer !== undefined)
+			return observer;
+		throw new UnkownObserver(subscibeId, componentId);
+	}
+	SetAFlavour(subscribeId: number, componentId: number, flavourId: number) {
+		const observer = this._findObserver(subscribeId, componentId);
+		if (!observer.ProductId)
+			throw new DeterminantsNotSetError();
+			
+		const productId = this._productMediator.GetSubscribedProduct(subscribeId, componentId);
+		if (this._flavourMediator.IsFlavourExists(productId, flavourId))
+			throw new UnIdentityFlavourError(productId, flavourId);
+
+		if (this._flavourMediator.IsSubscribed(subscribeId, componentId)) {
+			if (this._flavourMediator.ChangeSubscription(subscribeId, componentId, productId, flavourId)) {
+				if (this._quantityMediator.IsQuantitySubscribed(subscribeId, componentId)) {
+					const quantity = this._quantityMediator.GetQuantitySubscribed(subscribeId, componentId)!;
+					this._quantityMediator.ChangeQuantity(subscribeId, componentId, productId, flavourId, quantity);
+				}
+			}
+		}
+		else
+			this._flavourMediator.Subscribe(subscribeId, componentId, productId, flavourId);
+		const subscriptionInfo = this._findObserver(subscribeId, componentId);
+		subscriptionInfo.FlavourId = flavourId;
+	}
+	SetAQuantity(subscribeId: number, componentId: number, quantity: number) {
+		const subscriptionInfo = this._findObserver(subscribeId, componentId);
+		const productId = subscriptionInfo.ProductId;
+		const flavourId = subscriptionInfo.FlavourId;
+		if (!productId || !flavourId)
+			throw new DeterminantsNotSetError();
+
+		if (this._quantityMediator.IsQuantitySubscribed(subscribeId, componentId)) {
+			this._quantityMediator.ChangeQuantity(subscribeId, componentId, productId, flavourId, quantity)
+		}
+		else {
+			this._quantityMediator.Subscribe(subscribeId, componentId, productId, flavourId, quantity);
+		}
+		this._findObserver(subscribeId, componentId).Quantity = quantity;
+	}
+	// SetASubscription(subscriptionId: number, componentId: number, productId: number, flavourId?: number, quantity?: number) {
+	// 	const IsFlavourNull = !flavourId;
+	// 	const IsQuantityNull = !quantity;
+	// 	if (this._productMediator.IsAlreadySubscribed(subscriptionId, componentId)) {
+	// 		if (this._productMediator.ChangeSubscription(subscriptionId, componentId, productId)) {
+	// 			if (this._flavourMediator.IsSubscribed(subscriptionId, componentId)) {
+	// 				flavourId = flavourId || this._flavourMediator.GetSubscribedFlavourId(subscriptionId, componentId);
+	// 				quantity = quantity || this._quantityMediator.IsQuantitySubscribed(subscriptionId, componentId) ? this._quantityMediator.GetQuantitySubscribed(subscriptionId, componentId) : undefined;
+	// 			}
+	// 		}
+	// 	} else {
+	// 		this._productMediator.Subscribe(subscriptionId, componentId, productId);
+	// 	}
+	// 	if (flavourId) {
+	// 		if (this._flavourMediator.IsSubscribed(subscriptionId, componentId)) {
+	// 			try {
+	// 				if (this._flavourMediator.ChangeSubscription(subscriptionId, componentId, productId, flavourId)) {
+	// 					// this._flavourMediator.IsFlavourExhausted(subscriptionId,productId) &&
+	// 					// 	this._flavourMediator.RestoreFlavour(productId, previoudFlavourId) &&
+	// 					// 	this._productMediator.IsProductDeleted(productId) &&
+	// 					// 	this._productMediator.RestoreProduct(productId);
+	// 					this._quantityMediator.IsQuantitySubscribed(subscriptionId, componentId) &&
+	// 						this._quantityMediator.Unsubscibe(subscriptionId, componentId);
+	// 				}
+	// 				// if (this._flavourMediator.IsFlavourExhausted(productId)) {
+	// 				// 	//this._productMediator.DeleteProduct(productId);
+	// 				// }
+	// 			}
+	// 			catch (e) {
+	// 				if (IsFlavourNull && (e instanceof UnIdentityFlavourError || e instanceof FlavourOccupiedError)) {
+	// 					this._flavourMediator.Unsubscribe(subscriptionId, componentId);
+	// 					this._quantityMediator.IsQuantitySubscribed(subscriptionId, componentId) && this._quantityMediator.Unsubscibe(subscriptionId, componentId)
+	// 					flavourId = undefined;
+	// 				}
+	// 				else
+	// 					throw e;
+	// 			}
+
+	// 		} else {
+	// 			this._flavourMediator.Subscribe(subscriptionId, componentId, productId, flavourId);
+	// 		}
+	// 	}
+	// 	if (quantity) {
+	// 		if (this._quantityMediator.IsQuantitySubscribed(subscriptionId, componentId)) {
+	// 			try {
+	// 				this._quantityMediator.ChangeQuantity(subscriptionId, componentId, productId, flavourId!, quantity);
+	// 			}
+	// 			catch (e) {
+	// 				if (IsQuantityNull && e instanceof QuantityLimitExceeded) {
+	// 					this._quantityMediator.Unsubscibe(subscriptionId, componentId);
+	// 					quantity = undefined;
+	// 				}
+	// 				else
+	// 					throw e;
+	// 			}
+	// 		} else {
+	// 			this._quantityMediator.Subscribe(subscriptionId, componentId, productId, flavourId!, quantity);
+	// 		}
+	// 	}
+	// 	const observer = this._observersInfo.find(e => e.SubscriptonId === subscriptionId && e.ComponentId === componentId)!;
+	// 	observer.ProductId = productId;
+	// 	observer.FlavourId = flavourId;
+	// 	observer.Quantity = quantity;
+	// }
 }
