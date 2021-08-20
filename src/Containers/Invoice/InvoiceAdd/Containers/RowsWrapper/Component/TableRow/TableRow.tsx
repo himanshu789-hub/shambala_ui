@@ -1,4 +1,3 @@
-import CaretSize from 'Components/CaretSize/CaretSize';
 import React, { ChangeEvent } from 'react';
 import { ProductInfo } from 'Types/Mediator';
 import { Flavour, SoldItem } from 'Types/DTO';
@@ -25,7 +24,7 @@ export default class TableRow extends React.PureComponent<TableRowProps, TableRo
 		this.state = {
 			Flavours: [],
 			QuantityLimit: -1,
-			ProductInfo: Observer.GetProduct(),
+			ProductInfo: Observer.GetProducts(),
 		};
 	}
 
@@ -38,7 +37,7 @@ export default class TableRow extends React.PureComponent<TableRowProps, TableRo
 	HandleFocus = () => {
 		const { GetObserver, ComponentId } = this.props;
 		const Observer = GetObserver(ComponentId);
-		Observer.UnsubscribeToQuantity();
+		Observer.UnsubscribeIfSubscribedToQuantity();
 		this.setState({ QuantityLimit: Observer.GetQuantityLimit() })
 	}
 	HandleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -77,7 +76,7 @@ export default class TableRow extends React.PureComponent<TableRowProps, TableRo
 	HandleInput = (num: number) => {
 		const { handleChange, ComponentId, GetObserver } = this.props;
 		const Observer = GetObserver(ComponentId);
-		Observer.UnsubscribeToQuantity();
+		Observer.UnsubscribeIfSubscribedToQuantity();
 		handleChange(ComponentId, 'Quantity', num);
 		Observer.SetQuantity(num);
 	};
@@ -91,7 +90,7 @@ export default class TableRow extends React.PureComponent<TableRowProps, TableRo
 					this.setState({ Flavours: Observer.GetFlavours() });
 				break;
 			case 'ProductId':
-				this.setState({ ProductInfo: Observer.GetProduct() });
+				this.setState({ ProductInfo: Observer.GetProducts() });
 				break;
 			default: break;
 		}
@@ -173,6 +172,6 @@ export default class TableRow extends React.PureComponent<TableRowProps, TableRo
 	componentDidMount() {
 		const { GetObserver, ComponentId } = this.props;
 		const Observer = GetObserver(ComponentId);
-		Observer.SetComponent(this);
+	//	Observer.SetComponent(this);
 	}
 }

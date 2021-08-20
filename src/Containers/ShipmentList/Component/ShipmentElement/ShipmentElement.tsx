@@ -71,7 +71,7 @@ export default class ShipmentElement extends React.PureComponent<ShipmentElement
 	}
 	handleProductFocus = (e: React.FocusEvent) => {
 		const { Observer } = this.props;
-		this.setState({ ProductList: Observer.GetProduct() });
+		this.setState({ ProductList: Observer.GetProducts() });
 	}
 	handleFocusIn = () => {
 

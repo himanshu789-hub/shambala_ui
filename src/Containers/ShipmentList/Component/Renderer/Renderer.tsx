@@ -6,10 +6,10 @@ import { ShipmentCellValueChangeEvent, ShipmentGridDataTransation, ShipmentGridG
 
 
 export const ProductCellRenderer =
-    SelectWithAriaRenderer<ShipmentRendererParams<ShipmentDTO['ProductId']>>(e => e.data.Observer.GetProduct().map(e => ({ label: e.Title, value: e.Id })),
+    SelectWithAriaRenderer<ShipmentRendererParams<ShipmentDTO['ProductId']>>(e => e.data.Observer.GetProducts().map(e => ({ label: e.Title, value: e.Id })),
         e => e.data.Shipment.ProductId !== -1);
         
-export const FlavourCellRenderer = SelectWithAriaRenderer<ShipmentRendererParams<ShipmentDTO['FlavourId']>>((e) => (e.data.Observer.GetProduct().map(e => ({ label: e.Title, value: e.Id }))), (e) => e.data.Shipment.ProductId !== -1);
+export const FlavourCellRenderer = SelectWithAriaRenderer<ShipmentRendererParams<ShipmentDTO['FlavourId']>>((e) => (e.data.Observer.GetProducts().map(e => ({ label: e.Title, value: e.Id }))), (e) => e.data.Shipment.ProductId !== -1);
 
 
 
@@ -59,7 +59,7 @@ export const FlavourValueChangedEvent = (event: ShipmentCellValueChangeEvent<Shi
     observer.SetFlavour(event.newValue);
     if (!isColumnsNull(columns) && quantityIndex) {
         let quantity = data.Shipment.TotalRecievedPieces;
-        observer.UnsubscribeToQuantity();
+        observer.UnsubscribeIfSubscribedToQuantity();
         const quantityLimit = observer.GetQuantityLimit();
         if (data.Shipment.TotalRecievedPieces.Value > quantityLimit) {
             quantity.Value = 0;

@@ -24,7 +24,7 @@ export default class Observer {
 	// 	this._component = component;
 	// }
 
-	GetProduct(): ProductInfo[] {
+	GetProducts(): ProductInfo[] {
 		return this._subject.GetProducts(this.SubscriptionId, this.ComponentId);
 	}
 
@@ -41,7 +41,7 @@ export default class Observer {
 		}
 		this._subject.UnsubscribeAComponent(this.SubscriptionId, this.ComponentId);
 	}
-	UnsubscribeToQuantity() {
+	UnsubscribeIfSubscribedToQuantity() {
 		const info = this.GetObserverInfo();
 		if (!(info.ProductId && info.FlavourId)) {
 			throw new DeterminantsNotSetError();

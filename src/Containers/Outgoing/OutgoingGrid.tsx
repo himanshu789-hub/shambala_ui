@@ -63,18 +63,16 @@ const commonColDefs: ColDef[] = [
         },
         cellClassRules: ClassSpecifier('ProductId'),
         cellRendererFramework: ProductCellRenderer,
-        cellEditorFramework: GridSelectEditor<IOutgoingGridRowValue, any>(e => Parser.ProductsToValueContainer(e.Observer.GetProduct())),
+        cellEditorFramework: GridSelectEditor<IOutgoingGridRowValue, any>(e => Parser.ProductsToValueContainer(e.Observer.GetProducts())),
         onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['ProductId']>) {
             const { data: { Observer, Shipment } } = params;
             const IsOnUpdate = params.context.IsOnUpdate;
             Observer.SetProduct(params.newValue);
             const { FlavourId, Quantity } = Observer.GetObserverInfo();
+            Shipment.CaretSize = params.context.getProductDetails(params.newValue).CaretSize;
             Shipment.FlavourId = FlavourId || -1;
             if (!Quantity) {
                 Shipment.TotalQuantityShiped = { Value: 0 };
-            }
-            else {
-                Shipment.TotalQuantityShiped.MaxLimit = Quantity;
             }
         },
         tooltipValueGetter: ToolTipValueGetter('ProductId')
@@ -95,6 +93,9 @@ const commonColDefs: ColDef[] = [
             const { data: { Observer, Shipment } } = params;
             Observer.SetFlavour(params.newValue);
             const { Quantity } = Observer.GetObserverInfo();
+            if (!Quantity) {
+                Shipment.TotalQuantityShiped = { Value: 0 }
+            }
         },
         cellEditorFramework: GridSelectEditor<IOutgoingGridRowValue, any>(e => e.Observer.GetFlavours().map(e => ({ label: e.Title, value: e.Id })), (e) => e.Shipment.ProductId !== -1)
     },
@@ -109,13 +110,17 @@ const commonColDefs: ColDef[] = [
     {
         headerName: 'Taken',
         valueGetter: function (params: ValueGetterParams) {
-            return params.data.Shipment.TotalQuantityShiped;
+            const { data: { Observer } } = params;
+            Observer.UnsubscribeIfSubscribedToQuantity();
+            return { ...params.data.Shipment.TotalQuantityShiped, MaxLimit: Observer.GetQuantityLimit() } as CaretSizeValue;
         },
         valueSetter: function (params: ValueSetterParams<OutgoingUpdateRow['TotalQuantitySale']>) {
             params.data.Shipment.TotalQuantityShiped = params.data.Shipment.TotalQuantityShiped;
             return true;
         },
         onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['TotalQuantityShiped']>) {
+            const { Observer } = params.data;
+            Observer.SetQuantity(params.newValue.Value);
             params.data.Shipment.TotalQuantitySale = params.newValue.Value - params.data.Shipment.TotalQuantityReturned.Value;
             params.data.Shipment.TotalQuantityReturned = { ...params.data.Shipment.TotalQuantityReturned, MaxLimit: params.data.Shipment.TotalQuantityShiped.Value };
         },
@@ -182,11 +187,11 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
             {
                 headerName: 'Quantity',
                 valueGetter: (params: ValueGetterParams) => params.data.Shipment.TotalSchemeQuantity,
-                tooltipValueGetter:ToolTipValueGetter('TotalSchemeQuantity')
+                tooltipValueGetter: ToolTipValueGetter('TotalSchemeQuantity')
             },
             {
                 headerName: 'Price',
-                tooltipValueGetter:ToolTipValueGetter('SchemePrice'),
+                tooltipValueGetter: ToolTipValueGetter('SchemePrice'),
                 valueGetter: (params: ValueGetterParams) => params.data.Shipment.SchemePrice
             }
         ]
@@ -198,7 +203,7 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
             params.data.Shipment.CustomPrices = params.newValue;
             return true;
         },
-        tooltipValueGetter:ToolTipValueGetter('CustomPrices'),
+        tooltipValueGetter: ToolTipValueGetter('CustomPrices'),
         cellRendererFramework: CustomPriceRenderer,
         cellEditorFramework: CustomPriceEditor,
         cellClassRules: ClassSpecifier('CustomPrices')

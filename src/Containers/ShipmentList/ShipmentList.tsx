@@ -58,7 +58,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				columnDefs: [
 					{
 						cellRendererFramework: ProductCellRenderer,
-						cellEditorFramework: GridSelectEditor<IRowValue, any>(e => e.Observer?.GetProduct().map(e => ({ label: e.Title, value: e.Id })), () => true),
+						cellEditorFramework: GridSelectEditor<IRowValue, any>(e => e.Observer?.GetProducts().map(e => ({ label: e.Title, value: e.Id })), () => true),
 						valueGetter: ProductValueGetter,
 						valueSetter: ProductValueSetter,
 						headerName: 'Product Name',
