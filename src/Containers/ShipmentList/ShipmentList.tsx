@@ -232,11 +232,6 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			Observer: this.componentListMediator.GetAObserver(this.state.SubscriptionId, Id), Id: Id + ''
 		};
 	}
-	filterRowNodes = <U, _>(callback: (e: ShipmentGridRowNode) => U): U[] => {
-		const shipments: U[] = [];
-		this.state.GridOptions.api?.forEachNode(e => (shipments.push(callback(e))));
-		return shipments;
-	}
 
 	private OnGridReady = (params: GridReadyEvent) => {
 		this.setState((prevState) => ({ GridOptions: { ...prevState.GridOptions, api: params.api, columnApi: params.columnApi } }));

@@ -1,9 +1,13 @@
 import React from "react";
 import { RouteComponentProps } from "react-router";
 import { AgGridReact } from '@ag-grid-community/react';
-import { ColDef, ColGroupDef, GridOptions, TooltipRendererParams } from '@ag-grid-community/all-modules';
-import { ValueGetterParams, ValueSetterParams, EditableCallbackParams, CellRendererParams, OutgoingUpdateRow, CellEditorParams, CellValueChangedEvent, GridContext, OutgoingRowDataTransaction, IOutgoingGridRowValue, QuantityValueParser, CustomPriceRowData, CellClassParams, ToolTipRendererParams } from './OutgoingGrid.d';
-import { IOutgoingShipmentAddDetail, Product } from "Types/DTO";
+import { ColDef, ColGroupDef, GridOptions } from '@ag-grid-community/all-modules';
+import {
+    ValueGetterParams, ValueSetterParams, EditableCallbackParams, CellRendererParams, OutgoingUpdateRow,
+    CellEditorParams, CellValueChangedEvent, GridContext, OutgoingRowDataTransaction, OutgoingGridRowValue, QuantityValueParser,
+    CustomPriceRowData, CellClassParams, ToolTipRendererParams, RowClassParams, RowNodeData
+} from './OutgoingGrid.d';
+import { Element, IOutgoingShipmentAddDetail, IOutgoingShipmentUpdateDetail, OutOfStock, Product, ResutModel } from "Types/DTO";
 import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer } from "./Component/Renderers/Renderers";
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { GridSelectEditor } from "Components/AgGridComponent/Editors/SelectWithAriaEditor";
@@ -17,19 +21,35 @@ import QuantityMediatorWrapper from './Component/Editors/QuatityMediatorWrapper'
 import MediatorSubject from 'Utilities/MediatorSubject';
 import config from 'config.json';
 import { ToolTipComponent, ToolTipGetter } from "Components/AgGridComponent/Renderer/ToolTipRenderer";
+import OutgoingShipmentService from 'Services/OutgoingShipmentService';
+import IOutgoingShipmentService from 'Contracts/services/IOutgoingShipmentService';
+import Loader, { ApiStatusInfo, CallStatus } from "Components/Loader/Loader";
+import { OutgoingStatus, OutgoingStatusErrorCode } from "Enums/Enum";
+import SalesmanList from "Components/SalesmanList/SalesmanList";
+import { addDanger } from "Utilities/AlertUtility";
 
 interface OutgoingGridProps extends RouteComponentProps<{ id?: string }> {
 }
+
+type OutgoingData = {
+    Id: number;
+    DateCreated: string;
+    Status?: OutgoingStatus;
+    SalesmanId: number;
+    Shipments: IOutgoingShipmentUpdateDetail[];
+}
 type OutgoingGridState = {
     GridOptions: GridOptions;
+    ApiInfo: ApiStatusInfo;
     IsOnUpdate: boolean;
+    OutgoingData: OutgoingData;
 }
 const defaultColDef: ColDef = {
     flex: 1,
     editable: true,
     tooltipComponentFramework: ToolTipComponent
 }
-const ClassSpecifier = (name: keyof OutgoingUpdateRow) => CellClassRuleSpecifier(name, OutgoingValidator, (params: CellClassParams) => params.data.Shipment);
+const ClassSpecifier = (name: keyof OutgoingUpdateRow) => CellClassRuleSpecifier<OutgoingUpdateRow, OutgoingValidator>(name, OutgoingValidator, (params: CellClassParams) => params.data.Shipment);
 //@ts-ignore
 const ToolTipValueGetter = (name: keyof OutgoingUpdateRow) => ToolTipGetter(OutgoingValidator, name, (e: ToolTipRendererParams) => e.data.Shipment);
 const QuantityCellRederer = CaretSizeRenderer<CellRendererParams<CaretSizeValue>>(e => e.data.Shipment.CaretSize, e => e.value.Value);
@@ -63,16 +83,15 @@ const commonColDefs: ColDef[] = [
         },
         cellClassRules: ClassSpecifier('ProductId'),
         cellRendererFramework: ProductCellRenderer,
-        cellEditorFramework: GridSelectEditor<IOutgoingGridRowValue, any>(e => Parser.ProductsToValueContainer(e.Observer.GetProducts())),
+        cellEditorFramework: GridSelectEditor<OutgoingGridRowValue, any>(e => Parser.ProductsToValueContainer(e.Observer.GetProducts())),
         onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['ProductId']>) {
             const { data: { Observer, Shipment } } = params;
-            const IsOnUpdate = params.context.IsOnUpdate;
             Observer.SetProduct(params.newValue);
             const { FlavourId, Quantity } = Observer.GetObserverInfo();
             Shipment.CaretSize = params.context.getProductDetails(params.newValue).CaretSize;
             Shipment.FlavourId = FlavourId || -1;
             if (!Quantity) {
-                Shipment.TotalQuantityShiped = { Value: 0 };
+                Shipment.TotalQuantityTaken = { Value: 0 };
             }
         },
         tooltipValueGetter: ToolTipValueGetter('ProductId')
@@ -94,10 +113,10 @@ const commonColDefs: ColDef[] = [
             Observer.SetFlavour(params.newValue);
             const { Quantity } = Observer.GetObserverInfo();
             if (!Quantity) {
-                Shipment.TotalQuantityShiped = { Value: 0 }
+                Shipment.TotalQuantityTaken = { Value: 0 }
             }
         },
-        cellEditorFramework: GridSelectEditor<IOutgoingGridRowValue, any>(e => e.Observer.GetFlavours().map(e => ({ label: e.Title, value: e.Id })), (e) => e.Shipment.ProductId !== -1)
+        cellEditorFramework: GridSelectEditor<OutgoingGridRowValue, any>((e) => e.Observer.GetFlavours().map(e => ({ label: e.Title, value: e.Id })), (e) => e.Shipment.ProductId !== -1)
     },
     {
         headerName: 'Caret Size',
@@ -112,26 +131,29 @@ const commonColDefs: ColDef[] = [
         valueGetter: function (params: ValueGetterParams) {
             const { data: { Observer } } = params;
             Observer.UnsubscribeIfSubscribedToQuantity();
-            return { ...params.data.Shipment.TotalQuantityShiped, MaxLimit: Observer.GetQuantityLimit() } as CaretSizeValue;
+            return { ...params.data.Shipment.TotalQuantityTaken, MaxLimit: Observer.GetQuantityLimit() } as CaretSizeValue;
         },
-        valueSetter: function (params: ValueSetterParams<OutgoingUpdateRow['TotalQuantitySale']>) {
-            params.data.Shipment.TotalQuantityShiped = params.data.Shipment.TotalQuantityShiped;
+        valueSetter: function (params: ValueSetterParams<OutgoingUpdateRow['TotalQuantityShiped']>) {
+            params.data.Shipment.TotalQuantityTaken = params.data.Shipment.TotalQuantityTaken;
             return true;
         },
-        onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['TotalQuantityShiped']>) {
+        onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['TotalQuantityTaken']>) {
+            const { context } = params;
             const { Observer } = params.data;
             Observer.SetQuantity(params.newValue.Value);
-            params.data.Shipment.TotalQuantitySale = params.newValue.Value - params.data.Shipment.TotalQuantityReturned.Value;
-            params.data.Shipment.TotalQuantityReturned = { ...params.data.Shipment.TotalQuantityReturned, MaxLimit: params.data.Shipment.TotalQuantityShiped.Value };
+            if (context.IsOnUpdate) {
+                params.data.Shipment.TotalQuantityShiped = params.newValue.Value - params.data.Shipment.TotalQuantityReturned.Value;
+                params.data.Shipment.TotalQuantityReturned = { ...params.data.Shipment.TotalQuantityReturned, MaxLimit: params.data.Shipment.TotalQuantityTaken.Value };
+            }
         },
         valueParser: function (params: QuantityValueParser) {
             const { newValue: { Value, IsValid } } = params;
             return { Value: IsValid ? Value : 0 };
         },
-        tooltipValueGetter: ToolTipValueGetter('TotalQuantityShiped'),
-        cellClassRules: ClassSpecifier('TotalQuantityShiped'),
+        tooltipValueGetter: ToolTipValueGetter('TotalQuantityTaken'),
+        cellClassRules: ClassSpecifier('TotalQuantityTaken'),
         cellRendererFramework: QuantityCellRederer,
-        cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityShiped']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.ProductId !== -1)
+        cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityTaken']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.ProductId !== -1)
     }
 ];
 
@@ -144,7 +166,7 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
             return true;
         },
         editable: (params: EditableCallbackParams) => {
-            return params.data.Shipment.TotalQuantityShiped.Value > 0;
+            return params.data.Shipment.TotalQuantityTaken.Value > 0;
         },
         cellRendererFramework: QuantityCellRederer,
         valueParser: function (params: QuantityValueParser) {
@@ -152,19 +174,19 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
             return { Value: IsValid ? Value : 0 } as CaretSizeValue;
         },
         onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['TotalQuantityReturned']>) {
-            params.data.Shipment.TotalQuantitySale = params.data.Shipment.TotalQuantityShiped.Value - params.newValue.Value;
+            params.data.Shipment.TotalQuantityShiped = params.data.Shipment.TotalQuantityTaken.Value - params.newValue.Value;
         },
         cellClassRules: ClassSpecifier('TotalQuantityReturned'),
         tooltipValueGetter: ToolTipValueGetter('TotalQuantityReturned'),
-        cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityReturned']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.TotalQuantitySale > 0)
+        cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityReturned']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.TotalQuantityShiped > 0)
     },
     {
         headerName: 'Sale',
         valueGetter: (params: ValueGetterParams) => {
-            return params.data.Shipment.TotalQuantitySale;
+            return params.data.Shipment.TotalQuantityShiped;
         },
         editable: false,
-        onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['TotalQuantitySale']>) {
+        onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['TotalQuantityShiped']>) {
             const customPrices = params.data.Shipment.CustomPrices;
             params.data.Shipment.CustomPrices = ReInitializeCustomPrice(customPrices, params.newValue);
             const schemeQuantity = params.context.getProductDetails(params.data.Shipment.ProductId).SchemeQuantity;
@@ -178,8 +200,8 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
                 Shipment.TotalSchemeQuantity = totalBottle;
             }
         },
-        cellClassRules: ClassSpecifier('TotalQuantitySale'),
-        tooltipValueGetter: ToolTipValueGetter('TotalQuantitySale')
+        cellClassRules: ClassSpecifier('TotalQuantityShiped'),
+        tooltipValueGetter: ToolTipValueGetter('TotalQuantityShiped')
     },
     {
         headerName: 'Scheme',
@@ -229,11 +251,11 @@ const getColumnIndex = function (name: keyof OutgoingUpdateRow) {
             columnIndex = 1; break;
         case 'CaretSize':
             columnIndex = 2; break;
-        case 'TotalQuantityShiped':
+        case 'TotalQuantityTaken':
             columnIndex = 3; break;
         case 'TotalQuantityReturned':
             columnIndex = 4; break;
-        case 'TotalQuantitySale':
+        case 'TotalQuantityShiped':
             columnIndex = 5; break;
         case 'SchemePrice':
             columnIndex = 6; break;
@@ -247,6 +269,7 @@ const getColumnIndex = function (name: keyof OutgoingUpdateRow) {
 export default class OutgoingGrid extends React.Component<OutgoingGridProps, OutgoingGridState>{
     private mediatorSubject: MediatorSubject;
     private products: Product[];
+    private outgoingService: IOutgoingShipmentService;
 
     constructor(props: OutgoingGridProps) {
         super(props);
@@ -254,9 +277,11 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
         let colDefs: ColDef[];
         const actionColDef = getActionColDef({ addAChild: this.addAShipment, deleteAChild: this.deleteAShipment });
         this.mediatorSubject = new MediatorSubject([]);
+        this.outgoingService = new OutgoingShipmentService();
         this.products = [];
+
         if (id) {
-            colDefs = [...commonColDefs, ...updateColDefs]
+            colDefs = [...commonColDefs, ...updateColDefs, actionColDef]
         }
         else
             colDefs = [...commonColDefs, actionColDef]
@@ -269,21 +294,23 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                     getProductDetails: (Id: number) => this.products.find(e => e.Id === Id)!,
                     IsOnUpdate
                 } as GridContext,
-                getRowNodeId: (data: IOutgoingGridRowValue) => data.Id
+                getRowNodeId: (data: OutgoingGridRowValue) => data.Id,
             },
-            IsOnUpdate
-        }
+            ApiInfo: { Status: CallStatus.LOADED },
+            IsOnUpdate,
+            OutgoingData: { DateCreated: new Date().toDateString(), SalesmanId: -1, Shipments: [], Id: 0 }
+        };
     }
     getProductDetails = (Id: number) => {
         return this.products.find(e => e.Id === Id)!;
     }
-    createAShipment = (componentId: number): IOutgoingGridRowValue => {
+    createAShipment = (componentId: number): OutgoingGridRowValue => {
         return {
             Id: componentId + '',
             Observer: this.mediatorSubject.GetAObserver(1, componentId),
             Shipment: {
                 CaretSize: 0, CustomPrices: [], FlavourId: -1, Id: componentId, ProductId: -1, SchemePrice: 0,
-                TotalQuantityRejected: { Value: 0 }, TotalQuantityReturned: { Value: 0 }, TotalQuantitySale: 0, TotalQuantityShiped: { Value: 0 },
+                TotalQuantityRejected: { Value: 0 }, TotalQuantityReturned: { Value: 0 }, TotalQuantityShiped: 0, TotalQuantityTaken: { Value: 0 },
                 TotalSchemeQuantity: 0
             }
         }
@@ -304,10 +331,82 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
         }
         api?.applyTransaction(transaction);
     }
+
+    handleSalesmanSelect = (Id: number) => {
+        this.setState((prevState) => { return { OutgoingData: { ...prevState.OutgoingData, SalesmanId: Id } } });
+    }
+
     render() {
-        const { GridOptions } = this.state;
-        return (<div className="ag-theme-alpine">
-            <AgGridReact gridOptions={GridOptions}></AgGridReact>
-        </div>);
+        const { GridOptions, ApiInfo: { Status, Message }, OutgoingData } = this.state;
+        return (<Loader Message={Message} Status={Status}>
+            <div className="form-inline">
+                <SalesmanList handleSelection={this.handleSalesmanSelect} SalemanId={OutgoingData.SalesmanId} />
+                {
+                    OutgoingData.Status && <div className="input-group mb-2 mr-sm-2">
+                        <div className="input-group-prepend">
+                            <div className="input-group-text">Shipment Status</div>
+                        </div>
+                        <input type="text" className="form-control" value={Object.entries(OutgoingStatus).find((k, v) => v == OutgoingData.Status)![0]} />
+                    </div>
+                }
+            </div>
+            <div className="ag-theme-alphine">
+                <AgGridReact gridOptions={GridOptions} rowData={OutgoingData.Shipments}></AgGridReact>
+            </div>
+        </Loader>);
+    }
+    handleError = (model: ResutModel) => {
+        const { GridOptions: { api } } = this.state;
+        const dataArray = [] as RowNodeData[];
+        api?.forEachNode((node) => dataArray.push(node.data));
+        const content = model.Content as Element[];
+
+        switch (model.Code) {
+            case OutgoingStatusErrorCode.CUSTOM_CARAT_PRICE_NOT_VALID:
+                alert('Custom Carat Price Not Valid.\nPlease, Contact Administration');
+                break;
+            case OutgoingStatusErrorCode.DUPLICATE:
+                alert('Duplicate Product Element Exists.\nPlease, Contact Administration');
+                break;
+            case OutgoingStatusErrorCode.OUT_OF_STOCK:
+                const outOfStockProducts = model.Content as OutOfStock[];
+                dataArray.forEach(data => {
+                    const p = outOfStockProducts.find(e => e.FlavourId == data.FlavourId && e.ProductId == data.ProductId);
+                    if (p)
+                        data.TotalQuantityTaken.MaxLimit = p.Quantity;
+                });
+                api?.refreshCells();
+                break;
+            case OutgoingStatusErrorCode.SCHEME_EXCEED:
+                addDanger('Scheme Product Quantity Excceed');
+                break;
+            case OutgoingStatusErrorCode.SCHEME_QUANTITY_NOT_VALID:
+                alert('Scheme Calculation Not Valid.\nPlease, Contact Administration');
+                break;
+            case OutgoingStatusErrorCode.SHIPED_QUANTITY_NOT_VALID:
+                alert('Product Shiped Value Not Valid.\nPlease, Contact Administration');
+                break;
+        }
+    }
+    componentDidMount() {
+        const { match: { params: { id } } } = this.props;
+        const { IsOnUpdate } = this.state;
+
+        if (IsOnUpdate) {
+            if (id && Number.parseInt(id)) {
+                this.setState({ ApiInfo: { Status: CallStatus.LOADING, Message: "Gathering Shipment Info . . ." } });
+                this.outgoingService.GetById(Number.parseInt(id))
+                    .then(res => this.setState({
+                        OutgoingData: {
+                            DateCreated: res.data.DateCreated,
+                            SalesmanId: res.data.Salesman.Id, Shipments: res.data.OutgoingShipmentDetails,
+                            Id: res.data.Id,
+                            Status: res.data.Status
+                        }
+                    }))
+                    .catch(() => this.setState({ ApiInfo: { Status: CallStatus.ERROR, Message: "Error Loading Shipment Info" } }));
+            }
+        }
+
     }
 }

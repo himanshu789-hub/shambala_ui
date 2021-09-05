@@ -1,75 +1,87 @@
 import { OutgoingStatus, SchemeKey } from 'Enums/Enum';
 
-export type OutgoingShipmentPriceDetail = {
+type OutgoingShipmentPriceDetail = {
 	Id: number;
 	Salesman: SalesmanDTO;
 	ProductDetails: OutgoingShipmentProductDetail[];
 }
-export type OutgoingShipmentProductDetail = {
+type OutgoingShipmentProductDetail = {
 	ProductId: number;
 	Name: string;
 	FlavourDetails: OutgoingShipmentFlavourDetail[];
 }
-export type OutgoingShipmentFlavourDetail = {
+type OutgoingShipmentFlavourDetail = {
 	FlavourId: number;
 	Name: string;
 	VariantDetails: FlavourVariantDetail[];
 	SchemeDetail: FlavourSchemeDetail;
 }
-export type FlavourVariantDetail = {
+type Element = {
+	ProductId: number;
+	FlavourId: number;
+}
+type FlavourVariantDetail = {
 	Quantity: number;
 	TotalPrice: number;
 	PricePerCarat: number;
 }
-export type FlavourSchemeDetail = {
+type FlavourSchemeDetail = {
 	TotalPrice: number;
 	Quantity: number;
 	PricePerBottle: number;
 }
-export type OutgoingShipment = {
+interface OutgoingShipment {
 	Id: number;
 	DateCreated: string;
+	OutgoingShipmentDetails: IOutgoingShipmentUpdateDetail[];
+};
+
+interface OutgoingShipmentPost {
+	SalesmanId: number;
+	DateCreated: string;
+	Shipments: ShipmentDTO[];
+}
+interface OutgoingShipmentPut extends OutgoingShipment {
+	SalesmanId: number;
+}
+interface OutgoingShipmentInfo extends OutgoingShipment {
 	Salesman: SalesmanDTO;
 	Status: number;
-	OutgoingShipmentDetails: IOutgoingShipmentAddDetail[];
-};
-export interface IOutgoingShipmentAddDetail {
+}
+
+interface IOutgoingShipmentAddDetail {
 	Id: number;
 	ProductId: number;
 	FlavourId: number;
-	TotalQuantityShiped: number;
+	TotalQuantityTaken: number;
 	TotalQuantityRejected: number;
 	CaretSize: number;
 	TotalQuantityReturned: number;
 }
-export interface IOutgoingShipmentUpdateDetail extends IOutgoingShipmentAddDetail {
+
+interface IOutgoingShipmentUpdateDetail extends IOutgoingShipmentAddDetail {
 	SchemePrice: number;
-	TotalQuantitySale: number;
+	TotalQuantityShiped: number;
 	TotalSchemeQuantity: nunber;
 	CustomPrices: CustomPrice[];
 }
-export type CustomPrice = {
+type CustomPrice = {
 	Id: number;
 	Quantity: number;
 	Price: number;
 }
-export type OutgoingShipmentInfo = {
-	Id: number;
-	Products: Product[];
-	Salesman: SalesmanDTO;
-	Status: OutgoingStatus;
-};
-export type OutgoingShipmentCompleteDetail = {
+
+type OutgoingShipmentCompleteDetail = {
 	DateCreated: Date;
 	Id: number;
 	Ledgers: IOutgoingShipmentLedgerWithOldDebit[]
 }
-export type PostOutgoingShipment = {
+type PostOutgoingShipment = {
 	DateCreated: Date,
 	Shipments: ShipmentDTO[];
 	SalesmanId: number;
 }
-export type ShipmentDTO = {
+type ShipmentDTO = {
 	Id: number;
 	ProductId: number;
 	TotalRecievedPieces: number;
@@ -77,39 +89,40 @@ export type ShipmentDTO = {
 	TotalDefectedPieces: number;
 	FlavourId: number;
 };
-export type SalesmanDTO =
+type SalesmanDTO =
 	{
 		Id: number;
 		FullName: string;
 	}
-export type OutOfStock = { ProductId: number, FlavourId: number }
-export type BadRequestError =
+type OutOfStock = { ProductId: number, FlavourId: number,Quantity:number; }
+type BadRequestError =
 	{
 		Code: number;
 		Model: any;
 	}
-export type Flavour = {
+type Flavour = {
 	Id: number;
 	Title: string;
 	Quantity?: number;
 };
-export type FlavourInfo =
+type FlavourInfo =
 	{
 		Id: number;
 		Title: string;
 		QuantityInStock: number;
 		QuantityInDispatch: number;
 	}
-export type Product = {
+type Product = {
 	Id: number;
 	Name: string;
 	CaretSize: number;
 	Flavours: Flavour[];
 	Price: number;
-	SchemeQuantity?:number;
+	SchemeQuantity?: number;
+	PricePerBottle: number;
 };
 
-export type SchemeDTO = {
+type SchemeDTO = {
 	Id: number;
 	Title: string;
 	Date: string;
@@ -118,39 +131,39 @@ export type SchemeDTO = {
 	Value: number;
 };
 
-export type SoldItem = {
+type SoldItem = {
 	Id: number;
 	ProductId: number;
 	FlavourId: number;
 	Quantity: number;
 	CaretSize: number;
 };
-export type ShopInvoice = {
+type ShopInvoice = {
 	ShopId: number | undefined;
 	SchemeId: number | null;
 	Invoices: SoldItem[];
 	DateCreated: Date;
 	OutgoingShipmentId: number;
 };
-export type ProductInfo =
+type ProductInfo =
 	{
 		Id: number;
 		Name: string;
 		CaretSize: number;
 		FlavourInfos: FlavourInfo[];
 	}
-export interface IShopBaseDTO {
+interface IShopBaseDTO {
 	Id: number;
 	Title: string;
 	Address: string;
 }
-export interface IShopDTO extends IShopBaseDTO {
+interface IShopDTO extends IShopBaseDTO {
 	SchemeId: number | null;
 }
-export interface IShopInfoDTO extends IShopBaseDTO {
+interface IShopInfoDTO extends IShopBaseDTO {
 	Scheme: SchemeDTO;
 };
-export type InvoiceDetailDTO = {
+type InvoiceDetailDTO = {
 	OutgoingShipmentId: number;
 	ShopId: number;
 	DateCreated: string;
@@ -160,6 +173,12 @@ export type InvoiceDetailDTO = {
 	TotalDuePrice: number;
 	IsCompleted: boolean;
 }
+type ResutModel = {
+	IsValid: boolean;
+	Content: Object;
+	Code: number;
+	Name: string;
+}
 type BillInfo = {
 	ProductName: string;
 	FlavourName: string;
@@ -167,49 +186,42 @@ type BillInfo = {
 	SellingPrice: number;
 	CaretSize: number;
 }
-export interface IInvoiceBillingDTO extends InvoiceDetailDTO {
+interface IInvoiceBillingDTO extends InvoiceDetailDTO {
 	Shop: IShopDTO;
 	OutgoingShipment: OutgoingShipment;
 	DateCreated: string;
 	BillingInfo: BillInfo[];
 }
-export type LedgerStatus = {
+type LedgerStatus = {
 	Result: boolean;
 	TotalShipmentPrice: number;
 	YourTotal: number;
 }
-export type CreditDTO = {
+type CreditDTO = {
 	OutgoingShipmentId: number;
 	ShopId: number;
 	Id: number;
 	Amount: number;
 	DateRecieved: string;
 }
-export type CreditLeftOver = {
+type CreditLeftOver = {
 	ShopId: number;
 	Credit: number;
 }
 
-export type InvoiceCreditInfoDTO = {
+type InvoiceCreditInfoDTO = {
 	Shop: IShopDTO;
 	OutgoingShipment: OutgoingShipment;
 	Credits: CreditDTO[];
 	TotalDuePrice: number;
 	IsCompleted: boolean;
 }
-export interface IOutgoingShipmentLedger {
+interface IOutgoingShipmentLedger {
 	ShopId: number;
 	Credit: number;
 	Debit: number;
 }
-export interface IOutgoingShipmentLedgerWithOldDebit extends IOutgoingShipmentLedger {
+interface IOutgoingShipmentLedgerWithOldDebit extends IOutgoingShipmentLedger {
 
 	OldDebit: number;
 }
-export type OutgingReturnDTO =
-	{
-		ProductId: number;
-		FlavourId: number;
-		TotalQuantityReturned: number;
-		TotalQuantityDefected: number;
-	}

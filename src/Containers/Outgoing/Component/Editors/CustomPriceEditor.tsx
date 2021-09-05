@@ -21,10 +21,10 @@ export default forwardRef<ICellEditor, CellEditorParams<OutgoingUpdateRow['Custo
             return data;
         },
         isCancelBeforeStart() {
-            return !isProductIdValid && params.data.Shipment.TotalQuantitySale > 0;
+            return !isProductIdValid && params.data.Shipment.TotalQuantityShiped > 0;
         }
     }));
-    return <CustomPriceGrid initialData={{ CaretSize: params.data.Shipment.CaretSize, Data: data, DefaultPrice: defaultPrice, QuantityLimit: params.data.Shipment.TotalQuantitySale }} setData={setData} />
+    return <CustomPriceGrid initialData={{ CaretSize: params.data.Shipment.CaretSize, Data: data, DefaultPrice: defaultPrice, QuantityLimit: params.data.Shipment.TotalQuantityShiped }} setData={setData} />
 });
 
 type GridData = {

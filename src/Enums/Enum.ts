@@ -11,3 +11,7 @@ export enum InvoiceStatus {
 export enum SchemeKey {
     PERCENTAGE = 1, BOTTLE, CARET
 }
+
+export enum OutgoingStatusErrorCode {
+    DUPLICATE = 1221, SCHEME_EXCEED, OUT_OF_STOCK, SCHEME_QUANTITY_NOT_VALID,SHIPED_QUANTITY_NOT_VALID,CUSTOM_CARAT_PRICE_NOT_VALID
+}

@@ -14,23 +14,24 @@ type GridWithOldAndNewValue<T, VType> = Omit<T, "oldValue" | "newValue"> & {
 
 type GridRowNode = GridParamsWithData<RowNode, IRowValue>;
 
-export type GridEditableCallbackParams<DataT> = GridParamsWithData<EditableCallbackParams, DataT>;
-export type GridCellClassParams<DataT> = GridParamsWithData<CellClassParams, DataT>;
-export type GridToolTipParams<DataT> = GridParamsWithValue<string, ITooltipParams, DataT>;
+type GridEditableCallbackParams<DataT> = GridParamsWithData<EditableCallbackParams, DataT>;
+type GridCellClassParams<DataT> = GridParamsWithData<CellClassParams, DataT>;
+type GridToolTipParams<DataT> = GridParamsWithValue<string, ITooltipParams, DataT>;
 
-export type GridEditorParams<ValueType, DataT, CtxT> = GridParamsWithContext<GridParamsWithValue<ValueType, ICellEditorParams, DataT>, CtxT>;
-export type GridRendererParams<ValueType, DataT, CtxT> = GridParamsWithContext<GridParamsWithValue<ValueType, ICellRendererParams, DataT>, CtxT>;
+type GridEditorParams<ValueType, DataT, CtxT> = GridParamsWithContext<GridParamsWithValue<ValueType, ICellEditorParams, DataT>, CtxT>;
+type GridRendererParams<ValueType, DataT, CtxT> = GridParamsWithContext<GridParamsWithValue<ValueType, ICellRendererParams, DataT>, CtxT>;
 
-export type GridSetterParams<VType, DataT, CtxT> = GridWithOldAndNewValue<GridParamsWithContext<GridParamsWithData<ValueSetterParams, DataT>, CtxT>
-,VType>
+type GridSetterParams<VType, DataT, CtxT> = GridWithOldAndNewValue<GridParamsWithContext<GridParamsWithData<ValueSetterParams, DataT>, CtxT>
+      , VType>
 
-export type GridGetterParams<DataT, CtxT> = GridParamsWithContext<GridParamsWithData<ValueGetterParams, DataT>, CtxT>;
+type GridGetterParams<DataT, CtxT> = GridParamsWithContext<GridParamsWithData<ValueGetterParams, DataT>, CtxT>;
 
 type Ids = { Id: string };
-export type GridRowDataTransaction<DataT> = Omit<{ [Property in keyof RowDataTransaction]+?: DataT[] }, 'addIndex' | 'remove'> & {
+type GridRowDataTransaction<DataT> = Omit<{ [Property in keyof RowDataTransaction]+?: DataT[] }, 'addIndex' | 'remove'> & {
       addIndex?: (number | null),
       remove?: Ids[]
 };
-export type GridCellValueChangeEvent<V, DataT, CtxT> = GridWithOldAndNewValue<GridParamsWithContext<GridParamsWithData<CellValueChangedEvent, DataT>, CtxT>, V>;
-export type GridValueParserParams<V,DataT,CtxT> = GridParamsWithContext<GridParamsWithData<GridWithOldAndNewValue<ValueSetterParams,V>,DataT>,CTxT>;
-export type ValidationRowData<T> = { [Property in keyof T]: { Value: T[Property], IsValid: boolean } };
+type GridCellValueChangeEvent<V, DataT, CtxT> = GridWithOldAndNewValue<GridParamsWithContext<GridParamsWithData<CellValueChangedEvent, DataT>, CtxT>, V>;
+type GridValueParserParams<V, DataT, CtxT> = GridParamsWithContext<GridParamsWithData<GridWithOldAndNewValue<ValueSetterParams, V>, DataT>, CTxT>;
+type ValidationRowData<T> = { [Property in keyof T]: { Value: T[Property], IsValid: boolean } };
+type RowStyleParams<DataT,Ctx> = GridParamsWithData<GridParamsWithContext<RowClassParams,Ctx>,DataT>;
