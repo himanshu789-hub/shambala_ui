@@ -1,11 +1,11 @@
 import React from "react";
 import { RouteComponentProps } from "react-router";
 import { AgGridReact } from '@ag-grid-community/react';
-import { ColDef, ColGroupDef, GridOptions } from '@ag-grid-community/all-modules';
+import { ColDef, ColGroupDef, GridOptions, GridReadyEvent } from '@ag-grid-community/all-modules';
 import {
     ValueGetterParams, ValueSetterParams, EditableCallbackParams, CellRendererParams, OutgoingUpdateRow,
     CellEditorParams, CellValueChangedEvent, GridContext, OutgoingRowDataTransaction, OutgoingGridRowValue, QuantityValueParser,
-    CustomPriceRowData, CellClassParams, ToolTipRendererParams, RowClassParams, RowNodeData
+    CustomPriceRowData, CellClassParams, ToolTipRendererParams, RowNodeData
 } from './OutgoingGrid.d';
 import { Element, IOutgoingShipmentAddDetail, IOutgoingShipmentUpdateDetail, OutOfStock, Product, ResutModel } from "Types/DTO";
 import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer } from "./Component/Renderers/Renderers";
@@ -20,6 +20,7 @@ import OutgoingValidator from 'Validation/OutgoingValidation';
 import QuantityMediatorWrapper from './Component/Editors/QuatityMediatorWrapper';
 import MediatorSubject from 'Utilities/MediatorSubject';
 import config from 'config.json';
+import IProductService from 'Contracts/services/IProductService';
 import { ToolTipComponent, ToolTipGetter } from "Components/AgGridComponent/Renderer/ToolTipRenderer";
 import OutgoingShipmentService from 'Services/OutgoingShipmentService';
 import IOutgoingShipmentService from 'Contracts/services/IOutgoingShipmentService';
@@ -27,6 +28,11 @@ import Loader, { ApiStatusInfo, CallStatus } from "Components/Loader/Loader";
 import { OutgoingStatus, OutgoingStatusErrorCode } from "Enums/Enum";
 import SalesmanList from "Components/SalesmanList/SalesmanList";
 import { addDanger } from "Utilities/AlertUtility";
+import { AllCommunityModules } from '@ag-grid-community/all-modules';
+import Action from "Components/Action/Action";
+import { DeterminantsNotSetError } from 'Errors/Error';
+import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
+import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
 
 interface OutgoingGridProps extends RouteComponentProps<{ id?: string }> {
 }
@@ -116,7 +122,8 @@ const commonColDefs: ColDef[] = [
                 Shipment.TotalQuantityTaken = { Value: 0 }
             }
         },
-        cellEditorFramework: GridSelectEditor<OutgoingGridRowValue, any>((e) => e.Observer.GetFlavours().map(e => ({ label: e.Title, value: e.Id })), (e) => e.Shipment.ProductId !== -1)
+        cellEditorFramework: GridSelectEditor<OutgoingGridRowValue, any>((e) => e.Observer.GetFlavours().map(e => ({ label: e.Title, value: e.Id })), (e) => e.Shipment.ProductId !== -1),
+        editable: (params: EditableCallbackParams) => params.data.Shipment.ProductId != -1
     },
     {
         headerName: 'Caret Size',
@@ -130,8 +137,19 @@ const commonColDefs: ColDef[] = [
         headerName: 'Taken',
         valueGetter: function (params: ValueGetterParams) {
             const { data: { Observer } } = params;
-            Observer.UnsubscribeIfSubscribedToQuantity();
-            return { ...params.data.Shipment.TotalQuantityTaken, MaxLimit: Observer.GetQuantityLimit() } as CaretSizeValue;
+            let maxLimit;
+            try {
+                Observer.UnsubscribeIfSubscribedToQuantity();
+                maxLimit = Observer.GetQuantityLimit();
+            }
+            catch (e) {
+                if (e instanceof DeterminantsNotSetError) {
+
+                }
+                else
+                    throw e;
+            }
+            return { ...params.data.Shipment.TotalQuantityTaken, MaxLimit: maxLimit } as CaretSizeValue;
         },
         valueSetter: function (params: ValueSetterParams<OutgoingUpdateRow['TotalQuantityShiped']>) {
             params.data.Shipment.TotalQuantityTaken = params.data.Shipment.TotalQuantityTaken;
@@ -270,7 +288,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
     private mediatorSubject: MediatorSubject;
     private products: Product[];
     private outgoingService: IOutgoingShipmentService;
-
+    private productService: IProductService;
     constructor(props: OutgoingGridProps) {
         super(props);
         const { match: { params: { id } } } = this.props;
@@ -278,6 +296,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
         const actionColDef = getActionColDef({ addAChild: this.addAShipment, deleteAChild: this.deleteAShipment });
         this.mediatorSubject = new MediatorSubject([]);
         this.outgoingService = new OutgoingShipmentService();
+        this.productService = new ProductSe
         this.products = [];
 
         if (id) {
@@ -295,11 +314,17 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                     IsOnUpdate
                 } as GridContext,
                 getRowNodeId: (data: OutgoingGridRowValue) => data.Id,
+                defaultColDef
             },
             ApiInfo: { Status: CallStatus.LOADED },
             IsOnUpdate,
-            OutgoingData: { DateCreated: new Date().toDateString(), SalesmanId: -1, Shipments: [], Id: 0 }
+            OutgoingData: { DateCreated: new Date().toDateString(), SalesmanId: -1, Shipments: [], Id: 0 },
+
         };
+    }
+
+    private OnGridReady = (params: GridReadyEvent) => {
+        this.setState((prevState) => ({ GridOptions: { ...prevState.GridOptions, api: params.api, columnApi: params.columnApi } }));
     }
     getProductDetails = (Id: number) => {
         return this.products.find(e => e.Id === Id)!;
@@ -335,7 +360,9 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
     handleSalesmanSelect = (Id: number) => {
         this.setState((prevState) => { return { OutgoingData: { ...prevState.OutgoingData, SalesmanId: Id } } });
     }
+    handleSubmit = () => {
 
+    }
     render() {
         const { GridOptions, ApiInfo: { Status, Message }, OutgoingData } = this.state;
         return (<Loader Message={Message} Status={Status}>
@@ -350,8 +377,10 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                     </div>
                 }
             </div>
-            <div className="ag-theme-alphine">
-                <AgGridReact gridOptions={GridOptions} rowData={OutgoingData.Shipments}></AgGridReact>
+            <div className="ag-theme-alpine" style={{ height: '500px', width: '100vw' }}>
+                <AgGridReact gridOptions={GridOptions} rowData={OutgoingData.Shipments} modules={AllCommunityModules}
+                    onGridReady={this.OnGridReady} singleClickEdit={true}></AgGridReact>
+                <Action handleAdd={this.addAShipment} handleProcess={this.handleSubmit} />
             </div>
         </Loader>);
     }
@@ -391,7 +420,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
     componentDidMount() {
         const { match: { params: { id } } } = this.props;
         const { IsOnUpdate } = this.state;
-
+    
         if (IsOnUpdate) {
             if (id && Number.parseInt(id)) {
                 this.setState({ ApiInfo: { Status: CallStatus.LOADING, Message: "Gathering Shipment Info . . ." } });

@@ -101,7 +101,7 @@ export function getSchemeText(scheme?: SchemeDTO) {
 	return result;
 }
 export function OutgoingDetailToShipment(shipment: IOutgoingShipmentAddDetail): ShipmentDTO {
-	return { CaretSize: shipment.CaretSize, FlavourId: shipment.FlavourId, Id: shipment.Id, ProductId: shipment.ProductId, TotalDefectedPieces: shipment.TotalQuantityRejected, TotalRecievedPieces: shipment.TotalQuantityShiped }
+	return { CaretSize: shipment.CaretSize, FlavourId: shipment.FlavourId, Id: shipment.Id, ProductId: shipment.ProductId, TotalDefectedPieces: shipment.TotalQuantityRejected, TotalRecievedPieces: shipment.TotalQuantityTaken }
 }
 export function toDateText(date: string) {
 	return new Date(date).toDateString();

@@ -3,7 +3,6 @@ import Nav from './Components/Nav/Nav';
 import Home from './Components/Home/Home';
 import IncoingShipment from '../../Components/IncomingShipment/IncomingShipment';
 import { Route, Switch,  useRouteMatch } from 'react-router-dom';
-import OutgoingShipment from 'discarded/Outgoing/Component/OutgoingShipment/OutgoingShipment';
 import Invoice from 'Components/Invoice/Invoice';
 import MessageModal from 'Components/MessageModal/MessageModal';
 import SearchProduct from 'Containers/SearchProduct/SearchProduct';
@@ -11,6 +10,7 @@ import Shop from 'Components/Shop/Shop';
 import Scheme from 'Components/Scheme/Scheme';
 import Salesman from 'Components/Salesman/Salesman';
 import Alert from 'Components/Alert/Alert';
+import OutgoingGrid from 'Containers/Outgoing/OutgoingGrid';
 
 
 function MessageRoute() {
@@ -34,9 +34,8 @@ export default class App extends React.Component {
 				<Route path='/incoming'>
 					<IncoingShipment />
 				</Route>
-				<Route path='/outgoing'>
-					<OutgoingShipment />
-				</Route>
+				<Route path='/outgoing' render={(params)=><OutgoingGrid {...params}/>}/>
+		
 				<Route path='/invoice'>
 					<Invoice />
 				</Route>

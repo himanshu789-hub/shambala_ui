@@ -145,7 +145,7 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 			}
 		});
 	}
-	CheckShipmentAmountAsync = (): Promise<LedgerStatus> => this._outgoingService.CheckShipmentAmount(toLedgersWithoutOldDebit(this.state.ShopSubscribers)).then(res => { this.setState({ LedgerStatus: res.data }); return res.data });
+	// CheckShipmentAmountAsync = (): Promise<LedgerStatus> => this._outgoingService.CheckShipmentAmount(toLedgersWithoutOldDebit(this.state.ShopSubscribers)).then(res => { this.setState({ LedgerStatus: res.data }); return res.data });
 
 	CheckOldDebtClearedAsync = (): Promise<CreditLeftOver[]> =>
 		new CreditService().GetCreditLeftByShopIds(this.state.ShopSubscribers.map((e): CreditLeftOver => { return { Credit: e.ShopLedger.OldDebit, ShopId: e.ShopLedger.Shop.Id } }))
@@ -164,9 +164,9 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 			});
 
 	CompleteAsync = () => {
-		const { OutgoingShipmentId } = this.state;
-		if (OutgoingShipmentId)
-			this._outgoingService.Complete(OutgoingShipmentId, toLedgersWithOldDebit(this.state.ShopSubscribers))
+		// const { OutgoingShipmentId } = this.state;
+		// if (OutgoingShipmentId)
+		// 	 this._outgoingService.Complete(OutgoingShipmentId, toLedgersWithOldDebit(this.state.ShopSubscribers))
 	}
 	PostShipmentAsync = () => {
 		return this.CheckOldDebtClearedAsync().then(res => {
@@ -176,20 +176,20 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 	}
 	HandleSubmit = () => {
 		const { ShopSubscribers, LedgerStatus } = this.state;
-		if (ShopSubscribers.length > 0) {
-			const IsCheckShipmentCompleted = LedgerStatus?.Result ?? false;
-			if (!IsCheckShipmentCompleted)
-				this.CheckShipmentAmountAsync().then(res => {
-					if (res.Result)
-						return this.PostShipmentAsync();
-				})
-					.catch(() => this.setState({ ApiStatus: { Status: CallStatus.ERROR, Message: undefined } }));
-			else
-				this.PostShipmentAsync()
-					.catch(() => this.setState({ ApiStatus: { Status: CallStatus.ERROR, Message: undefined } }));
-		}
-		else
-			addDanger('Please Add Some Ledger');
+		// if (ShopSubscribers.length > 0) {
+		// 	const IsCheckShipmentCompleted = LedgerStatus?.Result ?? false;
+		// 	if (!IsCheckShipmentCompleted)
+		// 		this.CheckShipmentAmountAsync().then(res => {
+		// 			if (res.Result)
+		// 				return this.PostShipmentAsync();
+		// 		})
+		// 			.catch(() => this.setState({ ApiStatus: { Status: CallStatus.ERROR, Message: undefined } }));
+		// 	else
+		// 		this.PostShipmentAsync()
+		// 			.catch(() => this.setState({ ApiStatus: { Status: CallStatus.ERROR, Message: undefined } }));
+		// }
+		// else
+		// 	addDanger('Please Add Some Ledger');
 	};
 
 	render() {
@@ -208,9 +208,9 @@ export default class InvoiceAddWrapper extends React.Component<IInvoiceAddWrappe
 		if (!OutgoingShipmentId)
 			DisplayComponent = <div className="alert alert-danger">Shopment Id Is Not Valid</div>;
 		else {
-			if (OutgoingShipment?.Status == OutgoingStatus.COMPLETED)
-				DisplayComponent = <div className="alert alert-warning">Shipment Has Been Processed</div>;
-			else
+			// if (OutgoingShipment?.Status == OutgoingStatus.COMPLETED)
+			// 	DisplayComponent = <div className="alert alert-warning">Shipment Has Been Processed</div>;
+			// else
 				DisplayComponent = <Loader Status={Status} Message={Message} Overlay={true}>
 					<GridView<ShopSubscriber> HeaderDisplay={header} Length={length}>
 						{this.state.ShopSubscribers.map((e, index) => {

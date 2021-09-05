@@ -3,7 +3,6 @@ import MockAdapter from 'axios-mock-adapter';
 import IProductService from 'Contracts/services/IProductService';
 import { ProductAxiosClient as AxiosClient, ProductAxiosClient } from 'HttpClient/Axios';
 import { ShipmentDTO,  ProductInfo , Product } from 'Types/DTO';
-import { productsWithLimit, productsWithoutLimit } from 'Mock/Product';
 
 // const mock = new MockAdapter(ProductAxiosClient,{delayResponse:1000});
 // mock.onGet(/\/api\/product\/getallwithlimit/i).reply(200, productsWithLimit);

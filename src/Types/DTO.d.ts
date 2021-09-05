@@ -211,7 +211,7 @@ type CreditLeftOver = {
 
 type InvoiceCreditInfoDTO = {
 	Shop: IShopDTO;
-	OutgoingShipment: OutgoingShipment;
+	OutgoingShipment: OutgoingShipmentInfo;
 	Credits: CreditDTO[];
 	TotalDuePrice: number;
 	IsCompleted: boolean;

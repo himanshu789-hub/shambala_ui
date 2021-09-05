@@ -1,6 +1,6 @@
 import React from "react";
 import './Credit.css';
-import { OutgoingShipment, IShopDTO, InvoiceCreditInfoDTO, CreditDTO } from 'Types/DTO';
+import { OutgoingShipment, IShopDTO, InvoiceCreditInfoDTO, CreditDTO, OutgoingShipmentInfo } from 'Types/DTO';
 import Loader, { ApiStatusInfo, CallStatus } from "Components/Loader/Loader";
 import ICreditService from "Contracts/services/ICreditService";
 import CreditService from "Services/CreditService";
@@ -36,7 +36,7 @@ type CreditState = {
     APIRequestInfo: ApiStatusInfo;
     PayingPrice: string;
 }
-function InvoiceInfo(props: { Shop: IShopDTO; OutgoingShipment: OutgoingShipment; }) {
+function InvoiceInfo(props: { Shop: IShopDTO; OutgoingShipment: OutgoingShipmentInfo; }) {
     return <div className="d-flex invoice-info">
         <div className="d-inline-flex flex-column col">
             <label>Name</label><input className="form-control" readOnly value={props.Shop.Title} />

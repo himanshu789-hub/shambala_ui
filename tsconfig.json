@@ -25,7 +25,7 @@
     "src/**/*"
   ],
   "exclude": [
-    "src/discarded/**/*"
+    "discarded/**/*"
   ],"watchOptions": {
     "excludeDirectories": ["src/discarded/**/*"]
   }
