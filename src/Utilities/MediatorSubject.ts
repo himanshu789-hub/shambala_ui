@@ -5,7 +5,6 @@ import QuantityMediator, { IQuantityMediator } from './QuantityMediator';
 import ComponentProductMediator, { IProductMediator } from './ProductMediator';
 import Observer from './Observer';
 import { DeterminantsNotSetError, FlavourOccupiedError, QuantityLimitExceeded, UnIdentityFlavourError, UnkownObserver } from 'Errors/Error';
-import { observers } from '@politie/sherlock/symbols';
 
 type SubscribedInfo = {
 	FlavourId?: number; ProductId?: number; Quantity?: number; SubscriptonId: number, ComponentId: number
@@ -24,9 +23,11 @@ export default class MediatorSubject {
 		this._observersInfo = [];
 	}
 	UnsubscribeAComponent(subscriptionId: number, componentId: number) {
-		this._quantityMediator.Unsubscibe(subscriptionId, componentId);
-		this._flavourMediator.Unsubscribe(subscriptionId, componentId);
-		this._productMediator.Unsubscribe(subscriptionId, componentId);
+		const observer = this._findObserver(subscriptionId, componentId);
+
+		observer.Quantity && this._quantityMediator.Unsubscibe(subscriptionId, componentId);
+		observer.FlavourId && this._flavourMediator.Unsubscribe(subscriptionId, componentId);
+		observer.ProductId && this._productMediator.Unsubscribe(subscriptionId, componentId);
 	}
 	UnregisteredObserverWithQuantities(OutofStocks: OutOfStock[]) {
 		for (var i = 0; i < this._observersInfo.length; i++) {
@@ -59,7 +60,7 @@ export default class MediatorSubject {
 	GetFlavours(subscriptionId: number, componentId: number, productId: number): Flavour[] {
 		return this._flavourMediator.GetFlavours(subscriptionId, componentId, productId);
 	}
-	GetQuantity(productId: number, flavourId: number) {
+	GetQuantityLimit(productId: number, flavourId: number) {
 		return this._quantityMediator.GetQuantityLimit(productId, flavourId);
 	}
 	UnsubscribeToQuantity(subscriptionId: number, componentId: number) {
@@ -68,7 +69,7 @@ export default class MediatorSubject {
 	}
 	SetAProduct(subscriptionId: number, componentId: number, productId: number) {
 		let flavourId, quantity, previousProductId;
-         
+
 		if (this._productMediator.IsAlreadySubscribed(subscriptionId, componentId)) {
 			previousProductId = this._productMediator.GetSubscribedProduct(subscriptionId, componentId);
 			if (this._productMediator.ChangeSubscription(subscriptionId, componentId, productId)) {
@@ -108,7 +109,7 @@ export default class MediatorSubject {
 		subscriptionInfo.Quantity = quantity;
 	}
 	private _findObserver(subscibeId: number, componentId: number): SubscribedInfo {
-		const observer = this._observersInfo.find(e => e.SubscriptonId === subscibeId && componentId === componentId);
+		const observer = this._observersInfo.find(e => e.SubscriptonId === subscibeId && e.ComponentId === componentId);
 		if (observer !== undefined)
 			return observer;
 		throw new UnkownObserver(subscibeId, componentId);
@@ -117,9 +118,9 @@ export default class MediatorSubject {
 		const observer = this._findObserver(subscribeId, componentId);
 		if (!observer.ProductId)
 			throw new DeterminantsNotSetError();
-			
+
 		const productId = this._productMediator.GetSubscribedProduct(subscribeId, componentId);
-		if (this._flavourMediator.IsFlavourExists(productId, flavourId))
+		if (!this._flavourMediator.IsFlavourExists(productId, flavourId))
 			throw new UnIdentityFlavourError(productId, flavourId);
 
 		if (this._flavourMediator.IsSubscribed(subscribeId, componentId)) {

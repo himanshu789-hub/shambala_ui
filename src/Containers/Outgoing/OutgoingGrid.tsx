@@ -7,12 +7,12 @@ import {
     CellEditorParams, CellValueChangedEvent, GridContext, OutgoingRowDataTransaction, OutgoingGridRowValue, QuantityValueParser,
     CustomPriceRowData, CellClassParams, ToolTipRendererParams, RowNodeData
 } from './OutgoingGrid.d';
-import { Element, IOutgoingShipmentAddDetail, IOutgoingShipmentUpdateDetail, OutOfStock, Product, ResutModel } from "Types/DTO";
+import { Element, IOutgoingShipmentAddDetail, IOutgoingShipmentUpdateDetail, OutOfStock, PostOutgoingShipment, Product, ResutModel, ShipmentDTO } from "Types/DTO";
 import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer } from "./Component/Renderers/Renderers";
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { GridSelectEditor } from "Components/AgGridComponent/Editors/SelectWithAriaEditor";
 import { getARandomNumber, Parser } from "Utilities/Utilities";
-import { CaretSizeEditor, CaretSizeValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
+import { CaretSizeEditor, CaretSizeValue, CaretSizeValueOldAndNewValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 import CustomPriceEditor from "./Component/Editors/CustomPriceEditor";
 import CellClassRuleSpecifier from "Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle";
@@ -30,7 +30,8 @@ import SalesmanList from "Components/SalesmanList/SalesmanList";
 import { addDanger } from "Utilities/AlertUtility";
 import { AllCommunityModules } from '@ag-grid-community/all-modules';
 import Action from "Components/Action/Action";
-import { DeterminantsNotSetError } from 'Errors/Error';
+import { DeterminantsNotSetError, UnknownSubscription, UnIdentifyComponentError } from 'Errors/Error';
+import ProductService from 'Services/ProductService';
 import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
 import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
 
@@ -137,27 +138,28 @@ const commonColDefs: ColDef[] = [
         headerName: 'Taken',
         valueGetter: function (params: ValueGetterParams) {
             const { data: { Observer } } = params;
-            let maxLimit;
+            let maxLimit = 0;
             try {
                 Observer.UnsubscribeIfSubscribedToQuantity();
                 maxLimit = Observer.GetQuantityLimit();
             }
             catch (e) {
                 if (e instanceof DeterminantsNotSetError) {
-
                 }
                 else
                     throw e;
             }
             return { ...params.data.Shipment.TotalQuantityTaken, MaxLimit: maxLimit } as CaretSizeValue;
         },
-        valueSetter: function (params: ValueSetterParams<OutgoingUpdateRow['TotalQuantityShiped']>) {
-            params.data.Shipment.TotalQuantityTaken = params.data.Shipment.TotalQuantityTaken;
+        editable: function (params: EditableCallbackParams) {
+            return params.data.Shipment.ProductId !== -1 && params.data.Shipment.FlavourId !== -1;
+        },
+        valueSetter: function (params: CaretSizeValueOldAndNewValue<ValueSetterParams<OutgoingUpdateRow['TotalQuantityTaken']>>) {
+            params.data.Shipment.TotalQuantityTaken = { ...params.data.Shipment.TotalQuantityTaken, Value: params.newValue.IsValid ? params.newValue.Value : params.oldValue.Value };
             return true;
         },
         onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['TotalQuantityTaken']>) {
-            const { context } = params;
-            const { Observer } = params.data;
+            const { context, data: { Observer } } = params;
             Observer.SetQuantity(params.newValue.Value);
             if (context.IsOnUpdate) {
                 params.data.Shipment.TotalQuantityShiped = params.newValue.Value - params.data.Shipment.TotalQuantityReturned.Value;
@@ -296,9 +298,8 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
         const actionColDef = getActionColDef({ addAChild: this.addAShipment, deleteAChild: this.deleteAShipment });
         this.mediatorSubject = new MediatorSubject([]);
         this.outgoingService = new OutgoingShipmentService();
-        this.productService = new ProductSe
         this.products = [];
-
+        this.productService = new ProductService();
         if (id) {
             colDefs = [...commonColDefs, ...updateColDefs, actionColDef]
         }
@@ -350,19 +351,54 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
     }
     deleteAShipment = (Id: string) => {
         const { GridOptions: { api } } = this.state;
-        this.mediatorSubject.UnsubscribeAComponent(1, Number.parseInt(Id));
+        try {
+            this.mediatorSubject.UnsubscribeAComponent(1, Number.parseInt(Id));
+
+        }
+        catch (error) {
+            if (error instanceof UnknownSubscription || error instanceof UnIdentifyComponentError) {
+
+            }
+            else
+                throw error;
+        }
         const transaction: OutgoingRowDataTransaction = {
             remove: [{ Id }]
         }
         api?.applyTransaction(transaction);
     }
-
+    getAllRows = () => {
+        const { GridOptions: { api } } = this.state;
+        const results: OutgoingGridRowValue[] = [];
+        api?.forEachNode((node) => {
+            results.push(node.data);
+        });
+        return results;
+    }
     handleSalesmanSelect = (Id: number) => {
         this.setState((prevState) => { return { OutgoingData: { ...prevState.OutgoingData, SalesmanId: Id } } });
     }
     handleSubmit = () => {
+        const { IsOnUpdate, OutgoingData } = this.state;
+        if (document.getElementsByClassName('is-invalid').length > 0) {
+            alert('Please Fill Properly');
+            return;
+        }
+        if (!IsOnUpdate) {
+            const rows = this.getAllRows();
+            const data: PostOutgoingShipment = {
+                DateCreated: new Date(OutgoingData.DateCreated),
+                SalesmanId: OutgoingData.SalesmanId,
+                Shipments: rows.map(e => ({ Id: e.Shipment.Id, CaretSize: e.Shipment.CaretSize, FlavourId: e.Shipment.FlavourId, ProductId: e.Shipment.ProductId, TotalDefectedPieces: e.Shipment.TotalQuantityRejected.Value, TotalRecievedPieces: e.Shipment.TotalQuantityTaken.Value } as ShipmentDTO))
+            }
+            this.outgoingService.Add(data)
+                .catch(e => this.handleError(e));
+        }
+        else {
 
+        }
     }
+
     render() {
         const { GridOptions, ApiInfo: { Status, Message }, OutgoingData } = this.state;
         return (<Loader Message={Message} Status={Status}>
@@ -406,6 +442,9 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                 });
                 api?.refreshCells();
                 break;
+            case OutgoingStatusErrorCode.SCHEME_PRICE_NOT_VALID:
+                alert('Scheme Price Calculation Not Valid.\nPlease, Contact Administration');
+                break;
             case OutgoingStatusErrorCode.SCHEME_EXCEED:
                 addDanger('Scheme Product Quantity Excceed');
                 break;
@@ -417,25 +456,43 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                 break;
         }
     }
+
+    private setMediator(products: Product[]) {
+        this.products = products;
+        this.mediatorSubject = new MediatorSubject(products);
+    }
     componentDidMount() {
         const { match: { params: { id } } } = this.props;
         const { IsOnUpdate } = this.state;
-    
+
         if (IsOnUpdate) {
             if (id && Number.parseInt(id)) {
                 this.setState({ ApiInfo: { Status: CallStatus.LOADING, Message: "Gathering Shipment Info . . ." } });
                 this.outgoingService.GetById(Number.parseInt(id))
-                    .then(res => this.setState({
-                        OutgoingData: {
-                            DateCreated: res.data.DateCreated,
-                            SalesmanId: res.data.Salesman.Id, Shipments: res.data.OutgoingShipmentDetails,
-                            Id: res.data.Id,
-                            Status: res.data.Status
-                        }
-                    }))
+                    .then(res => {
+                        this.setState({
+                            OutgoingData: {
+                                DateCreated: res.data.DateCreated,
+                                SalesmanId: res.data.Salesman.Id, Shipments: res.data.OutgoingShipmentDetails,
+                                Id: res.data.Id,
+                                Status: res.data.Status
+                            },
+                            ApiInfo: { Status: CallStatus.LOADING, Message: "Gathering Product List . . ." }
+                        });
+                        return this.productService.GetAll(res.data.DateCreated)
+                    })
+                    .then(res => {
+                        this.setState({ ApiInfo: { Status: CallStatus.LOADED, Message: undefined } });
+                        this.setMediator(res.data);
+                    })
                     .catch(() => this.setState({ ApiInfo: { Status: CallStatus.ERROR, Message: "Error Loading Shipment Info" } }));
             }
         }
+        else {
 
+            this.productService.GetAll()
+                .then(res => this.setMediator(res.data));
+
+        }
     }
 }

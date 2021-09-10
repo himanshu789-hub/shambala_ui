@@ -20,7 +20,7 @@ export interface IFlavourMediator {
 	GetSubscribedFlavourId(subscriptionId: number, componentId: number): number;
 	UnsubscribeASubscription(subscriptionId: number): boolean;
 	IsFlavourExists(productId: number, flavourId: number): boolean;
-	IsFlavourAvailable(subscibeId:number,productId:number,flavourId:number):boolean;
+	IsFlavourAvailable(subscibeId: number, productId: number, flavourId: number): boolean;
 }
 
 export default class FlavourMediator implements IFlavourMediator {
@@ -47,10 +47,10 @@ export default class FlavourMediator implements IFlavourMediator {
 	IsFlavourExists(productId: number, flavourId: number): boolean {
 		return this._flavours.get(productId)?.find(e => e.Id === flavourId) !== undefined;
 	}
-	IsFlavourAvailable(subscibeId: number,productId: number, flavourId: number) {
+	IsFlavourAvailable(subscibeId: number, productId: number, flavourId: number) {
 		if (!this.IsFlavourExists(productId, flavourId))
 			throw new UnIdentityFlavourError(productId, flavourId);
-		return !this._isFlavourDeletedForSubscriptionId(subscibeId,productId,flavourId);
+		return !this._isFlavourDeletedForSubscriptionId(subscibeId, productId, flavourId);
 	}
 	UnsubscribeASubscription(subscriptionId: number): boolean {
 		try {
@@ -75,11 +75,11 @@ export default class FlavourMediator implements IFlavourMediator {
 	private _restoreFlavour(subscriptionId: number, productId: number, flavourId: number) {
 		let FlavoursDeleted = this._deletedSubscriptionFlavour.get(subscriptionId);
 		if (FlavoursDeleted) {
-			FlavoursDeleted = FlavoursDeleted.filter(e => e.Id !== flavourId && e.ProductId === productId);
+			FlavoursDeleted = FlavoursDeleted.filter(e => e.ProductId === productId ? e.Id !== flavourId : true);
 			this._deletedSubscriptionFlavour.set(subscriptionId, FlavoursDeleted);
 			return;
 		}
-		throw new Error('Unknown Subscription');
+		throw new UnknownSubscription();
 	}
 	private _deductFlavour(subscritpionId: number, ProductId: number, flavourId: number) {
 		if (!this._deletedSubscriptionFlavour.has(subscritpionId)) {
@@ -177,7 +177,6 @@ export default class FlavourMediator implements IFlavourMediator {
 
 	Subscribe(subscriptionId: number, componentId: number, productId: number, flavourId: number) {
 		this._checkArgumentNullException(subscriptionId, componentId, flavourId, productId);
-		this._checkSubscription(subscriptionId);
 
 		if (this._componentFlavourChoosen.has(subscriptionId)) {
 			const SubscriptionComponentMapFlavour = this._componentFlavourChoosen.get(subscriptionId);
@@ -199,13 +198,14 @@ export default class FlavourMediator implements IFlavourMediator {
 			throw new UnIdentityFlavourError(productId, flavourId)
 	}
 	private _checkFlavourNotAlreadyOccupied(productId: number, flavourId: number, subscriptionId: number): void {
-		if (this._deletedSubscriptionFlavour.get(subscriptionId)?.find(e => e.ProductId === productId && e.Id === flavourId) !== null)
+		const flavour = this._deletedSubscriptionFlavour.get(subscriptionId)?.find(e => e.ProductId === productId && e.Id === flavourId);
+		if (flavour)
 			throw new FlavourOccupiedError(flavourId, productId, subscriptionId);
 	}
 	ChangeSubscription(subscriptionId: number, componentId: number, productId: number, flavourId: number): boolean {
 		this._checkSubscription(subscriptionId);
 		this._checkFlavourValid(productId, flavourId);
-                 
+
 		const SubscriptionComponentMapFlavour = this._componentFlavourChoosen.get(subscriptionId) as Map<number, FlavourWithProductKey>;
 		if (SubscriptionComponentMapFlavour.has(componentId)) {
 			const FlavourWithProductKey = SubscriptionComponentMapFlavour.get(componentId) as FlavourWithProductKey;

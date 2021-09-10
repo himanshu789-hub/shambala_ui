@@ -20,27 +20,31 @@ export class UnIdentityFlavourError extends Error {
     }
 }
 export class FlavourOccupiedError extends Error {
-    constructor(flavourId:number,productId:number,subscriptionId:number) {
-         super();
-         this.name="FlavourOccupiedError";
-         this.message = `FlavourId=${flavourId} of ProductId=${productId} has been already occupied in SubscriptionId=${subscriptionId}`;
+    constructor(flavourId: number, productId: number, subscriptionId: number) {
+        super();
+        this.name = "FlavourOccupiedError";
+        this.message = `FlavourId=${flavourId} of ProductId=${productId} has been already occupied in SubscriptionId=${subscriptionId}`;
     }
 }
-export class UnknownSubscription extends Error 
-{
+export class UnknownSubscription extends Error {
 
 }
-export class UnkownObserver extends Error
-{
-    constructor(subscibeId:number,componentId:number){
+export class NullOrUndefinedError extends Error {
+    constructor() {
+        super();
+        this.message = "A null or undefined value or reference exists";
+    }
+}
+export class UnkownObserver extends Error {
+    constructor(subscibeId: number, componentId: number) {
         super();
     }
 }
-export class QuantityLimitExceeded extends Error{
-    constructor(productId:number,flavourId:number){
+export class QuantityLimitExceeded extends Error {
+    constructor(productId: number, flavourId: number) {
         super();
     }
 }
-export class DeterminantsNotSetError extends Error{
+export class DeterminantsNotSetError extends Error {
 
 }

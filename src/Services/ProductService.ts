@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import IProductService from 'Contracts/services/IProductService';
 import { ProductAxiosClient as AxiosClient, ProductAxiosClient } from 'HttpClient/Axios';
-import { ShipmentDTO,  ProductInfo , Product } from 'Types/DTO';
+import { ShipmentDTO, ProductInfo, Product } from 'Types/DTO';
 
 // const mock = new MockAdapter(ProductAxiosClient,{delayResponse:1000});
 // mock.onGet(/\/api\/product\/getallwithlimit/i).reply(200, productsWithLimit);
@@ -11,14 +11,14 @@ import { ShipmentDTO,  ProductInfo , Product } from 'Types/DTO';
 // mock.onGet(/\/api\/product\/getproductbyid/i).reply(200,ProductInfoReply);
 
 export default class ProductService implements IProductService {
-	
+
 	GetProductById(ProductId: number): Promise<AxiosResponse<ProductInfo>> {
 		return ProductAxiosClient.get(`/GetProductByIdWithStockAndDispatch/${ProductId}`);
 	}
 	Add(shipment: ShipmentDTO[]): Promise<AxiosResponse<void>> {
 		return ProductAxiosClient.post('/add', shipment);
 	}
-	GetAll(): Promise<AxiosResponse<Product[]>> {
-		return ProductAxiosClient.get('/GetAll');
+	GetAll(date?: string): Promise<AxiosResponse<Product[]>> {
+		return ProductAxiosClient.get('/GetAll', { params: { date } });
 	}
 }

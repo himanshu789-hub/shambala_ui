@@ -1,7 +1,7 @@
 import Observer from '../../Utilities/Observer';
 import * as GridParams from './../../Components/AgGridComponent/Grid';
 import { CustomPrice, IOutgoingShipmentUpdateDetail, Product } from './../../Types/DTO';
-import { CaretSizeValue, CaretSizeValueParserParams } from './../../Components/AgGridComponent/Editors/CaretSizeEditor';
+import { CaretSizeValue, CaretSizeValueOldAndNewValue } from './../../Components/AgGridComponent/Editors/CaretSizeEditor';
 
 
 type GridContext = {
@@ -32,7 +32,7 @@ type EditableCallbackParams = GridParams.GridEditableCallbackParams<OutgoingGrid
 type CellEditorParams<V> = GridParams.GridEditorParams<V, OutgoingGridRowValue, GridContext>;
 type CellValueChangedEvent<V> = GridParams.GridCellValueChangeEvent<V, OutgoingGridRowValue, GridContext>;
 type OutgoingRowDataTransaction = GridParams.GridRowDataTransaction<OutgoingGridRowValue>;
-type QuantityValueParser = CaretSizeValueParserParams<GridParams.GridValueParserParams<CaretSizeValue, OutgoingGridRowValue, GridContext>>;
+type QuantityValueParser = CaretSizeValueOldAndNewValue<GridParams.GridValueParserParams<CaretSizeValue, OutgoingGridRowValue, GridContext>>;
 type CellClassParams = GridParams.GridCellClassParams<OutgoingGridRowValue>;
 type ToolTipRendererParams = GridParams.GridToolTipParams<OutgoingGridRowValue>;
 type RowClassParams = GridParams.RowStyleParams<RowNodeData, GridContext>;

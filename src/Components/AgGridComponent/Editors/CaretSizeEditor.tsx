@@ -26,7 +26,7 @@ export type CaretSizeNewValue = { IsValid: boolean, Value: number };
 // export type CaretSizeSetter = {
 //     (params: CaretSizeSetterParams): boolean
 // };
-export type CaretSizeValueParserParams<T extends ValueParserParams> = Omit<T, 'newValue' | 'oldValue'> & {
+export type CaretSizeValueOldAndNewValue<T extends ValueParserParams> = Omit<T, 'newValue' | 'oldValue'> & {
     newValue: CaretSizeNewValue,
     oldValue: CaretSizeValue
 }
@@ -46,13 +46,14 @@ export const CaretSizeEditor = function <T extends (EditorParams)>(caretSizeFrom
         useImperativeHandle(ref, () => {
             return {
                 getValue() {
-                    return { IsValid: new CaretQuantiyValidation({ Value: quantity, MaxLimit: maxValue, MinLimit: minValue }).IsQuantityValid(), Value: quantity };
+                    const value ={ IsValid: new CaretQuantiyValidation({ Value: quantity, MaxLimit: maxValue, MinLimit: minValue }).IsQuantityValid().IsValid, Value: quantity };
+                    return value;
                 },
                 isPopup() {
                     return true;
                 },
                 isCancelBeforeStart() {
-                    return isEditable(props.data);
+                    return !isEditable(props);
                 }
             }
         });

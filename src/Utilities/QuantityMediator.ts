@@ -127,7 +127,7 @@ export default class QuantityMediator implements IQuantityMediator {
 	}
 	Subscribe(subscriptionId: number, componentId: number, productId: number, flavourId: number, quantity: number) {
 		this._isFlavourValid(flavourId, productId);
-		this._willQuantityExceeded(flavourId, componentId, quantity);
+		this._willQuantityExceeded(flavourId, productId, quantity);
 
 		if (this._componentQuantity.has(subscriptionId)) {
 			const ComponentMapQuantity = this._componentQuantity.get(subscriptionId) as Map<number, QuantityFlavourInfo>;

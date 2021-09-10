@@ -1,7 +1,7 @@
 import { ProductInfo } from 'Types/Mediator';
 import { Flavour } from 'Types/DTO';
 import MediatorSubject from './MediatorSubject';
-import { DeterminantsNotSetError } from 'Errors/Error';
+import { DeterminantsNotSetError, NullOrUndefinedError } from 'Errors/Error';
 
 //export type ReactComponent = Component<any, any>;
 
@@ -33,7 +33,7 @@ export default class Observer {
 		if (!info.ProductId && !info.FlavourId) {
 			throw new DeterminantsNotSetError();
 		}
-		return this._subject.GetQuantity(info.ProductId as number, info.FlavourId as number);
+		return this._subject.GetQuantityLimit(info.ProductId as number, info.FlavourId as number);
 	}
 	Unubscribe() {
 		if (!(this.ComponentId && this.SubscriptionId)) {
@@ -60,7 +60,10 @@ export default class Observer {
 		this._subject.SetAProduct(this.SubscriptionId, this.ComponentId, Id);
 	}
 	SetFlavour(Id: number) {
+		if (!isFinite(Id))
+			throw new NullOrUndefinedError();
 		this._subject.SetAFlavour(this.SubscriptionId, this.ComponentId, Id);
+
 	}
 	SetQuantity(quantity: number) {
 		this._subject.SetAQuantity(this.SubscriptionId, this.ComponentId, quantity);

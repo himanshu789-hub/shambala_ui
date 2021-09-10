@@ -11,12 +11,12 @@ export default class CaretQuantityValidation implements ValidateMember<{ Quantit
     IsQuantityValid = (): IValidateResultOK | IValidateResultBad => {
         const minValue = this.data.MinLimit;
         const maxValue = this.data.MaxLimit;
-        const isMinValid = minValue ? this.data.Value < minValue : true
-        const isMaxValid = maxValue ? this.data.Value > maxValue : true
-        if (!isMinValid) {
+        const isMinValid = minValue ? this.data.Value > minValue : true
+        const isMaxValid = maxValue ? this.data.Value < maxValue : true
+        if (!isMaxValid) {
             return new ValidateResultBad("Excceded Max Limit");
         }
-        if (!isMaxValid) {
+        if (!isMinValid) {
             return new ValidateResultBad("Cannot Suppressed Min Limit");
         }
         return new ValidationResultOK();
