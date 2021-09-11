@@ -123,6 +123,7 @@ const CustomPriceGrid = function (props: CustomPriceProps) {
                     const { newValue: { Value, IsValid } } = params;
                     return { Value: IsValid ? Value : 0 } as CaretSizeValue;
                 },
+                //@ts-ignore
                 cellEditorFramework: CaretSizeEditor<CustomPriceGridEditorParams<CustomPriceRowData['Quantity']['Value']>>(e => e.context.getCaretSize(), (e) => true),
                 cellRendererFramework: CaretSizeRenderer<CustomPriceGridCellRendererParams<CustomPriceRowData['Quantity']>>(e => e.context.getCaretSize(), e => e.value.Value.Value)
             },

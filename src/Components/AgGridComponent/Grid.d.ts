@@ -1,4 +1,4 @@
-import { CellClassParams, EditableCallbackParams, CellValueChangedEvent, ICellEditorParams, ICellRendererParams, ITooltipParams, RowDataTransaction, ValueGetterParams, ValueSetterParams } from "@ag-grid-community/all-modules";
+import { CellClassParams, EditableCallbackParams, CellValueChangedEvent, ICellEditorParams, ICellRendererParams, ITooltipParams, RowDataTransaction, ValueGetterParams, ValueSetterParams,ValueFormatterParams } from "@ag-grid-community/all-modules";
 
 type GridParamsWithContext<T, CTx> = Omit<T, 'context'> & {
       context: CTx
@@ -34,3 +34,4 @@ type GridCellValueChangeEvent<V, DataT, CtxT> = GridWithOldAndNewValue<GridParam
 type GridValueParserParams<V, DataT, CtxT> = GridParamsWithContext<GridParamsWithData<GridWithOldAndNewValue<ValueSetterParams, V>, DataT>, CTxT>;
 type ValidationRowData<T> = { [Property in keyof T]: { Value: T[Property], IsValid: boolean } };
 type RowStyleParams<DataT,Ctx> = GridParamsWithData<GridParamsWithContext<RowClassParams,Ctx>,DataT>;
+type GridValueFormatterParams<DataT,CTx,VType> = GridParamsWithContext<GridParamsWithValue<VType,ValueFormatterParams,DataT>,CTx>; 

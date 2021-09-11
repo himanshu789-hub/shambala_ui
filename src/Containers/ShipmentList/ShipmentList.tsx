@@ -87,6 +87,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						cellStyle: ClassRuleSpecifier('CaretSize')
 					},
 					{
+						//@ts-ignore
 						cellEditorFramework: CaretSizeEditor<ShipmentGridEditorParams<ShipmentRowValue['TotalRecievedPieces']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.ProductId !== -1),
 						cellRendererFramework: CaretSizeRenderer<ShipmentRendererParams<ShipmentRowValue['TotalRecievedPieces']>>(e => e.data.Shipment.CaretSize),
 						valueGetter: (params: ShipmentGridGetterParams) => params.data.Shipment.TotalRecievedPieces,

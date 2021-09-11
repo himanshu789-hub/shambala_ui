@@ -40,13 +40,9 @@ const CaretSize = memo(forwardRef<HTMLInputElement, ICaretSizeProps>((props, ref
 			IsValid = false;
 		}
 		if (IsValid) {
-			handleInput(quantity);
 			setErrorMessage(null);
 		}
-		else {
-			handleInput(props.Quantity);
-		}
-
+		handleInput(quantity);
 	}, [quantity])
 	const Max_Caret_Allow = 100;
 	const Max_Pieces_Allow = Size - 1;

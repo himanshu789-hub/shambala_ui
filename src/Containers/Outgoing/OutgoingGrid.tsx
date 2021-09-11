@@ -5,14 +5,14 @@ import { ColDef, ColGroupDef, GridOptions, GridReadyEvent } from '@ag-grid-commu
 import {
     ValueGetterParams, ValueSetterParams, EditableCallbackParams, CellRendererParams, OutgoingUpdateRow,
     CellEditorParams, CellValueChangedEvent, GridContext, OutgoingRowDataTransaction, OutgoingGridRowValue, QuantityValueParser,
-    CustomPriceRowData, CellClassParams, ToolTipRendererParams, RowNodeData
+    CustomPriceRowData, CellClassParams, ToolTipRendererParams, RowNodeData, ValueFormatterParams
 } from './OutgoingGrid.d';
 import { Element, IOutgoingShipmentAddDetail, IOutgoingShipmentUpdateDetail, OutOfStock, PostOutgoingShipment, Product, ResutModel, ShipmentDTO } from "Types/DTO";
-import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer } from "./Component/Renderers/Renderers";
+import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer, RowStyleSpecifier } from "./Component/Renderers/Renderers";
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { GridSelectEditor } from "Components/AgGridComponent/Editors/SelectWithAriaEditor";
 import { getARandomNumber, Parser } from "Utilities/Utilities";
-import { CaretSizeEditor, CaretSizeValue, CaretSizeValueOldAndNewValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
+import { CaretSizeEditor, CaretSizeNewValue, CaretSizeValue, CaretSizeValueOldAndNewValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 import CustomPriceEditor from "./Component/Editors/CustomPriceEditor";
 import CellClassRuleSpecifier from "Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle";
@@ -25,7 +25,7 @@ import { ToolTipComponent, ToolTipGetter } from "Components/AgGridComponent/Rend
 import OutgoingShipmentService from 'Services/OutgoingShipmentService';
 import IOutgoingShipmentService from 'Contracts/services/IOutgoingShipmentService';
 import Loader, { ApiStatusInfo, CallStatus } from "Components/Loader/Loader";
-import { OutgoingStatus, OutgoingStatusErrorCode } from "Enums/Enum";
+import { OutgoingStatus, OutgoingStatusErrorCode, OutgoingGridRowCode } from "Enums/Enum";
 import SalesmanList from "Components/SalesmanList/SalesmanList";
 import { addDanger } from "Utilities/AlertUtility";
 import { AllCommunityModules } from '@ag-grid-community/all-modules';
@@ -34,7 +34,8 @@ import { DeterminantsNotSetError, UnknownSubscription, UnIdentifyComponentError 
 import ProductService from 'Services/ProductService';
 import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
 import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
-
+import { Heading } from "Components/Miscellaneous/Miscellaneous";
+import { AxiosError } from "axios";
 interface OutgoingGridProps extends RouteComponentProps<{ id?: string }> {
 }
 
@@ -59,7 +60,7 @@ const defaultColDef: ColDef = {
 const ClassSpecifier = (name: keyof OutgoingUpdateRow) => CellClassRuleSpecifier<OutgoingUpdateRow, OutgoingValidator>(name, OutgoingValidator, (params: CellClassParams) => params.data.Shipment);
 //@ts-ignore
 const ToolTipValueGetter = (name: keyof OutgoingUpdateRow) => ToolTipGetter(OutgoingValidator, name, (e: ToolTipRendererParams) => e.data.Shipment);
-const QuantityCellRederer = CaretSizeRenderer<CellRendererParams<CaretSizeValue>>(e => e.data.Shipment.CaretSize, e => e.value.Value);
+const QuantityCellRederer = CaretSizeRenderer<CellRendererParams<number>>(e => e.data.Shipment.CaretSize, e => e.value);
 const ReInitializeCustomPrice = function (customPrices: CustomPriceRowData[], quantity: number) {
     const quantityMediator = new QuantityMediatorWrapper(quantity);
     for (let i = 0; i < customPrices.length; i++) {
@@ -92,14 +93,15 @@ const commonColDefs: ColDef[] = [
         cellRendererFramework: ProductCellRenderer,
         cellEditorFramework: GridSelectEditor<OutgoingGridRowValue, any>(e => Parser.ProductsToValueContainer(e.Observer.GetProducts())),
         onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['ProductId']>) {
-            const { data: { Observer, Shipment } } = params;
+            const { data: { Observer, Shipment }, api } = params;
             Observer.SetProduct(params.newValue);
             const { FlavourId, Quantity } = Observer.GetObserverInfo();
             Shipment.CaretSize = params.context.getProductDetails(params.newValue).CaretSize;
             Shipment.FlavourId = FlavourId || -1;
             if (!Quantity) {
-                Shipment.TotalQuantityTaken = { Value: 0 };
+                Shipment.TotalQuantityTaken = 0;
             }
+            api?.refreshCells({ rowNodes: [params.node] });
         },
         tooltipValueGetter: ToolTipValueGetter('ProductId')
     },
@@ -119,9 +121,11 @@ const commonColDefs: ColDef[] = [
             const { data: { Observer, Shipment } } = params;
             Observer.SetFlavour(params.newValue);
             const { Quantity } = Observer.GetObserverInfo();
+
             if (!Quantity) {
-                Shipment.TotalQuantityTaken = { Value: 0 }
+                Shipment.TotalQuantityTaken = 0;
             }
+
         },
         cellEditorFramework: GridSelectEditor<OutgoingGridRowValue, any>((e) => e.Observer.GetFlavours().map(e => ({ label: e.Title, value: e.Id })), (e) => e.Shipment.ProductId !== -1),
         editable: (params: EditableCallbackParams) => params.data.Shipment.ProductId != -1
@@ -137,7 +141,29 @@ const commonColDefs: ColDef[] = [
     {
         headerName: 'Taken',
         valueGetter: function (params: ValueGetterParams) {
-            const { data: { Observer } } = params;
+            return params.data.Shipment.TotalQuantityTaken;
+        },
+        editable: function (params: EditableCallbackParams) {
+            return params.data.Shipment.ProductId !== -1 && params.data.Shipment.FlavourId !== -1;
+        },
+        valueSetter: function (params: CaretSizeValueOldAndNewValue<ValueSetterParams<OutgoingUpdateRow['TotalQuantityTaken']>>) {
+            params.data.Shipment.TotalQuantityTaken = params.newValue.IsValid ? params.newValue.Value : params.oldValue;
+            return true;
+        },
+        onCellValueChanged: function (params: CellValueChangedEvent<number>) {
+            const { context, data: { Observer } } = params;
+            Observer.SetQuantity(params.newValue);
+
+            if (context.IsOnUpdate) {
+                params.data.Shipment.TotalQuantityShiped = params.newValue - params.data.Shipment.TotalQuantityReturned.Value;
+                params.data.Shipment.TotalQuantityReturned = { ...params.data.Shipment.TotalQuantityReturned, MaxLimit: params.data.Shipment.TotalQuantityTaken };
+            }
+        },
+        tooltipValueGetter: ToolTipValueGetter('TotalQuantityTaken'),
+        cellClassRules: ClassSpecifier('TotalQuantityTaken'),
+        cellRendererFramework: QuantityCellRederer,
+        cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityTaken']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.ProductId !== -1, (e) => {
+            const { data: { Observer } } = e;
             let maxLimit = 0;
             try {
                 Observer.UnsubscribeIfSubscribedToQuantity();
@@ -145,38 +171,20 @@ const commonColDefs: ColDef[] = [
             }
             catch (e) {
                 if (e instanceof DeterminantsNotSetError) {
+
                 }
-                else
-                    throw e;
+                else throw e;
             }
-            return { ...params.data.Shipment.TotalQuantityTaken, MaxLimit: maxLimit } as CaretSizeValue;
-        },
-        editable: function (params: EditableCallbackParams) {
-            return params.data.Shipment.ProductId !== -1 && params.data.Shipment.FlavourId !== -1;
-        },
-        valueSetter: function (params: CaretSizeValueOldAndNewValue<ValueSetterParams<OutgoingUpdateRow['TotalQuantityTaken']>>) {
-            params.data.Shipment.TotalQuantityTaken = { ...params.data.Shipment.TotalQuantityTaken, Value: params.newValue.IsValid ? params.newValue.Value : params.oldValue.Value };
-            return true;
-        },
-        onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['TotalQuantityTaken']>) {
-            const { context, data: { Observer } } = params;
-            Observer.SetQuantity(params.newValue.Value);
-            if (context.IsOnUpdate) {
-                params.data.Shipment.TotalQuantityShiped = params.newValue.Value - params.data.Shipment.TotalQuantityReturned.Value;
-                params.data.Shipment.TotalQuantityReturned = { ...params.data.Shipment.TotalQuantityReturned, MaxLimit: params.data.Shipment.TotalQuantityTaken.Value };
-            }
-        },
-        valueParser: function (params: QuantityValueParser) {
-            const { newValue: { Value, IsValid } } = params;
-            return { Value: IsValid ? Value : 0 };
-        },
-        tooltipValueGetter: ToolTipValueGetter('TotalQuantityTaken'),
-        cellClassRules: ClassSpecifier('TotalQuantityTaken'),
-        cellRendererFramework: QuantityCellRederer,
-        cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityTaken']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.ProductId !== -1)
+            return maxLimit;
+        }, (e) => {
+            const { context: { IsOnUpdate }, data } = e;
+            let minLimit;
+            if (IsOnUpdate)
+                minLimit = data.Shipment.TotalQuantityReturned.Value;
+            return minLimit;
+        })
     }
 ];
-
 const updateColDefs: (ColDef | ColGroupDef)[] = [
     {
         headerName: 'Return',
@@ -186,18 +194,15 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
             return true;
         },
         editable: (params: EditableCallbackParams) => {
-            return params.data.Shipment.TotalQuantityTaken.Value > 0;
+            return params.data.Shipment.TotalQuantityTaken > 0;
         },
         cellRendererFramework: QuantityCellRederer,
-        valueParser: function (params: QuantityValueParser) {
-            const { newValue: { Value, IsValid } } = params;
-            return { Value: IsValid ? Value : 0 } as CaretSizeValue;
-        },
         onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['TotalQuantityReturned']>) {
-            params.data.Shipment.TotalQuantityShiped = params.data.Shipment.TotalQuantityTaken.Value - params.newValue.Value;
+            params.data.Shipment.TotalQuantityShiped = params.data.Shipment.TotalQuantityTaken - params.newValue.Value;
         },
         cellClassRules: ClassSpecifier('TotalQuantityReturned'),
         tooltipValueGetter: ToolTipValueGetter('TotalQuantityReturned'),
+        //@ts-ignore
         cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityReturned']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.TotalQuantityShiped > 0)
     },
     {
@@ -315,7 +320,8 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                     IsOnUpdate
                 } as GridContext,
                 getRowNodeId: (data: OutgoingGridRowValue) => data.Id,
-                defaultColDef
+                defaultColDef,
+                getRowStyle: RowStyleSpecifier
             },
             ApiInfo: { Status: CallStatus.LOADED },
             IsOnUpdate,
@@ -336,8 +342,8 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
             Observer: this.mediatorSubject.GetAObserver(1, componentId),
             Shipment: {
                 CaretSize: 0, CustomPrices: [], FlavourId: -1, Id: componentId, ProductId: -1, SchemePrice: 0,
-                TotalQuantityRejected: { Value: 0 }, TotalQuantityReturned: { Value: 0 }, TotalQuantityShiped: 0, TotalQuantityTaken: { Value: 0 },
-                TotalSchemeQuantity: 0
+                TotalQuantityRejected: { Value: 0 }, TotalQuantityReturned: { Value: 0 }, TotalQuantityShiped: 0, TotalQuantityTaken: 0,
+                TotalSchemeQuantity: 0, Status: OutgoingGridRowCode.NONE
             }
         }
     }
@@ -380,6 +386,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
     }
     handleSubmit = () => {
         const { IsOnUpdate, OutgoingData } = this.state;
+
         if (document.getElementsByClassName('is-invalid').length > 0) {
             alert('Please Fill Properly');
             return;
@@ -389,71 +396,81 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
             const data: PostOutgoingShipment = {
                 DateCreated: new Date(OutgoingData.DateCreated),
                 SalesmanId: OutgoingData.SalesmanId,
-                Shipments: rows.map(e => ({ Id: e.Shipment.Id, CaretSize: e.Shipment.CaretSize, FlavourId: e.Shipment.FlavourId, ProductId: e.Shipment.ProductId, TotalDefectedPieces: e.Shipment.TotalQuantityRejected.Value, TotalRecievedPieces: e.Shipment.TotalQuantityTaken.Value } as ShipmentDTO))
+                Shipments: rows.map(e => ({ Id: e.Shipment.Id, CaretSize: e.Shipment.CaretSize, FlavourId: e.Shipment.FlavourId, ProductId: e.Shipment.ProductId, TotalDefectedPieces: e.Shipment.TotalQuantityRejected.Value, TotalRecievedPieces: e.Shipment.TotalQuantityTaken } as ShipmentDTO))
             }
             this.outgoingService.Add(data)
                 .catch(e => this.handleError(e));
         }
         else {
-
+            alert('Valid');
         }
     }
 
     render() {
-        const { GridOptions, ApiInfo: { Status, Message }, OutgoingData } = this.state;
-        return (<Loader Message={Message} Status={Status}>
-            <div className="form-inline">
-                <SalesmanList handleSelection={this.handleSalesmanSelect} SalemanId={OutgoingData.SalesmanId} />
-                {
-                    OutgoingData.Status && <div className="input-group mb-2 mr-sm-2">
-                        <div className="input-group-prepend">
-                            <div className="input-group-text">Shipment Status</div>
-                        </div>
-                        <input type="text" className="form-control" value={Object.entries(OutgoingStatus).find((k, v) => v == OutgoingData.Status)![0]} />
+        const { IsOnUpdate, GridOptions, ApiInfo: { Status, Message }, OutgoingData } = this.state;
+        return (
+            <div>
+                {IsOnUpdate ? <Heading label="Update Outgoing Shipment" /> : <Heading label="Add Outgoing Shipment" />}
+                <Loader Message={Message} Status={Status}>
+                    <div className="form-inline">
+                        <SalesmanList handleSelection={this.handleSalesmanSelect} SalemanId={OutgoingData.SalesmanId} />
+                        {
+                            OutgoingData.Status && <div className="input-group mb-2 mr-sm-2">
+                                <div className="input-group-prepend">
+                                    <div className="input-group-text">Shipment Status</div>
+                                </div>
+                                <input type="text" className="form-control" value={Object.entries(OutgoingStatus).find((k, v) => v == OutgoingData.Status)![0]} />
+                            </div>
+                        }
                     </div>
-                }
-            </div>
-            <div className="ag-theme-alpine" style={{ height: '500px', width: '100vw' }}>
-                <AgGridReact gridOptions={GridOptions} rowData={OutgoingData.Shipments} modules={AllCommunityModules}
-                    onGridReady={this.OnGridReady} singleClickEdit={true}></AgGridReact>
-                <Action handleAdd={this.addAShipment} handleProcess={this.handleSubmit} />
-            </div>
-        </Loader>);
+                    <div className="ag-theme-alpine" style={{ height: '500px', width: '100vw' }}>
+                        <AgGridReact gridOptions={GridOptions} rowData={OutgoingData.Shipments} modules={AllCommunityModules}
+                            onGridReady={this.OnGridReady} singleClickEdit={true}></AgGridReact>
+                        <Action handleAdd={this.addAShipment} handleProcess={this.handleSubmit} />
+                    </div>
+                </Loader>
+            </div>);
     }
-    handleError = (model: ResutModel) => {
-        const { GridOptions: { api } } = this.state;
-        const dataArray = [] as RowNodeData[];
-        api?.forEachNode((node) => dataArray.push(node.data));
-        const content = model.Content as Element[];
-
-        switch (model.Code) {
-            case OutgoingStatusErrorCode.CUSTOM_CARAT_PRICE_NOT_VALID:
-                alert('Custom Carat Price Not Valid.\nPlease, Contact Administration');
-                break;
-            case OutgoingStatusErrorCode.DUPLICATE:
-                alert('Duplicate Product Element Exists.\nPlease, Contact Administration');
-                break;
-            case OutgoingStatusErrorCode.OUT_OF_STOCK:
-                const outOfStockProducts = model.Content as OutOfStock[];
-                dataArray.forEach(data => {
-                    const p = outOfStockProducts.find(e => e.FlavourId == data.FlavourId && e.ProductId == data.ProductId);
-                    if (p)
-                        data.TotalQuantityTaken.MaxLimit = p.Quantity;
-                });
-                api?.refreshCells();
-                break;
-            case OutgoingStatusErrorCode.SCHEME_PRICE_NOT_VALID:
-                alert('Scheme Price Calculation Not Valid.\nPlease, Contact Administration');
-                break;
-            case OutgoingStatusErrorCode.SCHEME_EXCEED:
-                addDanger('Scheme Product Quantity Excceed');
-                break;
-            case OutgoingStatusErrorCode.SCHEME_QUANTITY_NOT_VALID:
-                alert('Scheme Calculation Not Valid.\nPlease, Contact Administration');
-                break;
-            case OutgoingStatusErrorCode.SHIPED_QUANTITY_NOT_VALID:
-                alert('Product Shiped Value Not Valid.\nPlease, Contact Administration');
-                break;
+    handleError = (error: AxiosError) => {
+        if (error.response?.status === 422) {
+            const { GridOptions: { api } } = this.state;
+            const dataArray = [] as RowNodeData[];
+            api?.forEachNode((node) => dataArray.push(node.data));
+            const model = (error.response.data as ResutModel);
+            const content = model.Content as Element[];
+            switch (model.Code) {
+                case OutgoingStatusErrorCode.CUSTOM_CARAT_PRICE_NOT_VALID:
+                    alert('Custom Carat Price Not Valid.\nPlease, Contact Administration');
+                    break;
+                case OutgoingStatusErrorCode.DUPLICATE:
+                    alert('Duplicate Product Element Exists.\nPlease, Contact Administration');
+                    break;
+                case OutgoingStatusErrorCode.OUT_OF_STOCK:
+                    const outOfStockProducts = content as OutOfStock[];
+                    dataArray.forEach(data => {
+                        const p = outOfStockProducts.find(e => e.FlavourId == data.FlavourId && e.ProductId == data.ProductId);
+                        if (p) {
+                            data.Status = OutgoingGridRowCode.OUT_OF_STOCK;
+                        }
+                    });
+                    api?.refreshCells();
+                    break;
+                case OutgoingStatusErrorCode.SCHEME_PRICE_NOT_VALID:
+                    alert('Scheme Price Calculation Not Valid.\nPlease, Contact Administration');
+                    break;
+                case OutgoingStatusErrorCode.SCHEME_EXCEED:
+                    addDanger('Scheme Product Quantity Excceed');
+                    break;
+                case OutgoingStatusErrorCode.SCHEME_QUANTITY_NOT_VALID:
+                    alert('Scheme Calculation Not Valid.\nPlease, Contact Administration');
+                    break;
+                case OutgoingStatusErrorCode.SHIPED_QUANTITY_NOT_VALID:
+                    alert('Product Shiped Value Not Valid.\nPlease, Contact Administration');
+                    break;
+            }
+        }
+        else {
+            addDanger('Error Posting Data');
         }
     }
 

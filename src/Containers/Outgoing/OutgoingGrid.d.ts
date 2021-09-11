@@ -2,6 +2,7 @@ import Observer from '../../Utilities/Observer';
 import * as GridParams from './../../Components/AgGridComponent/Grid';
 import { CustomPrice, IOutgoingShipmentUpdateDetail, Product } from './../../Types/DTO';
 import { CaretSizeValue, CaretSizeValueOldAndNewValue } from './../../Components/AgGridComponent/Editors/CaretSizeEditor';
+import { OutgoingGridRowCode, OutgoingStatusErrorCode } from 'Enums/Enum';
 
 
 type GridContext = {
@@ -13,12 +14,14 @@ export type CustomPriceRowData = GridParams.ValidationRowData<Omit<CustomPrice, 
 
 export type OutgoingUpdateRow = Omit<IOutgoingShipmentUpdateDetail, 'CustomPrices' | "TotalQuantityTaken" | 'TotalQuantityRejected' | 'TotalQuantityShiped' | 'TotalQuantityReturned'> & {
   CustomPrices: CustomPriceRowData[];
-  TotalQuantityTaken: CaretSizeValue;
+  TotalQuantityTaken: number;
   TotalQuantityRejected: CaretSizeValue;
   TotalQuantityShiped: number;
   TotalQuantityReturned: CaretSizeValue;
 };
-type RowNodeData = OutgoingUpdateRow;
+type RowNodeData = OutgoingUpdateRow & {
+  Status: OutgoingGridRowCode
+};
 type OutgoingGridRowValue = {
   Id: string;
   Observer: Observer,
@@ -36,3 +39,4 @@ type QuantityValueParser = CaretSizeValueOldAndNewValue<GridParams.GridValuePars
 type CellClassParams = GridParams.GridCellClassParams<OutgoingGridRowValue>;
 type ToolTipRendererParams = GridParams.GridToolTipParams<OutgoingGridRowValue>;
 type RowClassParams = GridParams.RowStyleParams<RowNodeData, GridContext>;
+type ValueFormatterParams<V> = GridParams.GridValueFormatterParams<OutgoingGridRowValue, GridContext, V>;

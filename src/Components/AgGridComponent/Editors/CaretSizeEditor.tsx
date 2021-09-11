@@ -11,7 +11,7 @@ export type CaretSizeValue = {
 }
 
 type EditorParams = Omit<ICellEditorParams, 'value'> & {
-    value: CaretSizeValue;
+    value: number;
 }
 // type CaretSizeGetterParams = Omit<ValueGetterParams, 'value'> & {
 //     value: CaretSizeValue;
@@ -28,26 +28,27 @@ export type CaretSizeNewValue = { IsValid: boolean, Value: number };
 // };
 export type CaretSizeValueOldAndNewValue<T extends ValueParserParams> = Omit<T, 'newValue' | 'oldValue'> & {
     newValue: CaretSizeNewValue,
-    oldValue: CaretSizeValue
+    oldValue: number
 }
 export function CaretSizeValueParser(params: ValueParserParams) {
     const value = params.newValue as CaretSizeNewValue;
     return { Value: value.IsValid ? value.Value : 0 } as CaretSizeValue;
 }
-export const CaretSizeEditor = function <T extends (EditorParams)>(caretSizeFromParams: (e: T) => number, isEditable: (data: T) => boolean) {
+export const CaretSizeEditor = function <T extends (EditorParams)>(caretSizeFromParams: (e: T) => number, isEditable: (data: T) => boolean, getMaxValue?: (e: T) => number | undefined, getMinValue?: (e: T) => number | undefined) {
     return forwardRef<ICellEditor, T>((props, ref) => {
         const inputRef = useRef<HTMLInputElement>(null);
-        const value = props.value.Value;
-        const minValue = props.value.MinLimit;
-        const maxValue = props.value.MaxLimit;
+        const value = props.value;
+        const minValue = getMinValue ? getMinValue(props) : undefined;
+        const maxValue = getMaxValue ? getMaxValue(props) : undefined;
         const caretSize = caretSizeFromParams(props);
         const [quantity, setQuantity] = useState<number>(value);
 
         useImperativeHandle(ref, () => {
             return {
                 getValue() {
-                    const value ={ IsValid: new CaretQuantiyValidation({ Value: quantity, MaxLimit: maxValue, MinLimit: minValue }).IsQuantityValid().IsValid, Value: quantity };
-                    return value;
+                    const IsValid = new CaretQuantiyValidation({ Value: quantity, MaxLimit: maxValue, MinLimit: minValue }).IsQuantityValid().IsValid;
+                    const returnValue = { IsValid, Value:quantity } as CaretSizeNewValue;
+                    return returnValue;
                 },
                 isPopup() {
                     return true;

@@ -43,6 +43,7 @@ export class UnkownObserver extends Error {
 export class QuantityLimitExceeded extends Error {
     constructor(productId: number, flavourId: number) {
         super();
+        this.message = `Flavour with Id=${productId} of Product with Id=${productId},  Quantity Exceeded`;
     }
 }
 export class DeterminantsNotSetError extends Error {
