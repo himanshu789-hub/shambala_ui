@@ -10,9 +10,10 @@ import { getARandomNumber } from "Utilities/Utilities";
 import { CaretSizeEditor, CaretSizeNewValue, CaretSizeValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
 import QuantityMediatorWrapper, { IQuantityMediatorWrapper } from './QuatityMediatorWrapper';
 import { addWarn } from "Utilities/AlertUtility";
+import { CustomPrice } from "Types/DTO";
 
 export default forwardRef<ICellEditor, CellEditorParams<OutgoingUpdateRow['CustomPrices']>>((params, ref) => {
-    const [data, setData] = useState<CustomPriceRowData[]>(params.data.Shipment.CustomPrices || []);
+    const [data, setData] = useState<CustomPrice[]>(params.data.Shipment.CustomPrices || []);
     const isProductIdValid = params.data.Shipment.ProductId !== -1;
     const defaultPrice: number = isProductIdValid ? params.context.getProductDetails(params.data.Shipment.ProductId).Price : 0;
 
@@ -29,12 +30,12 @@ export default forwardRef<ICellEditor, CellEditorParams<OutgoingUpdateRow['Custo
 
 type GridData = {
     CaretSize: number;
-    Data: CustomPriceRowData[];
+    Data: CustomPrice[];
     DefaultPrice: number;
     QuantityLimit: number;
 }
 type CustomPriceProps = {
-    setData: (data: CustomPriceRowData[]) => void;
+    setData: (data: CustomPrice[]) => void;
     initialData: GridData;
 }
 type PriceGridContext = {
@@ -65,7 +66,7 @@ const quantityGetter = (params: CustomPriceGridValueGetterParams) => {
     return quantity;
 };
 
-const quantitySetter = (params: CustomPriceValueSetterParams<CustomPriceRowData['Quantity']>) => {
+const quantitySetter = (params: CustomPriceValueSetterParams<CustomPrice['Quantity']>) => {
     params.data.Quantity = params.newValue;
     return true;
 }
@@ -73,7 +74,7 @@ const quantitySetter = (params: CustomPriceValueSetterParams<CustomPriceRowData[
 type PriceGridCellValueChangedEvent = GridCellValueChangeEvent<any, CustomPriceRowData, PriceGridContext>;
 type RowTransactionData = GridRowDataTransaction<CustomPriceRowData>;
 const CustomPriceGrid = function (props: CustomPriceProps) {
-    const [list, setList] = useState<CustomPriceRowData[]>(props.initialData.Data);
+    const [list, setList] = useState<CustomPrice[]>(props.initialData.Data);
     const [api, setApi] = useState<GridApi>();
     const [columnApi, setColumnApi] = useState<ColumnApi>();
     const [quantityMediator] = useState<IQuantityMediatorWrapper>(new QuantityMediatorWrapper(props.initialData.QuantityLimit));

@@ -32,6 +32,6 @@ type GridRowDataTransaction<DataT> = Omit<{ [Property in keyof RowDataTransactio
 };
 type GridCellValueChangeEvent<V, DataT, CtxT> = GridWithOldAndNewValue<GridParamsWithContext<GridParamsWithData<CellValueChangedEvent, DataT>, CtxT>, V>;
 type GridValueParserParams<V, DataT, CtxT> = GridParamsWithContext<GridParamsWithData<GridWithOldAndNewValue<ValueSetterParams, V>, DataT>, CTxT>;
-type ValidationRowData<T> = { [Property in keyof T]: { Value: T[Property], IsValid: boolean } };
+//type ValidationRowData<T> = { [Property in keyof T]: { Value: T[Property], IsValid: boolean } };
 type RowStyleParams<DataT,Ctx> = GridParamsWithData<GridParamsWithContext<RowClassParams,Ctx>,DataT>;
 type GridValueFormatterParams<DataT,CTx,VType> = GridParamsWithContext<GridParamsWithValue<VType,ValueFormatterParams,DataT>,CTx>; 

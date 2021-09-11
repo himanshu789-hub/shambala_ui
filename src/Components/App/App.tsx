@@ -34,7 +34,7 @@ export default class App extends React.Component {
 				<Route path='/incoming'>
 					<IncoingShipment />
 				</Route>
-				<Route path='/outgoing' render={(params)=><OutgoingGrid {...params}/>}/>
+				<Route path='/outgoing/:id?' render={(props)=><OutgoingGrid {...props}/>}/>
 		
 				<Route path='/invoice'>
 					<Invoice />

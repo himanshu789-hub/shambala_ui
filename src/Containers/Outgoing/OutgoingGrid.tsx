@@ -44,7 +44,7 @@ type OutgoingData = {
     DateCreated: string;
     Status?: OutgoingStatus;
     SalesmanId: number;
-    Shipments: IOutgoingShipmentUpdateDetail[];
+    Shipments: OutgoingGridRowValue[];
 }
 type OutgoingGridState = {
     GridOptions: GridOptions;
@@ -67,7 +67,6 @@ const ReInitializeCustomPrice = function (customPrices: CustomPriceRowData[], qu
         if (customPrices[i].Quantity.Value.Value > quantityMediator.GetQuantityLimit()) {
             for (let j = i; j < customPrices.length; j++) {
                 customPrices[j].Quantity.IsValid = false;
-                customPrices[j].Quantity.Value.MaxLimit = 0;
             }
             break;
         }
@@ -155,8 +154,7 @@ const commonColDefs: ColDef[] = [
             Observer.SetQuantity(params.newValue);
 
             if (context.IsOnUpdate) {
-                params.data.Shipment.TotalQuantityShiped = params.newValue - params.data.Shipment.TotalQuantityReturned.Value;
-                params.data.Shipment.TotalQuantityReturned = { ...params.data.Shipment.TotalQuantityReturned, MaxLimit: params.data.Shipment.TotalQuantityTaken };
+                params.data.Shipment.TotalQuantityShiped = params.newValue - params.data.Shipment.TotalQuantityReturned;
             }
         },
         tooltipValueGetter: ToolTipValueGetter('TotalQuantityTaken'),
@@ -180,7 +178,7 @@ const commonColDefs: ColDef[] = [
             const { context: { IsOnUpdate }, data } = e;
             let minLimit;
             if (IsOnUpdate)
-                minLimit = data.Shipment.TotalQuantityReturned.Value;
+                minLimit = data.Shipment.TotalQuantityReturned;
             return minLimit;
         })
     }
@@ -198,12 +196,14 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
         },
         cellRendererFramework: QuantityCellRederer,
         onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['TotalQuantityReturned']>) {
-            params.data.Shipment.TotalQuantityShiped = params.data.Shipment.TotalQuantityTaken - params.newValue.Value;
+            params.data.Shipment.TotalQuantityShiped = params.data.Shipment.TotalQuantityTaken - params.newValue;
         },
         cellClassRules: ClassSpecifier('TotalQuantityReturned'),
         tooltipValueGetter: ToolTipValueGetter('TotalQuantityReturned'),
-        //@ts-ignore
-        cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityReturned']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.TotalQuantityShiped > 0)
+        cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityReturned']>>(
+            (e) => e.data.Shipment.CaretSize, (e) => e.data.Shipment.TotalQuantityShiped > 0,
+            (e) => e.data.Shipment.TotalQuantityTaken
+        )
     },
     {
         headerName: 'Sale',
@@ -326,7 +326,6 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
             ApiInfo: { Status: CallStatus.LOADED },
             IsOnUpdate,
             OutgoingData: { DateCreated: new Date().toDateString(), SalesmanId: -1, Shipments: [], Id: 0 },
-
         };
     }
 
@@ -342,7 +341,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
             Observer: this.mediatorSubject.GetAObserver(1, componentId),
             Shipment: {
                 CaretSize: 0, CustomPrices: [], FlavourId: -1, Id: componentId, ProductId: -1, SchemePrice: 0,
-                TotalQuantityRejected: { Value: 0 }, TotalQuantityReturned: { Value: 0 }, TotalQuantityShiped: 0, TotalQuantityTaken: 0,
+                TotalQuantityRejected: 0, TotalQuantityReturned: 0, TotalQuantityShiped: 0, TotalQuantityTaken: 0,
                 TotalSchemeQuantity: 0, Status: OutgoingGridRowCode.NONE
             }
         }
@@ -396,7 +395,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
             const data: PostOutgoingShipment = {
                 DateCreated: new Date(OutgoingData.DateCreated),
                 SalesmanId: OutgoingData.SalesmanId,
-                Shipments: rows.map(e => ({ Id: e.Shipment.Id, CaretSize: e.Shipment.CaretSize, FlavourId: e.Shipment.FlavourId, ProductId: e.Shipment.ProductId, TotalDefectedPieces: e.Shipment.TotalQuantityRejected.Value, TotalRecievedPieces: e.Shipment.TotalQuantityTaken } as ShipmentDTO))
+                Shipments: rows.map(e => ({ Id: e.Shipment.Id, CaretSize: e.Shipment.CaretSize, FlavourId: e.Shipment.FlavourId, ProductId: e.Shipment.ProductId, TotalDefectedPieces: e.Shipment.TotalQuantityRejected, TotalRecievedPieces: e.Shipment.TotalQuantityTaken } as ShipmentDTO))
             }
             this.outgoingService.Add(data)
                 .catch(e => this.handleError(e));
@@ -470,7 +469,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
             }
         }
         else {
-            addDanger('Error Posting Data');
+            addDanger('Error Sending Data');
         }
     }
 
@@ -488,21 +487,33 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                 this.outgoingService.GetById(Number.parseInt(id))
                     .then(res => {
                         this.setState({
-                            OutgoingData: {
-                                DateCreated: res.data.DateCreated,
-                                SalesmanId: res.data.Salesman.Id, Shipments: res.data.OutgoingShipmentDetails,
-                                Id: res.data.Id,
-                                Status: res.data.Status
-                            },
                             ApiInfo: { Status: CallStatus.LOADING, Message: "Gathering Product List . . ." }
                         });
-                        return this.productService.GetAll(res.data.DateCreated)
-                    })
-                    .then(res => {
-                        this.setState({ ApiInfo: { Status: CallStatus.LOADED, Message: undefined } });
-                        this.setMediator(res.data);
+                        return this.productService.GetAll(res.data.DateCreated).then(res2 => {
+                            const products: Product[] = res2.data;
+                            res.data.OutgoingShipmentDetails.forEach(details =>
+                                products.find(e => e.Id === details.ProductId)!.Flavours.find(e => e.Id === details.FlavourId)!.Quantity += details.TotalQuantityShiped);
+                            this.setMediator(products);
+                            const rowData: OutgoingGridRowValue[] = [];
+                            res.data.OutgoingShipmentDetails.forEach(element => {
+                                const observer = this.mediatorSubject.GetAObserver(1, element.Id);
+                                observer.SetProduct(element.ProductId)
+                                observer.SetFlavour(element.FlavourId);
+                                //quantity are not added to mediator if return value not null
+                                observer.SetQuantity(element.TotalQuantityTaken);
+                                rowData.push({
+                                    Id: element.Id + '',
+                                    Observer: observer,
+                                    Shipment: { ...element, Status: OutgoingGridRowCode.NONE }
+                                })
+                            });
+                            this.setState({ ApiInfo: { Status: CallStatus.LOADED, Message: undefined } });
+                        })
                     })
                     .catch(() => this.setState({ ApiInfo: { Status: CallStatus.ERROR, Message: "Error Loading Shipment Info" } }));
+            }
+            else {
+                alert('Outgoing Id Cannot Be A Non-Integer');
             }
         }
         else {

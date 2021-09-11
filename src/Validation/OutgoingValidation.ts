@@ -46,7 +46,7 @@ export default class OutgoingValidator implements ValidateMember<OutgoingUpdateR
         if (!this.outgoing.TotalQuantityRejected)
             return { IsValid: false, Message: "Invalid" }
         const value = this.outgoing.TotalQuantityRejected;
-        if (value.Value >= this.outgoing.TotalQuantityShiped) {
+        if (value >= this.outgoing.TotalQuantityShiped) {
             return { IsValid: false, Message: 'Cannot Be Greater or Equal To Sale' }
         }
         return { IsValid: true };
@@ -55,7 +55,7 @@ export default class OutgoingValidator implements ValidateMember<OutgoingUpdateR
         const value = this.outgoing.TotalQuantityReturned;
         if (!value)
             return { IsValid: false, Message: "Invalid" }
-        if (value.Value > this.outgoing.TotalQuantityTaken) {
+        if (value > this.outgoing.TotalQuantityTaken) {
             return { IsValid: false, Message: "Cannot Be Greater To Taken" }
         }
         return { IsValid: true };
@@ -74,7 +74,7 @@ export default class OutgoingValidator implements ValidateMember<OutgoingUpdateR
             return { IsValid: false, Message: "Taken Quantity Must Have Value", Code: ValidationCode.Parameter };
         if (!this.outgoing.TotalQuantityReturned)
             return { IsValid: false, Message: "Return Quantity Must Have Value", Code: ValidationCode.Parameter };
-        if (this.outgoing.TotalQuantityTaken - this.outgoing.TotalQuantityReturned.Value < value)
+        if (this.outgoing.TotalQuantityTaken - this.outgoing.TotalQuantityReturned < value)
             return { IsValid: false, Message: "Cannot Be Greater Than Difference of Taken/Return Quantity", Code: ValidationCode.Memeber };
         return { IsValid: true };
     }

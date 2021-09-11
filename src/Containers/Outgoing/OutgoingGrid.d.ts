@@ -10,15 +10,10 @@ type GridContext = {
   getColumnIndex(name: keyof OutgoingUpdateRow): number;
   IsOnUpdate: boolean;
 }
-export type CustomPriceRowData = GridParams.ValidationRowData<Omit<CustomPrice, 'Quantity'> & { Quantity: CaretSizeValue }>;
+type CustomPriceRowData = CustomPrice;
 
-export type OutgoingUpdateRow = Omit<IOutgoingShipmentUpdateDetail, 'CustomPrices' | "TotalQuantityTaken" | 'TotalQuantityRejected' | 'TotalQuantityShiped' | 'TotalQuantityReturned'> & {
-  CustomPrices: CustomPriceRowData[];
-  TotalQuantityTaken: number;
-  TotalQuantityRejected: CaretSizeValue;
-  TotalQuantityShiped: number;
-  TotalQuantityReturned: CaretSizeValue;
-};
+type OutgoingUpdateRow = IOutgoingShipmentUpdateDetail;
+
 type RowNodeData = OutgoingUpdateRow & {
   Status: OutgoingGridRowCode
 };

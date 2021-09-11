@@ -62,7 +62,7 @@ interface IOutgoingShipmentAddDetail {
 interface IOutgoingShipmentUpdateDetail extends IOutgoingShipmentAddDetail {
 	SchemePrice: number;
 	TotalQuantityShiped: number;
-	TotalSchemeQuantity: nunber;
+	TotalSchemeQuantity: number;
 	CustomPrices: CustomPrice[];
 }
 type CustomPrice = {
@@ -103,7 +103,7 @@ type BadRequestError =
 type Flavour = {
 	Id: number;
 	Title: string;
-	Quantity?: number;
+	Quantity: number;
 };
 type FlavourInfo =
 	{
