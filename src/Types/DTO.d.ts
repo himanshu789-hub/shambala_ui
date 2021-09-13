@@ -63,7 +63,7 @@ interface IOutgoingShipmentUpdateDetail extends IOutgoingShipmentAddDetail {
 	SchemePrice: number;
 	TotalQuantityShiped: number;
 	TotalSchemeQuantity: number;
-	CustomPrices: CustomPrice[];
+	CustomCaratPrices: CustomPrice[];
 }
 type CustomPrice = {
 	Id: number;

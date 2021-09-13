@@ -12,8 +12,8 @@ import QuantityMediatorWrapper, { IQuantityMediatorWrapper } from '../../../../U
 import { addWarn } from "Utilities/AlertUtility";
 import { CustomPrice } from "Types/DTO";
 
-export default forwardRef<ICellEditor, CellEditorParams<OutgoingUpdateRow['CustomPrices']>>((params, ref) => {
-    const [data, setData] = useState<CustomPrice[]>(params.data.Shipment.CustomPrices || []);
+export default forwardRef<ICellEditor, CellEditorParams<OutgoingUpdateRow['CustomCaratPrices']>>((params, ref) => {
+    const [data, setData] = useState<CustomPrice[]>(params.data.Shipment.CustomCaratPrices || []);
     const isProductIdValid = params.data.Shipment.ProductId !== -1;
     const defaultPrice: number = isProductIdValid ? params.context.getProductDetails(params.data.Shipment.ProductId).Price : 0;
 
@@ -138,7 +138,7 @@ const CustomPriceGrid = function (props: CustomPriceProps) {
             getCaretSize: () => props.initialData.CaretSize,
             getQuantityMediator: function () { return quantityMediator; }
         } as PriceGridContext,
-        rowData: props.initialData.Data,
+        rowData: list,
         // onCellValueChanged: (event: PriceGridCellValueChangedEvent) => {
         //     setList(list.map((e, index) => index === event.rowIndex ? { ...event.data } : e));
         // },
@@ -148,8 +148,22 @@ const CustomPriceGrid = function (props: CustomPriceProps) {
     const onGridReady = function (params: GridReadyEvent) {
         setApi(params.api);
         setColumnApi(params.columnApi);
-        list.length === 0 && addAPrice();
     }
+    useEffect(() => {
+        list.length && setList([{ Id: getARandomNumber(), Price: props.initialData.DefaultPrice, Quantity: 0 }]);
+        return () => {
+            const data: CustomPrice[] = [];
+            api?.forEachNode(node => {
+                data.push(node.data);
+            });
+            const firstElement = data[0] as CustomPrice;
+            if (firstElement && firstElement.Quantity === 0 || firstElement.Price === props.initialData.DefaultPrice) {
+                props.setData([])
+            }
+            else
+                props.setData(data);
+        };
+    }, [])
 
     return (<div className="ag-theme-alpine" style={{ minHeight: 120, minWidth: 190 }}>
         <AgGridReact gridOptions={options} onGridReady={onGridReady} api={api} columnApi={columnApi} rowData={list}>

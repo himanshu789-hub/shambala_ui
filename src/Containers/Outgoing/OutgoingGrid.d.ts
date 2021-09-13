@@ -7,7 +7,7 @@ import { OutgoingGridRowCode, OutgoingStatusErrorCode } from 'Enums/Enum';
 
 type GridContext = {
   getProductDetails(Id: number): Product;
-  getColumnIndex(name: keyof OutgoingUpdateRow): number;
+  getColumnIndex(name: keyof OutgoingUpdateRow): string;
   IsOnUpdate: boolean;
 }
 type CustomPriceRowData = CustomPrice;

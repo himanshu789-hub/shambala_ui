@@ -11,7 +11,7 @@ export function ProductCellRenderer(params: CellRendererParams<IOutgoingShipment
 export const FlavourCellRenderer = SelectWithAriaRenderer<CellRendererParams<IOutgoingShipmentAddDetail['FlavourId']>>
     (e => e.data.Observer.GetFlavours().map(e => ({ label: e.Title, value: e.Id })), (e) => e.data.Shipment.FlavourId !== -1);
 
-export const CustomPriceRenderer = (params: CellRendererParams<IOutgoingShipmentUpdateDetail['CustomPrices']>) => {
+export const CustomPriceRenderer = (params: CellRendererParams<IOutgoingShipmentUpdateDetail['CustomCaratPrices']>) => {
     const prices = params.value;
     if (!prices)
         return <span>N/A</span>;

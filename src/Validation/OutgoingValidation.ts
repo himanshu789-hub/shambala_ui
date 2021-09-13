@@ -14,10 +14,10 @@ export default class OutgoingValidator implements ValidateMember<OutgoingUpdateR
             return { IsValid: false, } as IValidateResultBad;
         return new ValidationResultOK();
     }
-    IsCustomPricesValid(): IValidateResultOK {
-        if (!this.outgoing.CustomPrices || this.outgoing.CustomPrices.length == 0)
+    IsCustomCaratPricesValid(): IValidateResultOK {
+        if (!this.outgoing.CustomCaratPrices || this.outgoing.CustomCaratPrices.length == 0)
             return { IsValid: false, Message: "Cannot Left Empty" } as IValidateResultBad;
-        const validator = new CustomPriceCollectionValidation(this.outgoing.CustomPrices, this.outgoing.TotalQuantityShiped);
+        const validator = new CustomPriceCollectionValidation(this.outgoing.CustomCaratPrices, this.outgoing.TotalQuantityShiped);
         if (!validator.IsAllPriceValid().IsValid)
             return new ValidateResultBad("Price Not Valid");
         if (!validator.IsAllQuantityValid().IsValid)

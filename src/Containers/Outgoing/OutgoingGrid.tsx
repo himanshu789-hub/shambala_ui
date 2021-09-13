@@ -56,12 +56,12 @@ const defaultColDef: ColDef = {
     flex: 1,
     editable: true,
     tooltipComponentFramework: ToolTipComponent,
-    
+
 }
 const ClassSpecifier = (name: keyof OutgoingUpdateRow) => CellClassRuleSpecifier<OutgoingUpdateRow, OutgoingValidator>(name, OutgoingValidator, (params: CellClassParams) => params.data.Shipment);
 //@ts-ignore
 const ToolTipValueGetter = (name: keyof OutgoingUpdateRow) => ToolTipGetter(OutgoingValidator, name, (e: ToolTipRendererParams) => e.data.Shipment);
-const QuantityCellRederer = CaretSizeRenderer<CellRendererParams<number>>(e => e.data.Shipment.CaretSize, e => e.value);
+const QuantityCellRederer = CaretSizeRenderer<CellRendererParams<number>>(e => e.data.Shipment.CaretSize);
 const ReInitializeCustomPrice = function (customPrices: CustomPriceRowData[], quantity: number) {
     const quantityMediator = new QuantityMediatorWrapper(quantity);
     for (let i = 0; i < customPrices.length; i++) {
@@ -75,6 +75,31 @@ const ReInitializeCustomPrice = function (customPrices: CustomPriceRowData[], qu
             quantityMediator.Subscribe(customPrices[i].Id, customPrices[i].Quantity);
     }
     return customPrices;
+}
+
+const getColumnId = function (name: keyof OutgoingUpdateRow) {
+    let columnIndex: number | null = null;
+    switch (name) {
+        case 'ProductId':
+            columnIndex = 0; break;
+        case 'FlavourId':
+            columnIndex = 1; break;
+        case 'CaretSize':
+            columnIndex = 2; break;
+        case 'TotalQuantityTaken':
+            columnIndex = 3; break;
+        case 'TotalQuantityReturned':
+            columnIndex = 4; break;
+        case 'TotalQuantityShiped':
+            columnIndex = 5; break;
+        case 'SchemePrice':
+            columnIndex = 6; break;
+        case 'CustomCaratPrices':
+            columnIndex = 7; break;
+        case 'Id':
+            columnIndex = 8; break;
+    }
+    return columnIndex + '';
 }
 const commonColDefs: ColDef[] = [
     {
@@ -100,7 +125,8 @@ const commonColDefs: ColDef[] = [
             }
             api?.refreshCells({ rowNodes: [params.node] });
         },
-        tooltipValueGetter: ToolTipValueGetter('ProductId')
+        tooltipValueGetter: ToolTipValueGetter('ProductId'),
+        colId: getColumnId('ProductId')
     },
     {
         headerName: 'Flavour Name',
@@ -152,6 +178,7 @@ const commonColDefs: ColDef[] = [
             Observer.SetQuantity(params.newValue);
 
             if (context.IsOnUpdate) {
+
                 params.data.Shipment.TotalQuantityShiped = params.newValue - params.data.Shipment.TotalQuantityReturned;
             }
         },
@@ -185,8 +212,8 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
     {
         headerName: 'Return',
         valueGetter: (params: ValueGetterParams) => params.data.Shipment.TotalQuantityReturned,
-        valueSetter: (params:CaretSizeValueOldAndNewValue<ValueSetterParams<OutgoingUpdateRow['TotalQuantityReturned']>>) => {
-            params.data.Shipment.TotalQuantityReturned = params.newValue.IsValid?params.newValue.Value:params.oldValue;
+        valueSetter: (params: CaretSizeValueOldAndNewValue<ValueSetterParams<OutgoingUpdateRow['TotalQuantityReturned']>>) => {
+            params.data.Shipment.TotalQuantityReturned = params.newValue.IsValid ? params.newValue.Value : params.oldValue;
             return true;
         },
         editable: (params: EditableCallbackParams) => {
@@ -194,7 +221,7 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
         },
         cellRendererFramework: QuantityCellRederer,
         onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['TotalQuantityReturned']>) {
-            params.data.Shipment.TotalQuantityShiped = params.data.Shipment.TotalQuantityTaken - params.newValue;
+            params.node.setDataValue(params.context.getColumnIndex('TotalQuantityReturned'), params.data.Shipment.TotalQuantityShiped - params.newValue)
         },
         cellClassRules: ClassSpecifier('TotalQuantityReturned'),
         tooltipValueGetter: ToolTipValueGetter('TotalQuantityReturned'),
@@ -208,20 +235,23 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
         valueGetter: (params: ValueGetterParams) => {
             return params.data.Shipment.TotalQuantityShiped;
         },
+        valueSetter: function (params: ValueSetterParams<number>) {
+            params.data.Shipment.TotalQuantityShiped = params.newValue;
+            return true;
+        },
         editable: false,
         onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['TotalQuantityShiped']>) {
-            const customPrices = params.data.Shipment.CustomPrices;
-            params.data.Shipment.CustomPrices = ReInitializeCustomPrice(customPrices, params.newValue);
+            const { node, context: { getColumnIndex } } = params;
+            const customPrices = params.data.Shipment.CustomCaratPrices;
+            node.setDataValue(getColumnIndex('CustomCaratPrices'), ReInitializeCustomPrice(customPrices, params.newValue));
             const schemeQuantity = params.context.getProductDetails(params.data.Shipment.ProductId).SchemeQuantity;
-            if (schemeQuantity) {
-                const schemeProduct = params.context.getProductDetails(config.SchemeProductId);
-                const totalCaret = Math.floor(params.newValue / params.data.Shipment.CaretSize);
-                const totalBottle = schemeQuantity * totalCaret;
-                const totalPrice = (schemeProduct.Price / schemeProduct.CaretSize) * totalBottle;
-                const { data: { Shipment } } = params;
-                Shipment.SchemePrice = totalPrice;
-                Shipment.TotalSchemeQuantity = totalBottle;
-            }
+            const schemeProduct = params.context.getProductDetails(config.SchemeProductId);
+            const totalCaret = Math.floor(params.newValue / params.data.Shipment.CaretSize);
+            const totalBottle = schemeQuantity || 0 * totalCaret;
+            const totalPrice = (schemeProduct.Price / schemeProduct.CaretSize) * totalBottle;
+            // set corresponding SchemePrice and TotalSchemeQuantity
+            node.setDataValue(getColumnIndex('SchemePrice'), totalPrice);
+            node.setDataValue(getColumnIndex('TotalSchemeQuantity'), totalBottle);
         },
         cellClassRules: ClassSpecifier('TotalQuantityShiped'),
         tooltipValueGetter: ToolTipValueGetter('TotalQuantityShiped')
@@ -239,19 +269,20 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
                 tooltipValueGetter: ToolTipValueGetter('SchemePrice'),
                 valueGetter: (params: ValueGetterParams) => params.data.Shipment.SchemePrice
             }
-        ]
+        ],
+        marryChildren: true
     },
     {
         headerName: 'Custom Price',
-        valueGetter: (params: ValueGetterParams) => params.data.Shipment.CustomPrices,
-        valueSetter: (params: ValueSetterParams<OutgoingUpdateRow['CustomPrices']>) => {
-            params.data.Shipment.CustomPrices = params.newValue;
+        valueGetter: (params: ValueGetterParams) => params.data.Shipment.CustomCaratPrices,
+        valueSetter: (params: ValueSetterParams<OutgoingUpdateRow['CustomCaratPrices']>) => {
+            params.data.Shipment.CustomCaratPrices = params.newValue;
             return true;
         },
-        tooltipValueGetter: ToolTipValueGetter('CustomPrices'),
+        tooltipValueGetter: ToolTipValueGetter('CustomCaratPrices'),
         cellRendererFramework: CustomPriceRenderer,
         cellEditorFramework: CustomPriceEditor,
-        cellClassRules: ClassSpecifier('CustomPrices')
+        cellClassRules: ClassSpecifier('CustomCaratPrices')
     }
 ]
 const getActionColDef = function (cellParams: ActionCellParams<string>): ColDef {
@@ -264,30 +295,6 @@ const getActionColDef = function (cellParams: ActionCellParams<string>): ColDef 
         cellRendererFramework: ActionCellRenderer,
         cellRendererParams: cellParams
     };
-}
-const getColumnIndex = function (name: keyof OutgoingUpdateRow) {
-    let columnIndex: number | null = null;
-    switch (name) {
-        case 'ProductId':
-            columnIndex = 0; break;
-        case 'FlavourId':
-            columnIndex = 1; break;
-        case 'CaretSize':
-            columnIndex = 2; break;
-        case 'TotalQuantityTaken':
-            columnIndex = 3; break;
-        case 'TotalQuantityReturned':
-            columnIndex = 4; break;
-        case 'TotalQuantityShiped':
-            columnIndex = 5; break;
-        case 'SchemePrice':
-            columnIndex = 6; break;
-        case 'CustomPrices':
-            columnIndex = 7; break;
-        case 'Id':
-            columnIndex = 8; break;
-    }
-    return columnIndex;
 }
 export default class OutgoingGrid extends React.Component<OutgoingGridProps, OutgoingGridState>{
     private mediatorSubject: MediatorSubject;
@@ -313,14 +320,14 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
             GridOptions: {
                 columnDefs: colDefs,
                 context: {
-                    getColumnIndex,
+                    getColumnIndex: getColumnId,
                     getProductDetails: (Id: number) => this.products.find(e => e.Id === Id)!,
                     IsOnUpdate
                 } as GridContext,
                 getRowNodeId: (data: OutgoingGridRowValue) => data.Id,
                 defaultColDef,
                 getRowStyle: RowStyleSpecifier,
-                tooltipShowDelay:0
+                tooltipShowDelay: 0
             },
             ApiInfo: { Status: CallStatus.LOADED },
             IsOnUpdate,
@@ -339,7 +346,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
             Id: componentId + '',
             Observer: this.mediatorSubject.GetAObserver(1, componentId),
             Shipment: {
-                CaretSize: 0, CustomPrices: [], FlavourId: -1, Id: componentId, ProductId: -1, SchemePrice: 0,
+                CaretSize: 0, CustomCaratPrices: [], FlavourId: -1, Id: componentId, ProductId: -1, SchemePrice: 0,
                 TotalQuantityRejected: 0, TotalQuantityReturned: 0, TotalQuantityShiped: 0, TotalQuantityTaken: 0,
                 TotalSchemeQuantity: 0, Status: OutgoingGridRowCode.NONE
             }
@@ -413,7 +420,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                     <div className="form-inline">
                         <SalesmanList handleSelection={this.handleSalesmanSelect} SalemanId={OutgoingData.SalesmanId} />
                         {
-                            OutgoingData.Status!==undefined  && <div className="input-group mb-2 mr-sm-2">
+                            OutgoingData.Status !== undefined && <div className="input-group mb-2 mr-sm-2">
                                 <div className="input-group-prepend">
                                     <div className="input-group-text">Shipment Status</div>
                                 </div>
@@ -506,7 +513,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                                     Shipment: { ...element, Status: OutgoingGridRowCode.NONE }
                                 })
                             });
-                            this.setState({ ApiInfo: { Status: CallStatus.LOADED, Message: undefined },OutgoingData:{...res.data,SalesmanId:res.data.Salesman.Id,Shipments:rowData} });
+                            this.setState({ ApiInfo: { Status: CallStatus.LOADED, Message: undefined }, OutgoingData: { ...res.data, SalesmanId: res.data.Salesman.Id, Shipments: rowData } });
                         })
                     })
                     .catch(() => this.setState({ ApiInfo: { Status: CallStatus.ERROR, Message: "Error Loading Shipment Info" } }));
