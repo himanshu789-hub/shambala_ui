@@ -1,25 +1,36 @@
 import { CustomPrice } from "Types/DTO";
-import {  ValidateMember, ValidationCode } from "./Validation.d";
-import { CaretSizeValue } from 'Components/AgGridComponent/Editors/CaretSizeEditor';
 import { ValidateResultBad, ValidationResultOK } from "./Validation";
-import QuantityValidation from './CaretQuantityValidation';
+import './Validation.d';
+import QuantityMediatorWrapper from './../Utilities/QuatityMediatorWrapper';
+import { QuantityLimitExceeded } from 'Errors/Error';
 
-type CustomPriceValue = Omit<CustomPrice, 'Id' | 'Quantity'> & { Quantity: CaretSizeValue };
-export default class CustomPriceValidation implements ValidateMember<CustomPriceValue>
+export default class CustomPriceCollectionValidation implements ValidateArray<CustomPrice>
 {
-    private data: CustomPriceValue;
-    constructor(data: CustomPriceValue) {
-        this.data = data;
+    private arr: CustomPrice[];
+    private readonly limit: number;
+    constructor(data: CustomPrice[], limit: number) {
+        this.arr = data;
+        this.limit = limit;
     }
-    IsPriceValid = () => {
-        if (this.data.Price == 0)
-            return new ValidateResultBad("Price Cannot Be Zero", ValidationCode.Memeber);
+    IsAllPriceValid(): IValidateResultBad | IValidateResultOK {
+
+        for (const element of this.arr) {
+            if (element.Price === 0)
+                return new ValidateResultBad("Price Cannot Be Zero");
+        }
+        return { IsValid: true };
+    }
+    IsAllQuantityValid(): IValidateResultOK | IValidateResultBad {
+        const quantityMediator = new QuantityMediatorWrapper(this.limit);
+        for (const element of this.arr) {
+            try {
+                quantityMediator.Subscribe(element.Id, element.Quantity);
+            }
+            catch (e) {
+                if (e instanceof QuantityLimitExceeded)
+                    return new ValidateResultBad("Quantity Limit Exceed");
+            }
+        }
         return new ValidationResultOK();
-    }
-    IsQuantityValid = () => {
-        const quantity = this.data.Quantity;
-        if (quantity.Value === 0)
-            return new ValidateResultBad("Cannot Be Zero");
-        return new QuantityValidation(quantity).IsQuantityValid();
     }
 }

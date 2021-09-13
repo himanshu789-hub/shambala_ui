@@ -1,5 +1,5 @@
 import { CellClassParams } from "@ag-grid-community/all-modules";
-import { IValidateResult, ValidateMember } from "Validation/Validation.d";
+import  "Validation/Validation.d";
 import './StyleSpecifier.css';
 
 const CellClassRuleSpecifier = function <T, V extends ValidateMember<T>>(name: keyof T, validator: new (data:T)=>V,getValidationEnttyFromParams?:(params:CellClassParams)=>T) {

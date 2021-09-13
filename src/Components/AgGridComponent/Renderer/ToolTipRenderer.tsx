@@ -1,6 +1,6 @@
 import { ITooltipParams,CellClassParams } from '@ag-grid-community/all-modules';
 import React, { forwardRef, useImperativeHandle } from 'react';
-import { IValidateResult, IValidateResultBad, IValidateResultOK, ValidateMember } from 'Validation/Validation.d';
+import  'Validation/Validation.d';
 import './ToolTip.css'
 
 export const ToolTipComponent = forwardRef<{ getReactContainerClasses: () => string[] }, ITooltipParams>((props, ref) => {
@@ -19,7 +19,7 @@ export const ToolTipComponent = forwardRef<{ getReactContainerClasses: () => str
 export function ToolTipGetter<T, V extends ValidateMember<T>>(validator: new (data:T)=>V, name: keyof T,getConstructorDataFromParams?:(e:ITooltipParams)=>T) {
     return function (params: ITooltipParams) {
         let ValidationResult: IValidateResult = { IsValid: false };
-        ValidationResult = (new validator(params.data) as any)['Is' + name + 'Valid'] as IValidateResult;
+        ValidationResult =(getConstructorDataFromParams?new validator(getConstructorDataFromParams(params)): ( new validator(params.data) as any))['Is' + name + 'Valid']() as IValidateResult;
         if (ValidationResult.IsValid)
             return '';
         return (ValidationResult as IValidateResultBad).Message!;

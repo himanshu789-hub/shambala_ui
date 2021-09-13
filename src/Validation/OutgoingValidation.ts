@@ -1,7 +1,6 @@
-import { IValidateResultBad, IValidateResultOK, ValidateMember, ValidationCode } from './Validation.d';
-import { ValidateResultBad, ValidationResultOK } from './Validation';
+import { ValidateResultBad, ValidationResultOK} from './Validation';
 import { OutgoingUpdateRow } from 'Containers/Outgoing/OutgoingGrid.d';
-
+import CustomPriceCollectionValidation from './CustomPriceValidation';
 
 export default class OutgoingValidator implements ValidateMember<OutgoingUpdateRow> {
     private readonly outgoing: OutgoingUpdateRow;
@@ -18,14 +17,16 @@ export default class OutgoingValidator implements ValidateMember<OutgoingUpdateR
     IsCustomPricesValid(): IValidateResultOK {
         if (!this.outgoing.CustomPrices || this.outgoing.CustomPrices.length == 0)
             return { IsValid: false, Message: "Cannot Left Empty" } as IValidateResultBad;
-        const IsNotValid = this.outgoing.CustomPrices.find(e => !e.Id.IsValid || !e.Price.IsValid || !e.Quantity.IsValid) != null;
-        if (IsNotValid)
-            return new ValidateResultBad("Values Are Not Valid", ValidationCode.Memeber);
+        const validator = new CustomPriceCollectionValidation(this.outgoing.CustomPrices, this.outgoing.TotalQuantityShiped);
+        if (!validator.IsAllPriceValid().IsValid)
+            return new ValidateResultBad("Price Not Valid");
+        if (!validator.IsAllQuantityValid().IsValid)
+            return new ValidateResultBad("Quantities Sum Cannot Greater Than Sale");
         return new ValidationResultOK();
     }
     IsFlavourIdValid(): IValidateResultOK | IValidateResultBad {
         if (this.outgoing.FlavourId === -1)
-            return { IsValid: false, Message: "Cannot Left Empty", Code: ValidationCode.Memeber } as IValidateResultBad;
+            return { IsValid: false, Message: "Cannot Left Empty" } as IValidateResultBad;
         return { IsValid: true };
     }
     IsIdValid(): IValidateResultOK | IValidateResultBad {
@@ -54,7 +55,7 @@ export default class OutgoingValidator implements ValidateMember<OutgoingUpdateR
     IsTotalQuantityReturnedValid(): IValidateResultOK | IValidateResultBad {
         const value = this.outgoing.TotalQuantityReturned;
         if (!value)
-            return { IsValid: false, Message: "Invalid" }
+            return { IsValid: false, Message: "Cannot Be Empty" }
         if (value > this.outgoing.TotalQuantityTaken) {
             return { IsValid: false, Message: "Cannot Be Greater To Taken" }
         }
@@ -63,27 +64,27 @@ export default class OutgoingValidator implements ValidateMember<OutgoingUpdateR
     IsTotalQuantityTakenValid(): IValidateResultOK | IValidateResultBad {
         const value = this.outgoing.TotalQuantityTaken;
         if (!value)
-            return new ValidateResultBad("Cannot Be Empty", ValidationCode.Memeber);
+            return new ValidateResultBad("Cannot Be Empty");
         return new ValidationResultOK();
     }
     IsTotalQuantityShipedValid(): IValidateResultOK | IValidateResultBad {
         const value = this.outgoing.TotalQuantityShiped;
         if (!value)
             return { IsValid: false, Message: "Cannot Be Empty" };
-        if (!this.IsTotalQuantityShipedValid().IsValid)
-            return { IsValid: false, Message: "Taken Quantity Must Have Value", Code: ValidationCode.Parameter };
+        if (!this.IsTotalQuantityTakenValid().IsValid)
+            return { IsValid: false, Message: "Taken Quantity Must Have Value",Code:"Parameter" };
         if (!this.outgoing.TotalQuantityReturned)
-            return { IsValid: false, Message: "Return Quantity Must Have Value", Code: ValidationCode.Parameter };
+            return { IsValid: false, Message: "Return Quantity Must Have Value", Code: 'Parameter' };
         if (this.outgoing.TotalQuantityTaken - this.outgoing.TotalQuantityReturned < value)
-            return { IsValid: false, Message: "Cannot Be Greater Than Difference of Taken/Return Quantity", Code: ValidationCode.Memeber };
+            return { IsValid: false, Message: "Cannot Be Greater Than Difference of Taken/Return Quantity", Code: 'Parameter' };
         return { IsValid: true };
     }
     IsTotalSchemeQuantityValid(): IValidateResultBad | IValidateResultOK {
         const value = this.outgoing.TotalSchemeQuantity;
         if (!value)
-            return new ValidateResultBad("Canot Be Empty", ValidationCode.Memeber);
+            return new ValidateResultBad("Canot Be Empty");
         if (!this.IsCaretSizeValid().IsValid)
-            return new ValidateResultBad("Caret Size Not Valid", ValidationCode.Parameter);
+            return new ValidateResultBad("Caret Size Not Valid", 'Parameter');
         return { IsValid: true };
     }
 }

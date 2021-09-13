@@ -7,8 +7,8 @@ import { AgGridReact } from "@ag-grid-community/react";
 import NumericOnlyEditor from "./NumericOnlyEditor";
 import ActionCellRenderer, { ActionCellParams } from "Components/AgGridComponent/Renderer/ActionCellRender";
 import { getARandomNumber } from "Utilities/Utilities";
-import { CaretSizeEditor, CaretSizeNewValue, CaretSizeValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
-import QuantityMediatorWrapper, { IQuantityMediatorWrapper } from './QuatityMediatorWrapper';
+import { CaretSizeEditor, CaretSizeValue, CaretSizeValueOldAndNewValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
+import QuantityMediatorWrapper, { IQuantityMediatorWrapper } from '../../../../Utilities/QuatityMediatorWrapper';
 import { addWarn } from "Utilities/AlertUtility";
 import { CustomPrice } from "Types/DTO";
 
@@ -23,6 +23,9 @@ export default forwardRef<ICellEditor, CellEditorParams<OutgoingUpdateRow['Custo
         },
         isCancelBeforeStart() {
             return !isProductIdValid && params.data.Shipment.TotalQuantityShiped > 0;
+        },
+        isPopup() {
+            return true;
         }
     }));
     return <CustomPriceGrid initialData={{ CaretSize: params.data.Shipment.CaretSize, Data: data, DefaultPrice: defaultPrice, QuantityLimit: params.data.Shipment.TotalQuantityShiped }} setData={setData} />
@@ -45,33 +48,14 @@ type PriceGridContext = {
 type CustomPriceGridEditorParams<V> = GridEditorParams<V, CustomPriceRowData, PriceGridContext>;
 type CustomPriceGridCellRendererParams<V> = GridRendererParams<V, CustomPriceRowData, PriceGridContext>;
 type CustomPriceGridValueGetterParams = GridGetterParams<CustomPriceRowData, PriceGridContext>;
-type CustomPriceValueSetterParams<V> = GridSetterParams<V, CustomPriceRowData, PriceGridContext>;
-type CustomPriceValueParser<V> = GridValueParserParams<V, CustomPriceRowData, PriceGridContext>;
-
+type CustomPriceCellValueChnageEvent<V> = GridCellValueChangeEvent<V, CustomPrice, PriceGridContext>;
+type CustomPriceValueSetterPrams<V> = GridSetterParams<V, CustomPrice, PriceGridContext>;
 const defaultColDef: ColDef = {
     flex: 1,
     editable: true
 }
 
-const quantityGetter = (params: CustomPriceGridValueGetterParams) => {
-    const quantityMediator = params.context.getQuantityMediator();
-    const quantitySizeValue = params.data.Quantity.Value;
-    let previousMaxLimit = quantitySizeValue.MaxLimit;
-    const quantityLeft = quantityMediator.GetQuantityLimit();
-    const validQuantityLimit = quantityLeft > 0 ? quantityLeft : 0;
-    if (quantityMediator.IsQuantitySubscribed(params.data.Id.Value)) {
-        previousMaxLimit = (previousMaxLimit ? previousMaxLimit : 0) + validQuantityLimit;
-    }
-    const quantity: CaretSizeValue = { ...params.data.Quantity.Value, MaxLimit: validQuantityLimit };
-    return quantity;
-};
 
-const quantitySetter = (params: CustomPriceValueSetterParams<CustomPrice['Quantity']>) => {
-    params.data.Quantity = params.newValue;
-    return true;
-}
-
-type PriceGridCellValueChangedEvent = GridCellValueChangeEvent<any, CustomPriceRowData, PriceGridContext>;
 type RowTransactionData = GridRowDataTransaction<CustomPriceRowData>;
 const CustomPriceGrid = function (props: CustomPriceProps) {
     const [list, setList] = useState<CustomPrice[]>(props.initialData.Data);
@@ -85,11 +69,11 @@ const CustomPriceGrid = function (props: CustomPriceProps) {
         if (leftQuantity > 0) {
             const data: CustomPriceRowData[] = []
             api?.forEachNode(e => data.push(e.data));
-            if (data.find(e => e.Quantity.Value.Value === 0) === null) {
+            if (data.find(e => e.Quantity === 0) === null) {
                 const newPrice: CustomPriceRowData = {
-                    Id: { IsValid: true, Value: getARandomNumber() },
-                    Price: { IsValid: true, Value: props.initialData.DefaultPrice },
-                    Quantity: { IsValid: false, Value: { Value: 0, MaxLimit: leftQuantity } }
+                    Id: getARandomNumber(),
+                    Price: props.initialData.DefaultPrice,
+                    Quantity: 0
                 };
                 const transaction: RowTransactionData = {
                     add: [newPrice]
@@ -118,19 +102,27 @@ const CustomPriceGrid = function (props: CustomPriceProps) {
             },
             {
                 headerName: 'Quantity',
-                valueGetter: quantityGetter,
-                valueSetter: quantitySetter,
-                valueParser: function (params: CustomPriceValueParser<CaretSizeNewValue>) {
-                    const { newValue: { Value, IsValid } } = params;
-                    return { Value: IsValid ? Value : 0 } as CaretSizeValue;
+                cellEditorFramework: CaretSizeEditor<CustomPriceGridEditorParams<CustomPrice['Quantity']>>(e => e.context.getCaretSize(), (e) => true),
+                cellRendererFramework: CaretSizeRenderer<CustomPriceGridCellRendererParams<CustomPriceRowData['Quantity']>>(e => e.context.getCaretSize(), (e) => {
+                    const quantityMediator = e.context.getQuantityMediator();
+                    if (quantityMediator.IsQuantitySubscribed(e.data.Id)) {
+                        quantityMediator.Unsubscribe(e.data.Id);
+                    }
+                    return quantityMediator.GetQuantityLimit();
+                }),
+                valueSetter: function (params: CaretSizeValueOldAndNewValue<CustomPriceValueSetterPrams<number>>) {
+                    params.data.Quantity = params.newValue.IsValid ? params.newValue.Value : params.oldValue;
+                    const quantityMediator = params.context.getQuantityMediator();
+                    quantityMediator.Subscribe(params.data.Id, params.data.Quantity);
+                    return true;
                 },
-                //@ts-ignore
-                cellEditorFramework: CaretSizeEditor<CustomPriceGridEditorParams<CustomPriceRowData['Quantity']['Value']>>(e => e.context.getCaretSize(), (e) => true),
-                cellRendererFramework: CaretSizeRenderer<CustomPriceGridCellRendererParams<CustomPriceRowData['Quantity']>>(e => e.context.getCaretSize(), e => e.value.Value.Value)
+                onCellValueChanged: function (params: CustomPriceCellValueChnageEvent<number>) {
+                    const quantityMediator = params.context.getQuantityMediator();
+                    quantityMediator.Subscribe(params.data.Id, params.newValue);
+                }
             },
             {
                 headerName: 'Price',
-                valueGetter: (params: CustomPriceGridValueGetterParams) => params.data.Price.Value,
                 cellEditorFramework: NumericOnlyEditor
             },
             {
@@ -141,28 +133,26 @@ const CustomPriceGrid = function (props: CustomPriceProps) {
                     deleteAChild: deleteAChild
                 } as ActionCellParams<number>
             }],
-        getRowNodeId: (data: CustomPriceRowData) => data.Id.Value + '',
+        getRowNodeId: (data: CustomPriceRowData) => data.Id + '',
         context: {
-            getCaretSize: () => props.initialData.CaretSize
+            getCaretSize: () => props.initialData.CaretSize,
+            getQuantityMediator: function () { return quantityMediator; }
         } as PriceGridContext,
         rowData: props.initialData.Data,
-        onCellValueChanged: (event: PriceGridCellValueChangedEvent) => {
-            setList(list.map((e, index) => index === event.rowIndex ? { ...event.data } : e));
-        },
+        // onCellValueChanged: (event: PriceGridCellValueChangedEvent) => {
+        //     setList(list.map((e, index) => index === event.rowIndex ? { ...event.data } : e));
+        // },
         defaultColDef: defaultColDef
     });
 
     const onGridReady = function (params: GridReadyEvent) {
         setApi(params.api);
-        setColumnApi(params.columnApi)
+        setColumnApi(params.columnApi);
+        list.length === 0 && addAPrice();
     }
 
-    useEffect(() => {
-        props.setData(list);
-    }, [list]);
-
-    return (<div className="ag-theme-alpine">
-        <AgGridReact gridOptions={options} onGridReady={onGridReady} api={api} columnApi={columnApi} >
+    return (<div className="ag-theme-alpine" style={{ minHeight: 120, minWidth: 190 }}>
+        <AgGridReact gridOptions={options} onGridReady={onGridReady} api={api} columnApi={columnApi} rowData={list}>
         </AgGridReact>
     </div>);
 }

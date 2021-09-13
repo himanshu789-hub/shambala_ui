@@ -1,4 +1,4 @@
-import QuantityMediator, { IQuantityMediator } from './.././../../../Utilities/QuantityMediator';
+import QuantityMediator, { IQuantityMediator } from './QuantityMediator';
 
 export interface IQuantityMediatorWrapper {
     GetQuantityLimit():number;

@@ -1,7 +1,7 @@
 import CaretSize from 'Components/CaretSize/CaretSize'
 import { forwardRef, useImperativeHandle, useState, useRef, useEffect } from 'react';
 import { CellValueChangedEvent, ICellEditor, ICellEditorParams, ValueGetterParams, ValueParserParams, ValueSetterParams } from '@ag-grid-community/all-modules'
-import CustomPriceValidation from 'Validation/CustomPriceValidation';
+import CustomPriceCollectionValidation from 'Validation/CustomPriceValidation';
 import CaretQuantiyValidation from 'Validation/CaretQuantityValidation';
 
 export type CaretSizeValue = {

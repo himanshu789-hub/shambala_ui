@@ -3,16 +3,19 @@
 interface IValidateResult {
     IsValid: boolean;
 }
-export enum ValidationCode {
- Parameter,Memeber
+type ValidationCode = "Parameter" | "Member";
+
+
+interface IValidateResultOK extends IValidateResult {
 }
-export interface IValidateResultOK extends IValidateResult {
-}
-export interface IValidateResultBad extends IValidateResult {
+interface IValidateResultBad extends IValidateResult {
     Message: string;
     Code: ValidationCode;
 }
+type ValidateMember<T extends {}> = {
+    [Property in keyof T as `Is${Property}Valid`]: () => IValidateResultOK | IValidateResultBad;
+}
 
-export type ValidateMember<T> = {
-    [Property in keyof T as `Is${Property}Valid`]: () => IValidateResultOK|IValidateResultBad;
+type ValidateArray<T extends {}> = {
+    [Property in keyof T as `IsAll${Exclude<string & Property, "Id">}Valid`]: () => IValidateResultBad | IValidateResultOK;
 }

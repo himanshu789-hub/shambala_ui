@@ -1,6 +1,6 @@
 import { CaretSizeValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
 import { ValidateResultBad, ValidationResultOK } from "./Validation";
-import { IValidateResultBad, IValidateResultOK, ValidateMember } from "./Validation.d";
+import "./Validation.d";
 
 export default class CaretQuantityValidation implements ValidateMember<{ Quantity: CaretSizeValue }>
 {

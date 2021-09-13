@@ -12,12 +12,12 @@ import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer, RowStyle
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { GridSelectEditor } from "Components/AgGridComponent/Editors/SelectWithAriaEditor";
 import { getARandomNumber, Parser } from "Utilities/Utilities";
-import { CaretSizeEditor, CaretSizeNewValue, CaretSizeValue, CaretSizeValueOldAndNewValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
+import { CaretSizeEditor, CaretSizeValueOldAndNewValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 import CustomPriceEditor from "./Component/Editors/CustomPriceEditor";
 import CellClassRuleSpecifier from "Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle";
 import OutgoingValidator from 'Validation/OutgoingValidation';
-import QuantityMediatorWrapper from './Component/Editors/QuatityMediatorWrapper';
+import QuantityMediatorWrapper from '../../Utilities/QuatityMediatorWrapper';
 import MediatorSubject from 'Utilities/MediatorSubject';
 import config from 'config.json';
 import IProductService from 'Contracts/services/IProductService';
@@ -55,7 +55,8 @@ type OutgoingGridState = {
 const defaultColDef: ColDef = {
     flex: 1,
     editable: true,
-    tooltipComponentFramework: ToolTipComponent
+    tooltipComponentFramework: ToolTipComponent,
+    
 }
 const ClassSpecifier = (name: keyof OutgoingUpdateRow) => CellClassRuleSpecifier<OutgoingUpdateRow, OutgoingValidator>(name, OutgoingValidator, (params: CellClassParams) => params.data.Shipment);
 //@ts-ignore
@@ -64,17 +65,14 @@ const QuantityCellRederer = CaretSizeRenderer<CellRendererParams<number>>(e => e
 const ReInitializeCustomPrice = function (customPrices: CustomPriceRowData[], quantity: number) {
     const quantityMediator = new QuantityMediatorWrapper(quantity);
     for (let i = 0; i < customPrices.length; i++) {
-        if (customPrices[i].Quantity.Value.Value > quantityMediator.GetQuantityLimit()) {
+        if (customPrices[i].Quantity > quantityMediator.GetQuantityLimit()) {
             for (let j = i; j < customPrices.length; j++) {
-                customPrices[j].Quantity.IsValid = false;
+                customPrices[j].Quantity = 0;
             }
             break;
         }
-        else {
-            const limit = quantityMediator.GetQuantityLimit();
-            quantityMediator.Subscribe(i, customPrices[i].Quantity.Value.Value);
-            customPrices[i].Quantity.Value.MaxLimit = limit;
-        }
+        else
+            quantityMediator.Subscribe(customPrices[i].Id, customPrices[i].Quantity);
     }
     return customPrices;
 }
@@ -187,8 +185,8 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
     {
         headerName: 'Return',
         valueGetter: (params: ValueGetterParams) => params.data.Shipment.TotalQuantityReturned,
-        valueSetter: (params: ValueSetterParams<OutgoingUpdateRow['TotalQuantityReturned']>) => {
-            params.data.Shipment.TotalQuantityReturned = params.newValue;
+        valueSetter: (params:CaretSizeValueOldAndNewValue<ValueSetterParams<OutgoingUpdateRow['TotalQuantityReturned']>>) => {
+            params.data.Shipment.TotalQuantityReturned = params.newValue.IsValid?params.newValue.Value:params.oldValue;
             return true;
         },
         editable: (params: EditableCallbackParams) => {
@@ -321,7 +319,8 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                 } as GridContext,
                 getRowNodeId: (data: OutgoingGridRowValue) => data.Id,
                 defaultColDef,
-                getRowStyle: RowStyleSpecifier
+                getRowStyle: RowStyleSpecifier,
+                tooltipShowDelay:0
             },
             ApiInfo: { Status: CallStatus.LOADED },
             IsOnUpdate,
@@ -414,11 +413,11 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                     <div className="form-inline">
                         <SalesmanList handleSelection={this.handleSalesmanSelect} SalemanId={OutgoingData.SalesmanId} />
                         {
-                            OutgoingData.Status && <div className="input-group mb-2 mr-sm-2">
+                            OutgoingData.Status!==undefined  && <div className="input-group mb-2 mr-sm-2">
                                 <div className="input-group-prepend">
                                     <div className="input-group-text">Shipment Status</div>
                                 </div>
-                                <input type="text" className="form-control" value={Object.entries(OutgoingStatus).find((k, v) => v == OutgoingData.Status)![0]} />
+                                <input type="text" className="form-control" value={Object.entries(OutgoingStatus).find((k, v) => v == OutgoingData.Status)![1]} />
                             </div>
                         }
                     </div>
@@ -507,7 +506,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                                     Shipment: { ...element, Status: OutgoingGridRowCode.NONE }
                                 })
                             });
-                            this.setState({ ApiInfo: { Status: CallStatus.LOADED, Message: undefined } });
+                            this.setState({ ApiInfo: { Status: CallStatus.LOADED, Message: undefined },OutgoingData:{...res.data,SalesmanId:res.data.Salesman.Id,Shipments:rowData} });
                         })
                     })
                     .catch(() => this.setState({ ApiInfo: { Status: CallStatus.ERROR, Message: "Error Loading Shipment Info" } }));
@@ -517,10 +516,9 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
             }
         }
         else {
-
             this.productService.GetAll()
-                .then(res => this.setMediator(res.data));
-
+                .then(res => this.setMediator(res.data))
+                .catch(e => this.setState({ ApiInfo: { Status: CallStatus.ERROR, Message: "Error Fetching Product" } }));
         }
     }
 }

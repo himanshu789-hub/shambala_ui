@@ -1,8 +1,8 @@
 import { ShipmentDTO } from "Types/DTO";
-import { ValidateMember, IValidateResultBad, IValidateResultOK } from './Validation.d';
+import './Validation.d';
 type ShipmentValidate = ValidateMember<ShipmentDTO>;
 
-export  class ValidateShipment implements ShipmentValidate {
+export class ValidateShipment implements ShipmentValidate {
     private data: ShipmentDTO;
     constructor(shipment: ShipmentDTO) {
         this.data = shipment;
