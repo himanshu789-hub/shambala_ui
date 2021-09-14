@@ -117,7 +117,7 @@ type Product = {
 	Name: string;
 	CaretSize: number;
 	Flavours: Flavour[];
-	Price: number;
+	PricePerCaret: number;
 	SchemeQuantity?: number;
 	PricePerBottle: number;
 };

@@ -10,7 +10,6 @@ type GridData = {
     QuantityLimit: number;
 }
 type CustomPriceProps = {
-    setData: (data: CustomPrice[]) => void;
     initialData: GridData;
 }
 type PriceGridContext = {

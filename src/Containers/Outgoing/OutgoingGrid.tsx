@@ -5,7 +5,7 @@ import { ColDef, ColGroupDef, GridOptions, GridReadyEvent } from '@ag-grid-commu
 import {
     ValueGetterParams, ValueSetterParams, EditableCallbackParams, CellRendererParams, OutgoingUpdateRow,
     CellEditorParams, CellValueChangedEvent, GridContext, OutgoingRowDataTransaction, OutgoingGridRowValue, QuantityValueParser,
- CellClassParams, ToolTipRendererParams, RowNodeData, ValueFormatterParams
+    CellClassParams, ToolTipRendererParams, RowNodeData, ValueFormatterParams
 } from './OutgoingGrid.d';
 import { CustomPrice, Element, IOutgoingShipmentAddDetail, IOutgoingShipmentUpdateDetail, OutOfStock, PostOutgoingShipment, Product, ResutModel, ShipmentDTO } from "Types/DTO";
 import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer, RowStyleSpecifier } from "./Component/Renderers/Renderers";
@@ -180,11 +180,11 @@ const commonColDefs: ColDef[] = [
             return true;
         },
         onCellValueChanged: function (params: CellValueChangedEvent<number>) {
-            const { context, data: { Observer },node } = params;
+            const { context, data: { Observer }, node } = params;
             Observer.SetQuantity(params.newValue);
 
             if (context.IsOnUpdate) {
-                node.setDataValue(context.getColumnIndex('TotalQuantityShiped'),params.newValue-params.data.Shipment.TotalQuantityReturned);
+                node.setDataValue(context.getColumnIndex('TotalQuantityShiped'), params.newValue - params.data.Shipment.TotalQuantityReturned);
             }
         },
         tooltipValueGetter: ToolTipValueGetter('TotalQuantityTaken'),
@@ -250,13 +250,13 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
         onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['TotalQuantityShiped']>) {
             const { node, context: { getColumnIndex } } = params;
             const customPrices = params.data.Shipment.CustomCaratPrices;
-            debugger;
+
             node.setDataValue(getColumnIndex('CustomCaratPrices'), ReInitializeCustomPrice(customPrices, params.newValue));
             const schemeQuantity = params.context.getProductDetails(params.data.Shipment.ProductId).SchemeQuantity;
             const schemeProduct = params.context.getProductDetails(config.SchemeProductId);
             const totalCaret = Math.floor(params.newValue / params.data.Shipment.CaretSize);
             const totalBottle = schemeQuantity || 0 * totalCaret;
-            const totalPrice = (schemeProduct.Price / schemeProduct.CaretSize) * totalBottle;
+            const totalPrice = (schemeProduct.PricePerCaret / schemeProduct.CaretSize) * totalBottle;
             // set corresponding SchemePrice and TotalSchemeQuantity
             node.setDataValue(getColumnIndex('SchemePrice'), totalPrice);
             node.setDataValue(getColumnIndex('TotalSchemeQuantity'), totalBottle);
@@ -264,7 +264,7 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
         cellClassRules: ClassSpecifier('TotalQuantityShiped'),
         tooltipValueGetter: ToolTipValueGetter('TotalQuantityShiped'),
         colId: getColumnId('TotalQuantityShiped'),
-        cellRendererFramework:QuantityCellRederer
+        cellRendererFramework: QuantityCellRederer
     },
     {
         headerName: 'Scheme',
@@ -306,10 +306,11 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
         colId: getColumnId('CustomCaratPrices'),
         suppressKeyboardEvent: function (params: SuppressKeyboardEventParams) {
             if (params.editing && params.event.keyCode === KeyCode.ENTER) {
-                return true;
+                return !params.event.altKey;
             }
             return false;
-        }
+        },
+        autoHeight:true,wrapText:true
     }
 ]
 const getActionColDef = function (cellParams: ActionCellParams<string>): ColDef {
