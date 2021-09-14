@@ -34,3 +34,23 @@ export default class CustomPriceCollectionValidation implements ValidateArray<Cu
         return new ValidationResultOK();
     }
 }
+export class CustomPriceValidation implements ValidateMember<CustomPrice>{
+    private readonly data: CustomPrice;
+    constructor(data: CustomPrice) {
+        this.data = data;
+    }
+    IsIdValid(){
+        return new ValidationResultOK();
+    }
+    IsQuantityValid(): IValidateResultBad | IValidateResultOK {
+        if (this.data.Quantity === 0)
+            return new ValidateResultBad('Cannot Be Zero');
+
+        return { IsValid: true } as IValidateResultOK;
+    }
+    IsPriceValid() {
+        if (this.data.Price === 0)
+            return new ValidateResultBad('Cannot Be Zero');
+        return { IsValid: true } as IValidateResultOK
+    }
+}

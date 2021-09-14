@@ -5,13 +5,13 @@ import { ColDef, ColGroupDef, GridOptions, GridReadyEvent } from '@ag-grid-commu
 import {
     ValueGetterParams, ValueSetterParams, EditableCallbackParams, CellRendererParams, OutgoingUpdateRow,
     CellEditorParams, CellValueChangedEvent, GridContext, OutgoingRowDataTransaction, OutgoingGridRowValue, QuantityValueParser,
-    CustomPriceRowData, CellClassParams, ToolTipRendererParams, RowNodeData, ValueFormatterParams
+ CellClassParams, ToolTipRendererParams, RowNodeData, ValueFormatterParams
 } from './OutgoingGrid.d';
-import { Element, IOutgoingShipmentAddDetail, IOutgoingShipmentUpdateDetail, OutOfStock, PostOutgoingShipment, Product, ResutModel, ShipmentDTO } from "Types/DTO";
+import { CustomPrice, Element, IOutgoingShipmentAddDetail, IOutgoingShipmentUpdateDetail, OutOfStock, PostOutgoingShipment, Product, ResutModel, ShipmentDTO } from "Types/DTO";
 import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer, RowStyleSpecifier } from "./Component/Renderers/Renderers";
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { GridSelectEditor } from "Components/AgGridComponent/Editors/SelectWithAriaEditor";
-import { getARandomNumber, Parser } from "Utilities/Utilities";
+import { getARandomNumber, KeyCode, Parser } from "Utilities/Utilities";
 import { CaretSizeEditor, CaretSizeValueOldAndNewValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 import CustomPriceEditor from "./Component/Editors/CustomPriceEditor";
@@ -28,7 +28,7 @@ import Loader, { ApiStatusInfo, CallStatus } from "Components/Loader/Loader";
 import { OutgoingStatus, OutgoingStatusErrorCode, OutgoingGridRowCode } from "Enums/Enum";
 import SalesmanList from "Components/SalesmanList/SalesmanList";
 import { addDanger } from "Utilities/AlertUtility";
-import { AllCommunityModules } from '@ag-grid-community/all-modules';
+import { AllCommunityModules, SuppressKeyboardEventParams } from '@ag-grid-community/all-modules';
 import Action from "Components/Action/Action";
 import { DeterminantsNotSetError, UnknownSubscription, UnIdentifyComponentError } from 'Errors/Error';
 import ProductService from 'Services/ProductService';
@@ -36,6 +36,8 @@ import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
 import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
 import { Heading } from "Components/Miscellaneous/Miscellaneous";
 import { AxiosError } from "axios";
+
+
 interface OutgoingGridProps extends RouteComponentProps<{ id?: string }> {
 }
 
@@ -62,7 +64,7 @@ const ClassSpecifier = (name: keyof OutgoingUpdateRow) => CellClassRuleSpecifier
 //@ts-ignore
 const ToolTipValueGetter = (name: keyof OutgoingUpdateRow) => ToolTipGetter(OutgoingValidator, name, (e: ToolTipRendererParams) => e.data.Shipment);
 const QuantityCellRederer = CaretSizeRenderer<CellRendererParams<number>>(e => e.data.Shipment.CaretSize);
-const ReInitializeCustomPrice = function (customPrices: CustomPriceRowData[], quantity: number) {
+const ReInitializeCustomPrice = function (customPrices: CustomPrice[], quantity: number) {
     const quantityMediator = new QuantityMediatorWrapper(quantity);
     for (let i = 0; i < customPrices.length; i++) {
         if (customPrices[i].Quantity > quantityMediator.GetQuantityLimit()) {
@@ -81,23 +83,25 @@ const getColumnId = function (name: keyof OutgoingUpdateRow) {
     let columnIndex: number | null = null;
     switch (name) {
         case 'ProductId':
-            columnIndex = 0; break;
-        case 'FlavourId':
             columnIndex = 1; break;
-        case 'CaretSize':
+        case 'FlavourId':
             columnIndex = 2; break;
-        case 'TotalQuantityTaken':
+        case 'CaretSize':
             columnIndex = 3; break;
-        case 'TotalQuantityReturned':
+        case 'TotalQuantityTaken':
             columnIndex = 4; break;
-        case 'TotalQuantityShiped':
+        case 'TotalQuantityReturned':
             columnIndex = 5; break;
-        case 'SchemePrice':
+        case 'TotalQuantityShiped':
             columnIndex = 6; break;
-        case 'CustomCaratPrices':
+        case 'SchemePrice':
             columnIndex = 7; break;
-        case 'Id':
+        case 'CustomCaratPrices':
             columnIndex = 8; break;
+        case 'Id':
+            columnIndex = 9; break;
+        case 'TotalSchemeQuantity':
+            columnIndex = 10; break;
     }
     return columnIndex + '';
 }
@@ -151,7 +155,8 @@ const commonColDefs: ColDef[] = [
 
         },
         cellEditorFramework: GridSelectEditor<OutgoingGridRowValue, any>((e) => e.Observer.GetFlavours().map(e => ({ label: e.Title, value: e.Id })), (e) => e.Shipment.ProductId !== -1),
-        editable: (params: EditableCallbackParams) => params.data.Shipment.ProductId != -1
+        editable: (params: EditableCallbackParams) => params.data.Shipment.ProductId != -1,
+        colId: getColumnId('FlavourId')
     },
     {
         headerName: 'Caret Size',
@@ -159,7 +164,8 @@ const commonColDefs: ColDef[] = [
             return params.data.Shipment.CaretSize;
         },
         editable: false,
-        cellClassRules: ClassSpecifier('CaretSize')
+        cellClassRules: ClassSpecifier('CaretSize'),
+        colId: getColumnId('CaretSize')
     },
     {
         headerName: 'Taken',
@@ -174,12 +180,11 @@ const commonColDefs: ColDef[] = [
             return true;
         },
         onCellValueChanged: function (params: CellValueChangedEvent<number>) {
-            const { context, data: { Observer } } = params;
+            const { context, data: { Observer },node } = params;
             Observer.SetQuantity(params.newValue);
 
             if (context.IsOnUpdate) {
-
-                params.data.Shipment.TotalQuantityShiped = params.newValue - params.data.Shipment.TotalQuantityReturned;
+                node.setDataValue(context.getColumnIndex('TotalQuantityShiped'),params.newValue-params.data.Shipment.TotalQuantityReturned);
             }
         },
         tooltipValueGetter: ToolTipValueGetter('TotalQuantityTaken'),
@@ -205,7 +210,8 @@ const commonColDefs: ColDef[] = [
             if (IsOnUpdate)
                 minLimit = data.Shipment.TotalQuantityReturned;
             return minLimit;
-        })
+        }),
+        colId: getColumnId('TotalQuantityTaken')
     }
 ];
 const updateColDefs: (ColDef | ColGroupDef)[] = [
@@ -221,14 +227,15 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
         },
         cellRendererFramework: QuantityCellRederer,
         onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['TotalQuantityReturned']>) {
-            params.node.setDataValue(params.context.getColumnIndex('TotalQuantityReturned'), params.data.Shipment.TotalQuantityShiped - params.newValue)
+            params.node.setDataValue(params.context.getColumnIndex('TotalQuantityShiped'), params.data.Shipment.TotalQuantityTaken - params.newValue)
         },
         cellClassRules: ClassSpecifier('TotalQuantityReturned'),
         tooltipValueGetter: ToolTipValueGetter('TotalQuantityReturned'),
         cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityReturned']>>(
             (e) => e.data.Shipment.CaretSize, (e) => e.data.Shipment.TotalQuantityShiped > 0,
             (e) => e.data.Shipment.TotalQuantityTaken
-        )
+        ),
+        colId: getColumnId('TotalQuantityReturned')
     },
     {
         headerName: 'Sale',
@@ -243,6 +250,7 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
         onCellValueChanged: function (params: CellValueChangedEvent<OutgoingUpdateRow['TotalQuantityShiped']>) {
             const { node, context: { getColumnIndex } } = params;
             const customPrices = params.data.Shipment.CustomCaratPrices;
+            debugger;
             node.setDataValue(getColumnIndex('CustomCaratPrices'), ReInitializeCustomPrice(customPrices, params.newValue));
             const schemeQuantity = params.context.getProductDetails(params.data.Shipment.ProductId).SchemeQuantity;
             const schemeProduct = params.context.getProductDetails(config.SchemeProductId);
@@ -254,7 +262,9 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
             node.setDataValue(getColumnIndex('TotalSchemeQuantity'), totalBottle);
         },
         cellClassRules: ClassSpecifier('TotalQuantityShiped'),
-        tooltipValueGetter: ToolTipValueGetter('TotalQuantityShiped')
+        tooltipValueGetter: ToolTipValueGetter('TotalQuantityShiped'),
+        colId: getColumnId('TotalQuantityShiped'),
+        cellRendererFramework:QuantityCellRederer
     },
     {
         headerName: 'Scheme',
@@ -262,12 +272,22 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
             {
                 headerName: 'Quantity',
                 valueGetter: (params: ValueGetterParams) => params.data.Shipment.TotalSchemeQuantity,
-                tooltipValueGetter: ToolTipValueGetter('TotalSchemeQuantity')
+                tooltipValueGetter: ToolTipValueGetter('TotalSchemeQuantity'),
+                colId: getColumnId('TotalSchemeQuantity'),
+                valueSetter: function (params: ValueSetterParams<OutgoingUpdateRow['TotalSchemeQuantity']>) {
+                    params.data.Shipment.TotalSchemeQuantity = params.newValue;
+                    return true;
+                }
             },
             {
                 headerName: 'Price',
                 tooltipValueGetter: ToolTipValueGetter('SchemePrice'),
-                valueGetter: (params: ValueGetterParams) => params.data.Shipment.SchemePrice
+                valueGetter: (params: ValueGetterParams) => params.data.Shipment.SchemePrice,
+                colId: getColumnId('SchemePrice'),
+                valueSetter: function (params: ValueSetterParams<OutgoingUpdateRow['SchemePrice']>) {
+                    params.data.Shipment.SchemePrice = params.newValue;
+                    return true;
+                }
             }
         ],
         marryChildren: true
@@ -282,7 +302,14 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
         tooltipValueGetter: ToolTipValueGetter('CustomCaratPrices'),
         cellRendererFramework: CustomPriceRenderer,
         cellEditorFramework: CustomPriceEditor,
-        cellClassRules: ClassSpecifier('CustomCaratPrices')
+        cellClassRules: ClassSpecifier('CustomCaratPrices'),
+        colId: getColumnId('CustomCaratPrices'),
+        suppressKeyboardEvent: function (params: SuppressKeyboardEventParams) {
+            if (params.editing && params.event.keyCode === KeyCode.ENTER) {
+                return true;
+            }
+            return false;
+        }
     }
 ]
 const getActionColDef = function (cellParams: ActionCellParams<string>): ColDef {
@@ -416,21 +443,23 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
         return (
             <div>
                 {IsOnUpdate ? <Heading label="Update Outgoing Shipment" /> : <Heading label="Add Outgoing Shipment" />}
-                <Loader Message={Message} Status={Status}>
-                    <div className="form-inline">
-                        <SalesmanList handleSelection={this.handleSalesmanSelect} SalemanId={OutgoingData.SalesmanId} />
-                        {
-                            OutgoingData.Status !== undefined && <div className="input-group mb-2 mr-sm-2">
-                                <div className="input-group-prepend">
-                                    <div className="input-group-text">Shipment Status</div>
-                                </div>
-                                <input type="text" className="form-control" value={Object.entries(OutgoingStatus).find((k, v) => v == OutgoingData.Status)![1]} />
+                <div className="form-inline">
+                    <SalesmanList handleSelection={this.handleSalesmanSelect} SalemanId={OutgoingData.SalesmanId} />
+                    {
+                        OutgoingData.Status !== undefined && <div className="input-group mb-2 mr-sm-2">
+                            <div className="input-group-prepend">
+                                <div className="input-group-text">Shipment Status</div>
                             </div>
-                        }
-                    </div>
+                            <input type="text" className="form-control" value={Object.entries(OutgoingStatus).find((k, v) => v == OutgoingData.Status)![1]} />
+                        </div>
+                    }
+                </div>
+                <Loader Message={Message} Status={Status}>
+
                     <div className="ag-theme-alpine" style={{ height: '500px', width: '100vw' }}>
+
                         <AgGridReact gridOptions={GridOptions} rowData={OutgoingData.Shipments} modules={AllCommunityModules}
-                            onGridReady={this.OnGridReady} singleClickEdit={true}></AgGridReact>
+                            onGridReady={this.OnGridReady} ></AgGridReact>
                         <Action handleAdd={this.addAShipment} handleProcess={this.handleSubmit} />
                     </div>
                 </Loader>

@@ -11,4 +11,5 @@ const CellClassRuleSpecifier = function <T, V extends ValidateMember<T>>(name: k
         }
     }
 }
+
 export default CellClassRuleSpecifier;

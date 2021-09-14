@@ -15,7 +15,7 @@ type GridWithOldAndNewValue<T, VType> = Omit<T, "oldValue" | "newValue"> & {
 type GridRowNode = GridParamsWithData<RowNode, IRowValue>;
 
 type GridEditableCallbackParams<DataT> = GridParamsWithData<EditableCallbackParams, DataT>;
-type GridCellClassParams<DataT> = GridParamsWithData<CellClassParams, DataT>;
+type GridCellClassParams<DataT,Ctx> = GridParamsWithContext<GridParamsWithData<CellClassParams, DataT>,Ctx>;
 type GridToolTipParams<DataT> = GridParamsWithValue<string, ITooltipParams, DataT>;
 
 type GridEditorParams<ValueType, DataT, CtxT> = GridParamsWithContext<GridParamsWithValue<ValueType, ICellEditorParams, DataT>, CtxT>;

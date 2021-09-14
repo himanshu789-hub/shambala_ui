@@ -1,9 +1,12 @@
+import { CellClassParams } from '@ag-grid-community/core';
 import { SelectWithAriaRenderer } from 'Components/AgGridComponent/Renderer/SelectWithAriaRenderer';
 import { OutgoingGridRowCode } from 'Enums/Enum';
 import { CSSProperties } from 'react';
-import { IOutgoingShipmentAddDetail, IOutgoingShipmentUpdateDetail } from 'Types/DTO';
+import { CustomPrice, IOutgoingShipmentAddDetail, IOutgoingShipmentUpdateDetail } from 'Types/DTO';
 import { getQuantityInText } from 'Utilities/Utilities';
 import { CellRendererParams, RowClassParams } from '../../OutgoingGrid.d';
+import { CustomPriceClassParams } from '../Editors/CustomPriceEditor.d';
+import './../../../../Components/AgGridComponent/StyleSpeficier/StyleSpecifier.css';
 
 export function ProductCellRenderer(params: CellRendererParams<IOutgoingShipmentAddDetail['ProductId']>) {
     return params.data.Observer.GetProducts().find(e => e.Id === params.data.Shipment.ProductId)?.Title ?? '--';
@@ -13,7 +16,7 @@ export const FlavourCellRenderer = SelectWithAriaRenderer<CellRendererParams<IOu
 
 export const CustomPriceRenderer = (params: CellRendererParams<IOutgoingShipmentUpdateDetail['CustomCaratPrices']>) => {
     const prices = params.value;
-    if (!prices)
+    if (!prices || !prices.length)
         return <span>N/A</span>;
     return params.value.map(e => `${getQuantityInText(e.Quantity, params.data.Shipment.CaretSize)}->${e.Price}`).join(" | ");
 }

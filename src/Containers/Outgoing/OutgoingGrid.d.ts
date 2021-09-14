@@ -10,8 +10,6 @@ type GridContext = {
   getColumnIndex(name: keyof OutgoingUpdateRow): string;
   IsOnUpdate: boolean;
 }
-type CustomPriceRowData = CustomPrice;
-
 type OutgoingUpdateRow = IOutgoingShipmentUpdateDetail;
 
 type RowNodeData = OutgoingUpdateRow & {
@@ -22,6 +20,8 @@ type OutgoingGridRowValue = {
   Observer: Observer,
   Shipment: RowNodeData;
 }
+
+type ColLiteral<T> = keyof T | "S.No.";
 
 type ValueGetterParams = GridParams.GridGetterParams<OutgoingGridRowValue, GridContext>;
 type ValueSetterParams<V> = GridParams.GridSetterParams<V, OutgoingGridRowValue, GridContext>;
