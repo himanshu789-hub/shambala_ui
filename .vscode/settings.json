@@ -15,10 +15,10 @@
         "titleBar.inactiveBackground": "#ffff0099",
         "titleBar.inactiveForeground": "#15202b99"
     },
-    "peacock.color": "yellow",
     "typescript.tsdk": "node_modules\\typescript\\lib",
     "files.watcherExclude": {
         "**/.git/objects/**": true,
         "**/node_modules/**": true
-    } 
+    },
+    // "typescript.tsserver.experimental.enableProjectDiagnostics":true
 }

@@ -7,6 +7,7 @@ import { CaretSizeValue } from 'Components/AgGridComponent/Editors/CaretSizeEdit
 type GridContext = {
     getCartetSizeByProductId(Id: number): number;
     getColumnIndex(name: keyof ShipmentDTO): number | null;
+    ShouldLimitQuantity:boolean;
 }
 type ShipmentRowValue = ShipmentDTO; 
 type IRowValue = {

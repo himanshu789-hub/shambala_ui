@@ -9,7 +9,7 @@ import { GridOptions, GridReadyEvent, RowNode, ITooltipParams, Column } from '@a
 import { FlavourCellRenderer, FlavourValueChangedEvent, FlavourValueGetter, FlavourValueSetter, ProductCellRenderer, ProductValueChangedEvent, ProductValueGetter, ProductValueSetter } from './Component/Renderer/Renderer';
 import { GridSelectEditor } from 'Components/AgGridComponent/Editors/SelectWithAriaEditor';
 import CaretSizeRenderer from 'Components/AgGridComponent/Renderer/CaretSizeRenderer';
-import { CaretSizeEditor, CaretSizeValue, CaretSizeValueParser, } from 'Components/AgGridComponent/Editors/CaretSizeEditor';
+import { CaretSizeEditor, CaretSizeValue, CaretSizeValueOldAndNewValue, CaretSizeValueParser, } from 'Components/AgGridComponent/Editors/CaretSizeEditor';
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 import { getARandomNumber } from 'Utilities/Utilities';
 import { AllCommunityModules } from '@ag-grid-community/all-modules';
@@ -18,7 +18,7 @@ import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
 import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
 import { ToolTipComponent, ToolTipGetter } from 'Components/AgGridComponent/Renderer/ToolTipRenderer';
 import CellClassSpecifier from 'Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle';
-import { ValidateShipment } from './../../Validation/ShipmentValidation';
+import { ShipmentDTOValidation } from './../../Validation/ShipmentValidation';
 import { FlavourOccupiedError, QuantityLimitExceeded, UnknownSubscription } from 'Errors/Error';
 
 type IShipmentListProps = {
@@ -36,8 +36,8 @@ type IShipmentListState = {
 	Alert: { Show: boolean, Message: string };
 	GridOptions: GridOptions;
 };
-const ToolTipValueGetter = (name: keyof ShipmentDTO) => ToolTipGetter<ShipmentDTO, ValidateShipment>(ValidateShipment, name);
-const ClassRuleSpecifier = (name: keyof ShipmentDTO) => CellClassSpecifier<ShipmentDTO, ValidateShipment>(name, ValidateShipment);
+const ToolTipValueGetter = (name: keyof ShipmentDTO) => ToolTipGetter<ShipmentDTO, ShipmentDTOValidation>(ShipmentDTOValidation, name);
+const ClassRuleSpecifier = (name: keyof ShipmentDTO) => CellClassSpecifier<ShipmentDTO, ShipmentDTOValidation>(name, ShipmentDTOValidation);
 
 export default class ShipmentList extends React.Component<IShipmentListProps, IShipmentListState> {
 	products: Map<string, Product>;
@@ -84,17 +84,20 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						cellStyle: ClassRuleSpecifier('CaretSize')
 					},
 					{
-						//@ts-ignore
-						cellEditorFramework: CaretSizeEditor<ShipmentGridEditorParams<ShipmentRowValue['TotalRecievedPieces']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.ProductId !== -1),
+						cellEditorFramework: CaretSizeEditor<ShipmentGridEditorParams<ShipmentRowValue['TotalRecievedPieces']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.ProductId !== -1, (params) => {
+							const { data: { Observer }, context: { ShouldLimitQuantity } } = params;
+							if (ShouldLimitQuantity) {
+								return Observer.GetQuantityLimit();
+							}
+							return undefined;
+						}, (params) => 1),
 						cellRendererFramework: CaretSizeRenderer<ShipmentRendererParams<ShipmentRowValue['TotalRecievedPieces']>>(e => e.data.Shipment.CaretSize),
 						valueGetter: (params: ShipmentGridGetterParams) => params.data.Shipment.TotalRecievedPieces,
-						valueSetter: (props: ShipmentValueSetter<ShipmentRowValue['TotalRecievedPieces']>) => {
-							props.data.Shipment.TotalRecievedPieces = props.newValue;
+						valueSetter: (props: CaretSizeValueOldAndNewValue<ShipmentValueSetter<ShipmentRowValue['TotalRecievedPieces']>>) => {
+							props.data.Shipment.TotalRecievedPieces = props.newValue.IsValid ? props.newValue.Value : props.oldValue;
 							return true;
 						},
-						valueParser: CaretSizeValueParser,
 						headerName: 'Quantity',
-						// @ts-ignore
 						tooltipValueGetter: ToolTipValueGetter('TotalRecievedPieces'),
 						cellStyle: ClassRuleSpecifier('TotalRecievedPieces')
 					},
@@ -116,7 +119,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				tooltipShowDelay: 0,
 				context: {
 					getCartetSizeByProductId: this.getCaretSizeByProductId,
-					getColumnIndex: this.getColummnIndex
+					getColumnIndex: this.getColummnIndex,
+					ShouldLimitQuantity: props.ShouldLimitQuantity
 				} as GridContext,
 				getRowNodeId: function (data: IRowValue) {
 					return data.Id + ''
@@ -127,6 +131,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			Alert: { Message: "", Show: false }
 		};
 		this.addAShipment = this.addAShipment.bind(this);
+		this.handleSubmit = this.handleSubmit.bind(this);
 	}
 	getColummnIndex(name: keyof ShipmentDTO) {
 		let index = null;

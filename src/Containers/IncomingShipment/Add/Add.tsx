@@ -6,11 +6,12 @@ import IProductService from 'Contracts/services/IProductService';
 import Loader, { CallStatus } from 'Components/Loader/Loader';
 import { RouteComponentProps } from 'react-router';
 import { AxiosError } from 'axios';
+import ShipmentCollectionValidation from 'Validation/ShipmentCollectionValidation';
 
-interface IIncomingAddProps extends RouteComponentProps {};
+interface IIncomingAddProps extends RouteComponentProps { };
 type IIncomingAddState = {
 	Products: Array<Product>;
-	ApiStatus:CallStatus;
+	ApiStatus: CallStatus;
 };
 
 export default class IncomingAdd extends React.Component<IIncomingAddProps, IIncomingAddState> {
@@ -18,24 +19,29 @@ export default class IncomingAdd extends React.Component<IIncomingAddProps, IInc
 	constructor(props: IIncomingAddProps) {
 		super(props);
 		this.state = {
-			Products: [],ApiStatus:CallStatus.EMPTY
+			Products: [], ApiStatus: CallStatus.EMPTY
 		};
 		this._productService = new ProductService();
 		this.handleSubmit = this.handleSubmit.bind(this);
 	}
-
+	validateShipment(shipments: ShipmentDTO[]) {
+		let isValid = true;
+		new ShipmentCollectionValidation(shipments).IsValid();
+		return isValid;
+	}
 	handleSubmit(shipments: ShipmentDTO[]) {
-		this._productService.Add(shipments).then(() => {
-			const { history } = this.props;
-			history.push({pathname:"/message/pass",search:"?message=Added Successfully"});
-		}).catch((error:AxiosError) => {
-			const { history } = this.props;
-			history.push({pathname:"/message/fail",search:"?message=Some Error Occurred"});
-		});
+		if (this.validateShipment(shipments))
+			this._productService.Add(shipments).then(() => {
+				const { history } = this.props;
+				history.push({ pathname: "/message/pass", search: "?message=Added Successfully" });
+			}).catch((error: AxiosError) => {
+				const { history } = this.props;
+				history.push({ pathname: "/message/fail", search: "?message=Some Error Occurred" });
+			});
 	}
 
 	render() {
-		const { Products ,ApiStatus} = this.state;
+		const { Products, ApiStatus } = this.state;
 		return (
 			<div className='incmoming-add'>
 				<h5 className="app-head">Add Incoming Shipments</h5>
@@ -47,11 +53,11 @@ export default class IncomingAdd extends React.Component<IIncomingAddProps, IInc
 	}
 
 	componentDidMount() {
-		this.setState({ApiStatus:CallStatus.LOADING});
+		this.setState({ ApiStatus: CallStatus.LOADING });
 		this._productService.GetAll().then(res => {
 			if (res.data.length > 0) {
-				this.setState({ Products: res.data ?? [],ApiStatus:CallStatus.LOADED });
+				this.setState({ Products: res.data ?? [], ApiStatus: CallStatus.LOADED });
 			}
-		}).catch(()=>this.setState({ ApiStatus:CallStatus.ERROR}));
+		}).catch(() => this.setState({ ApiStatus: CallStatus.ERROR }));
 	}
 }

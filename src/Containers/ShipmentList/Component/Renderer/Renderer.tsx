@@ -8,7 +8,7 @@ import { ShipmentCellValueChangeEvent, ShipmentGridDataTransation, ShipmentGridG
 export const ProductCellRenderer =
     SelectWithAriaRenderer<ShipmentRendererParams<ShipmentDTO['ProductId']>>(e => e.data.Observer.GetProducts().map(e => ({ label: e.Title, value: e.Id })),
         e => e.data.Shipment.ProductId !== -1);
-        
+
 export const FlavourCellRenderer = SelectWithAriaRenderer<ShipmentRendererParams<ShipmentDTO['FlavourId']>>((e) => (e.data.Observer.GetProducts().map(e => ({ label: e.Title, value: e.Id }))), (e) => e.data.Shipment.ProductId !== -1);
 
 
@@ -39,10 +39,13 @@ export const ProductValueChangedEvent = (event: ShipmentCellValueChangeEvent<Shi
     data.Observer.Unubscribe();
     if (!isColumnsNull(columns)) {
         data.Observer.SetProduct(event.newValue);
-        const isFlavourExists = doFlavourExists(data.Observer.GetFlavours(),data.Shipment.FlavourId);
+        const isFlavourExists = doFlavourExists(data.Observer.GetFlavours(), data.Shipment.FlavourId);
         data.Shipment.CaretSize = context.getCartetSizeByProductId(event.newValue);
         data.Shipment.FlavourId = isFlavourExists ? data.Shipment.FlavourId : -1;
         data.Shipment.TotalRecievedPieces = isFlavourExists ? data.Shipment.TotalRecievedPieces : 0;
+        if (event.context.ShouldLimitQuantity) {
+            data.Observer.SetQuantity(data.Shipment.TotalRecievedPieces);
+        }
         const transaction: ShipmentGridDataTransation = {
             update: [data]
         }
@@ -64,7 +67,8 @@ export const FlavourValueChangedEvent = (event: ShipmentCellValueChangeEvent<Shi
         if (data.Shipment.TotalRecievedPieces > quantityLimit) {
             quantity = 0;
         }
-        observer.SetQuantity(quantity);
+        if (event.context.ShouldLimitQuantity)
+            observer.SetQuantity(quantity);
         event.node.setDataValue(columns![quantityIndex].getColId(), quantity);
     }
 

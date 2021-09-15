@@ -15,7 +15,6 @@
         "titleBar.inactiveBackground": "#ff000099",
         "titleBar.inactiveForeground": "#e7e7e799"
     },
-    "peacock.color": "red",
     "files.watcherExclude": {
         "**/.git/objects/**": true,
         "**/node_modules/**": true

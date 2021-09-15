@@ -15,7 +15,7 @@ import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
 import { CustomPriceGridEditorParams, CustomPriceProps, CustomPriceCellValueChnageEvent, CustomPriceGridCellRendererParams, CustomPriceGridValueGetterParams, CustomPriceRowData, CustomPriceValueSetterPrams, PriceGridContext, RowTransactionData, GridData } from './CustomPriceEditor.d';
 import { CellEditorParams, OutgoingUpdateRow, ColLiteral } from './../../OutgoingGrid.d';
 import CellClassRuleSpecifier from "Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle";
-import { CustomPriceValidation } from "Validation/CustomPriceValidation";
+import  CustomPriceValidation  from "Validation/CustomPriceCollectionValidation";
 import { ToolTipComponent, ToolTipGetter } from "Components/AgGridComponent/Renderer/ToolTipRenderer";
 
 type CustomPriceGridRef = {

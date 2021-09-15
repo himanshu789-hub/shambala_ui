@@ -1,6 +1,6 @@
-import { ValidateResultBad, ValidationResultOK} from './Validation';
+import { enumerateValidateMemberOnly, ValidateResultBad, ValidationResultOK } from './Validation';
 import { OutgoingUpdateRow } from 'Containers/Outgoing/OutgoingGrid.d';
-import CustomPriceCollectionValidation from './CustomPriceValidation';
+import CustomPriceCollectionValidation,{CustomPriceValidation} from './CustomPriceCollectionValidation';
 
 export default class OutgoingValidator implements ValidateMember<OutgoingUpdateRow> {
     private readonly outgoing: OutgoingUpdateRow;
@@ -8,6 +8,9 @@ export default class OutgoingValidator implements ValidateMember<OutgoingUpdateR
     constructor(outgoing: OutgoingUpdateRow) {
         this.outgoing = outgoing;
     }
+    IsAllValid():IValidateResultBad|IValidateResultOK {
+        return enumerateValidateMemberOnly<OutgoingUpdateRow,OutgoingValidator>(this);
+    };
 
     IsCaretSizeValid(): IValidateResultOK | IValidateResultBad {
         if (!this.outgoing.CaretSize)
@@ -18,10 +21,9 @@ export default class OutgoingValidator implements ValidateMember<OutgoingUpdateR
         if (!this.outgoing.CustomCaratPrices || this.outgoing.CustomCaratPrices.length == 0)
             return { IsValid: false, Message: "Cannot Left Empty" } as IValidateResultBad;
         const validator = new CustomPriceCollectionValidation(this.outgoing.CustomCaratPrices, this.outgoing.TotalQuantityShiped);
-        if (!validator.IsAllPriceValid().IsValid)
-            return new ValidateResultBad("Price Not Valid");
-        if (!validator.IsAllQuantityValid().IsValid)
-            return new ValidateResultBad("Quantities Sum Cannot Greater Than Sale");
+        const result = validator.IsAllValid();
+        if (!result.IsValid)
+            return result;
         return new ValidationResultOK();
     }
     IsFlavourIdValid(): IValidateResultOK | IValidateResultBad {
@@ -72,7 +74,7 @@ export default class OutgoingValidator implements ValidateMember<OutgoingUpdateR
         if (!value)
             return { IsValid: false, Message: "Cannot Be Empty" };
         if (!this.IsTotalQuantityTakenValid().IsValid)
-            return { IsValid: false, Message: "Taken Quantity Must Have Value",Code:"Parameter" };
+            return { IsValid: false, Message: "Taken Quantity Must Have Value", Code: "Parameter" };
         if (!this.outgoing.TotalQuantityReturned)
             return { IsValid: false, Message: "Return Quantity Must Have Value", Code: 'Parameter' };
         if (this.outgoing.TotalQuantityTaken - this.outgoing.TotalQuantityReturned < value)

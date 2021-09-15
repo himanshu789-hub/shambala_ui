@@ -1,5 +1,3 @@
-
-
 interface IValidateResult {
     IsValid: boolean;
 }
@@ -12,10 +10,12 @@ interface IValidateResultBad extends IValidateResult {
     Message: string;
     Code: ValidationCode;
 }
+
 type ValidateMember<T extends {}> = {
     [Property in keyof T as `Is${Property}Valid`]: () => IValidateResultOK | IValidateResultBad;
+} & {
+    IsAllValid: () => IValidateResultOK | IValidateResultBad;
 }
-
 type ValidateArray<T extends {}> = {
-    [Property in keyof T as `IsAll${Exclude<string & Property, "Id">}Valid`]: () => IValidateResultBad | IValidateResultOK;
+    IsAllValid: () => IValidateResultBad | IValidateResultOK;
 }
