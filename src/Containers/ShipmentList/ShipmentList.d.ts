@@ -8,9 +8,7 @@ type GridContext = {
     getCartetSizeByProductId(Id: number): number;
     getColumnIndex(name: keyof ShipmentDTO): number | null;
 }
-type ShipmentRowValue = Omit<ShipmentDTO, "TotalRecievedPieces"> & {
-    TotalRecievedPieces: CaretSizeValue;
-};
+type ShipmentRowValue = ShipmentDTO; 
 type IRowValue = {
     Id: string;
     Shipment: ShipmentRowValue;
@@ -24,5 +22,5 @@ type ShipmentGridSetter<V> = GridSetterParams<V, IRowValue, GridContext>;
 type ShipmentRendererParams<V> = GridRendererParams<V, IRowValue, GridContext>;
 type QuantityCellValueChangeEvent = GridCellValueChangeEvent<CaretSizeValue, IRowValue, GridContext>;
 type ShipmentCellValueChangeEvent<V> = GridCellValueChangeEvent<V, IRowValue, GridContext>;
-type ShipmentValueSetter<V> = GridSetterParams<V,IRowValue,GridContext>;
+type ShipmentValueSetter<V> = GridSetterParams<V, IRowValue, GridContext>;
 

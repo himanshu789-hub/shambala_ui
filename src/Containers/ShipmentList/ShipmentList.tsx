@@ -9,7 +9,7 @@ import { GridOptions, GridReadyEvent, RowNode, ITooltipParams, Column } from '@a
 import { FlavourCellRenderer, FlavourValueChangedEvent, FlavourValueGetter, FlavourValueSetter, ProductCellRenderer, ProductValueChangedEvent, ProductValueGetter, ProductValueSetter } from './Component/Renderer/Renderer';
 import { GridSelectEditor } from 'Components/AgGridComponent/Editors/SelectWithAriaEditor';
 import CaretSizeRenderer from 'Components/AgGridComponent/Renderer/CaretSizeRenderer';
-import {  CaretSizeEditor, CaretSizeValue, CaretSizeValueParser,  } from 'Components/AgGridComponent/Editors/CaretSizeEditor';
+import { CaretSizeEditor, CaretSizeValue, CaretSizeValueParser, } from 'Components/AgGridComponent/Editors/CaretSizeEditor';
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 import { getARandomNumber } from 'Utilities/Utilities';
 import { AllCommunityModules } from '@ag-grid-community/all-modules';
@@ -19,7 +19,7 @@ import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
 import { ToolTipComponent, ToolTipGetter } from 'Components/AgGridComponent/Renderer/ToolTipRenderer';
 import CellClassSpecifier from 'Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle';
 import { ValidateShipment } from './../../Validation/ShipmentValidation';
-import { FlavourOccupiedError, QuantityLimitExceeded } from 'Errors/Error';
+import { FlavourOccupiedError, QuantityLimitExceeded, UnknownSubscription } from 'Errors/Error';
 
 type IShipmentListProps = {
 	handleSubmit: (Shipments: ShipmentDTO[]) => void;
@@ -63,7 +63,6 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						valueSetter: ProductValueSetter,
 						headerName: 'Product Name',
 						onCellValueChanged: ProductValueChangedEvent,
-						// @ts-ignore
 						tooltipValueGetter: ToolTipValueGetter('ProductId'),
 						cellStyle: ClassRuleSpecifier('ProductId')
 					},
@@ -75,14 +74,12 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						headerName: 'Flavour Name',
 						cellStyle: ClassRuleSpecifier('FlavourId'),
 						onCellValueChanged: FlavourValueChangedEvent,
-						// @ts-ignore
 						tooltipValueGetter: ToolTipValueGetter('FlavourId')
 					},
 					{
 						valueGetter: (props: ShipmentGridGetterParams) => props.data.Shipment.CaretSize,
 						editable: false,
 						headerName: 'Caret Size',
-						//@ts-ignore
 						tooltipValueGetter: ToolTipValueGetter('CaretSize'),
 						cellStyle: ClassRuleSpecifier('CaretSize')
 					},
@@ -95,7 +92,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 							props.data.Shipment.TotalRecievedPieces = props.newValue;
 							return true;
 						},
-						valueParser:CaretSizeValueParser,
+						valueParser: CaretSizeValueParser,
 						headerName: 'Quantity',
 						// @ts-ignore
 						tooltipValueGetter: ToolTipValueGetter('TotalRecievedPieces'),
@@ -122,7 +119,6 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 					getColumnIndex: this.getColummnIndex
 				} as GridContext,
 				getRowNodeId: function (data: IRowValue) {
-					debugger;
 					return data.Id + ''
 				}
 			},
@@ -157,9 +153,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 					products.set(value.Id + '', value);
 				});
 				this.products = new Map(products);
-				this.componentListMediator.Unsubscribe(this.state.SubscriptionId);
 				this.componentListMediator = new MediatorSubject(Products);
-				this.setState({ Products: products, ShipmentInfos: [this.createAShipment(1)] });
+				this.setState({ Products: products, ShipmentInfos: [this.createAShipment(getARandomNumber())] });
 			}
 		}
 		if (nextProps.ResetElement && nextProps.ResetElement != this.props.ResetElement) {
@@ -207,7 +202,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						break;
 					}
 				}
-				ShipmentInfos.push({ Observer: observer, Shipment: { ...shipment, TotalRecievedPieces: { Value: quantity, MaxLimit: initial.MaxLimit, MinLimit: initial.MinLimit } }, Id: Id + '' });
+				ShipmentInfos.push({ Observer: observer, Shipment: shipment, Id: Id + '' });
 			}
 			this.setState({ ShipmentInfos: ShipmentInfos });
 		}
@@ -222,20 +217,22 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			const { handleSubmit } = this.props;
 			const { ShipmentInfos: Shipments } = this.state;
 			if (Shipments.length > 0)
-				handleSubmit(Shipments.map(e => ({ ...e.Shipment, TotalRecievedPieces: e.Shipment.TotalRecievedPieces.Value })));
+				handleSubmit(Shipments.map(e => ({ ...e.Shipment, TotalRecievedPieces: e.Shipment.TotalRecievedPieces })));
 			else
 				addWarn("Please, Add Atleast One Item");
 		}
 	}
 	createAShipment = (Id: number): IRowValue => {
 		return {
-			Shipment: { Id: Id, CaretSize: 0, FlavourId: -1, ProductId: -1, TotalDefectedPieces: 0, TotalRecievedPieces: { Value: 0 } },
+			Shipment: { Id: Id, CaretSize: 0, FlavourId: -1, ProductId: -1, TotalDefectedPieces: 0, TotalRecievedPieces: 0 },
 			Observer: this.componentListMediator.GetAObserver(this.state.SubscriptionId, Id), Id: Id + ''
 		};
 	}
 
-	private OnGridReady = (params: GridReadyEvent) => {
-		this.setState((prevState) => ({ GridOptions: { ...prevState.GridOptions, api: params.api, columnApi: params.columnApi } }));
+	private setFocusToCell = (rowIndex: number, columnIndex: number) => {
+		const { GridOptions: { api, columnApi } } = this.state;
+		const column = columnApi?.getAllDisplayedColumns()![columnIndex];
+		api?.setFocusedCell(rowIndex, column!);
 	}
 
 	addAShipment = () => {
@@ -253,13 +250,8 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			this.setFocusToCell(currentRowCount!, this.getColummnIndex('ProductId')!);
 		}
 		else
-			addDanger("Product Not Available");
+			addDanger("No Product Available");
 	};
-	private setFocusToCell = (rowIndex: number, columnIndex: number) => {
-		const { GridOptions: { api, columnApi } } = this.state;
-		const column = columnApi?.getAllDisplayedColumns()![columnIndex];
-		api?.setFocusedCell(rowIndex, column!);
-	}
 	private refreshRowNodeByIndex = (index: number) => {
 		if (index < 0) {
 			return;
@@ -284,7 +276,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 
 		return (<div className="ag-theme-alpine" style={{ height: '500px', width: '100vw' }}>
 			<AgGridReact modules={AllCommunityModules} singleClickEdit={true} gridOptions={GridOptions}
-				rowData={ShipmentInfos} onGridReady={this.OnGridReady} >
+				rowData={ShipmentInfos}>
 			</AgGridReact>
 			<Action handleAdd={this.addAShipment} handleProcess={this.handleSubmit} />
 		</div>);

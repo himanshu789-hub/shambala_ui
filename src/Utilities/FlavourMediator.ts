@@ -1,4 +1,4 @@
-import { AlreadySubscribedError, FlavourOccupiedError, UnIdentifyComponentError, UnIdentityFlavourError, UnknownSubscription } from 'Errors/Error';
+import { AlreadySubscribedError, FlavourOccupiedError, UnIdentifyComponentError, UnIdentityFlavourError, UnknownSubscription, NullOrUndefinedError } from 'Errors/Error';
 import { Flavour, Product } from 'Types/DTO';
 
 type FlavourWithProductKey = {
@@ -88,7 +88,7 @@ export default class FlavourMediator implements IFlavourMediator {
 			this._deletedSubscriptionFlavour.get(subscritpionId)?.push({ Id: flavourId, ProductId: ProductId });
 	}
 	private _checkArgumentNullException(...params: number[]) {
-		for (let i = 0; i < params.length; i++) if (!params[i]) throw new Error('Argument Not Set');
+		for (let i = 0; i < params.length; i++) if (!params[i]) throw new NullOrUndefinedError();
 	}
 	private _getFlavourInfoFromProductId(productId: number, flavourId: number): Flavour {
 		const Flavours = this._cloneFlavours.get(productId) as Flavour[];

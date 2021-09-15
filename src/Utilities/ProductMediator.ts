@@ -1,4 +1,4 @@
-import { UnIdentifyComponentError, UnknownSubscription } from 'Errors/Error';
+import { NullOrUndefinedError, UnIdentifyComponentError, UnknownSubscription } from 'Errors/Error';
 import { Product } from 'Types/DTO';
 import { ProductInfo } from 'Types/Mediator';
 
@@ -57,7 +57,7 @@ export default class ComponentProductMediator implements IProductMediator {
 	}
 
 	private _checkArgumentNullException(...params: number[]) {
-		for (let i = 0; i < params.length; i++) if (!params[i]) throw new Error('Argument Not Set');
+		for (let i = 0; i < params.length; i++) if (!params[i]) throw new NullOrUndefinedError();
 	}
 
 	private _checkSubscription(subscribeId: number) {
@@ -150,7 +150,7 @@ export default class ComponentProductMediator implements IProductMediator {
 	}
 	Subscribe(subscriptionId: number, componentId: number, productId: number) {
 		this._checkArgumentNullException(subscriptionId, componentId, productId);
-		
+
 		if (this._componentProductMap.has(subscriptionId)) {
 			const ComponentMap = this._componentProductMap.get(subscriptionId) as ProductComponentMap;
 			ComponentMap.set(componentId, productId);
@@ -162,13 +162,7 @@ export default class ComponentProductMediator implements IProductMediator {
 	}
 
 	Unsubscribe(subscriptionId: number, componentId: number): boolean {
-		try {
-			this._checkSubscription(subscriptionId);
-
-		}
-		catch (error) {
-			return false;
-		}
+		this._checkSubscription(subscriptionId);
 		const ComponentMapProduct = this._componentProductMap.get(subscriptionId) as ProductComponentMap;
 		if (ComponentMapProduct.has(componentId)) {
 			const ProductId = ComponentMapProduct.get(componentId) as number;
@@ -196,6 +190,6 @@ export default class ComponentProductMediator implements IProductMediator {
 			}
 			return IsSubscribedChange;
 		}
-		throw new UnIdentifyComponentError(componentId,subscriptionId);
+		throw new UnIdentifyComponentError(componentId, subscriptionId);
 	}
 }
