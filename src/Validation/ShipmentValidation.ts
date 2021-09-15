@@ -1,7 +1,7 @@
 import {  ShipmentDTO } from "Types/DTO";
 import { enumerateValidateMemberOnly, ValidateResultBad, ValidationResultOK } from "./Validation";
 
-export class ShipmentDTOValidation implements ValidateMember<ShipmentDTO>{
+export class ShipmentDTOValidation implements ValidateMemberWithAll<ShipmentDTO>{
     private readonly data: ShipmentDTO;
     constructor(shipment: ShipmentDTO) {
         this.data = shipment;

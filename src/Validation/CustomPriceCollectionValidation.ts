@@ -4,7 +4,7 @@ import QuantityMediatorWrapper from '../Utilities/QuatityMediatorWrapper';
 import { getARandomNumber } from "Utilities/Utilities";
 
 
-export class CustomPriceValidation implements ValidateMember<CustomPrice>{
+export class CustomPriceValidation implements ValidateMemberWithAll<CustomPrice>{
     private readonly data: CustomPrice;
     constructor(data: CustomPrice) {
         this.data = data;

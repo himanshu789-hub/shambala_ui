@@ -13,7 +13,8 @@ interface IValidateResultBad extends IValidateResult {
 
 type ValidateMember<T extends {}> = {
     [Property in keyof T as `Is${Property}Valid`]: () => IValidateResultOK | IValidateResultBad;
-} & {
+};
+type ValidateMemberWithAll<T> = ValidateMember<T> & {
     IsAllValid: () => IValidateResultOK | IValidateResultBad;
 }
 type ValidateArray<T extends {}> = {

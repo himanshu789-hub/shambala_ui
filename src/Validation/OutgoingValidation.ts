@@ -2,7 +2,7 @@ import { enumerateValidateMemberOnly, ValidateResultBad, ValidationResultOK } fr
 import { OutgoingUpdateRow } from 'Containers/Outgoing/OutgoingGrid.d';
 import CustomPriceCollectionValidation,{CustomPriceValidation} from './CustomPriceCollectionValidation';
 
-export default class OutgoingValidator implements ValidateMember<OutgoingUpdateRow> {
+export default class OutgoingValidator implements ValidateMemberWithAll<OutgoingUpdateRow> {
     private readonly outgoing: OutgoingUpdateRow;
 
     constructor(outgoing: OutgoingUpdateRow) {

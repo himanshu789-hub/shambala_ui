@@ -7,6 +7,7 @@ import Loader, { CallStatus } from 'Components/Loader/Loader';
 import { RouteComponentProps } from 'react-router';
 import { AxiosError } from 'axios';
 import ShipmentCollectionValidation from 'Validation/ShipmentCollectionValidation';
+import { addDanger } from 'Utilities/AlertUtility';
 
 interface IIncomingAddProps extends RouteComponentProps { };
 type IIncomingAddState = {
@@ -26,7 +27,10 @@ export default class IncomingAdd extends React.Component<IIncomingAddProps, IInc
 	}
 	validateShipment(shipments: ShipmentDTO[]) {
 		let isValid = true;
-		new ShipmentCollectionValidation(shipments).IsValid();
+		const result = new ShipmentCollectionValidation(shipments).IsAllValid();
+		if (!result.IsValid)
+			addDanger((result as IValidateResultBad).Message);
+
 		return isValid;
 	}
 	handleSubmit(shipments: ShipmentDTO[]) {

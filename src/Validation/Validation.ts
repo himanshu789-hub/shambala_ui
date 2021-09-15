@@ -22,9 +22,9 @@ export function enumerateValidateMemberOnly<T, V extends ValidateMember<T>>(obj:
     return {IsValid:true} as IValidateResultOK;
 };
 
-export function checkAllElementValidInCollection<T, V extends ValidateMember<T>>(arr: T[], validator: new (data: T) => V) {
-    for (const customPrice of arr) {
-        const result = new validator(customPrice).IsAllValid();
+export function checkAllElementValidInCollection<T, V extends ValidateMemberWithAll<T>>(arr: T[], validator: new (data: T) => V):IValidateResultOK|IValidateResultBad {
+    for (const element of arr) {
+        const result = new validator(element).IsAllValid();
         if (!result.IsValid)
             return result;
     }
