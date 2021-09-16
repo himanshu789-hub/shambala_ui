@@ -1,13 +1,15 @@
 import Observer from '../../Utilities/Observer';
 import * as GridParams from './../../Components/AgGridComponent/Grid';
-import { CustomPrice, IOutgoingShipmentUpdateDetail, Product } from './../../Types/DTO';
+import { CustomPrice, IOutgoingShipmentUpdateDetail, Product, SchemeInfo } from './../../Types/DTO';
 import { CaretSizeValue, CaretSizeValueOldAndNewValue } from './../../Components/AgGridComponent/Editors/CaretSizeEditor';
 import { OutgoingGridRowCode, OutgoingStatusErrorCode } from 'Enums/Enum';
 
+type OutgoingGridCol = Omit<OutgoingUpdateRow,"SchemeInfo"> & Omit<SchemeInfo,"TotalQuantity"> & {TotalSchemeQuantity:number};
+type OutgoingGridColName = keyof OutgoingGridCol;
 
 type GridContext = {
   getProductDetails(Id: number): Product;
-  getColumnIndex(name: keyof OutgoingUpdateRow): string;
+  getColumnId(name:OutgoingGridColName): string;
   IsOnUpdate: boolean;
 }
 type OutgoingUpdateRow = IOutgoingShipmentUpdateDetail;
@@ -20,7 +22,6 @@ type OutgoingGridRowValue = {
   Observer: Observer,
   Shipment: RowNodeData;
 }
-
 type ColLiteral<T> = keyof T | "S.No.";
 
 type ValueGetterParams = GridParams.GridGetterParams<OutgoingGridRowValue, GridContext>;

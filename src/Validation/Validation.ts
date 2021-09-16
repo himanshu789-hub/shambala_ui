@@ -11,7 +11,7 @@ export class ValidateResultBad implements IValidateResultBad {
     }
 }
 
-export function enumerateValidateMemberOnly<T, V extends ValidateMember<T>>(obj: V, name?: keyof T):IValidateResult|IValidateResultBad {
+export function enumerateValidateMemberOnly<T, V extends ValidateMember<L>,L=T>(obj: V, name?: keyof L):IValidateResult|IValidateResultBad {
     for (let propertyName in Object.getOwnPropertyNames(Object.getPrototypeOf(obj))) {
         if (propertyName !== "IsAllValid" && propertyName !== 'constructor' && (typeof (obj as any)[propertyName] === "function") && (name ? propertyName.includes(name.toString()) : true)) {
             const result:IValidateResultOK|IValidateResultBad = (obj as any)[propertyName]();

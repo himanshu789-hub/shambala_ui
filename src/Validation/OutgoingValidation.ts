@@ -1,17 +1,28 @@
 import { enumerateValidateMemberOnly, ValidateResultBad, ValidationResultOK } from './Validation';
-import { OutgoingUpdateRow } from 'Containers/Outgoing/OutgoingGrid.d';
-import CustomPriceCollectionValidation,{CustomPriceValidation} from './CustomPriceCollectionValidation';
+import { OutgoingUpdateRow, OutgoingGridCol } from 'Containers/Outgoing/OutgoingGrid.d';
+import CustomPriceCollectionValidation, { CustomPriceValidation } from './CustomPriceCollectionValidation';
 
-export default class OutgoingValidator implements ValidateMemberWithAll<OutgoingUpdateRow> {
+export default class OutgoingValidator implements ValidateMemberWithAll<OutgoingGridCol> {
     private readonly outgoing: OutgoingUpdateRow;
 
     constructor(outgoing: OutgoingUpdateRow) {
         this.outgoing = outgoing;
     }
-    IsAllValid():IValidateResultBad|IValidateResultOK {
-        return enumerateValidateMemberOnly<OutgoingUpdateRow,OutgoingValidator>(this);
-    };
-
+    IsSchemeQuantityValid() {
+        const schemeQuantity = this.outgoing.SchemeInfo.SchemeQuantity;
+        if (Number.isInteger(schemeQuantity))
+            return new ValidationResultOK();
+        return new ValidateResultBad("Cannot Be Non-Integer");
+    }
+    IsAllValid(): IValidateResultBad | IValidateResultOK {
+        return enumerateValidateMemberOnly<OutgoingUpdateRow, OutgoingValidator,OutgoingGridCol>(this);
+    }
+    IsTotalSchemePriceValid() {
+        const quantity = this.outgoing.SchemeInfo.TotalQuantity;
+        if (Number.isInteger(quantity))
+            return new ValidationResultOK();
+        return new ValidateResultBad("Cannot be non-integer");
+    }
     IsCaretSizeValid(): IValidateResultOK | IValidateResultBad {
         if (!this.outgoing.CaretSize)
             return { IsValid: false, } as IValidateResultBad;
@@ -40,7 +51,7 @@ export default class OutgoingValidator implements ValidateMemberWithAll<Outgoing
         return { IsValid: true };
     }
     IsSchemePriceValid(): IValidateResultOK | IValidateResultBad {
-        if (!this.outgoing.SchemePrice && this.outgoing.SchemePrice !== 0)
+        if (!this.outgoing.SchemeInfo.TotalSchemePrice && this.outgoing.SchemeInfo.TotalSchemePrice !== 0)
             return { IsValid: false, Message: "Invalid" };
         return { IsValid: true };
     }
@@ -82,7 +93,7 @@ export default class OutgoingValidator implements ValidateMemberWithAll<Outgoing
         return { IsValid: true };
     }
     IsTotalSchemeQuantityValid(): IValidateResultBad | IValidateResultOK {
-        const value = this.outgoing.TotalSchemeQuantity;
+        const value = this.outgoing.SchemeInfo.TotalQuantity;
         if (!value)
             return new ValidateResultBad("Canot Be Empty");
         if (!this.IsCaretSizeValid().IsValid)

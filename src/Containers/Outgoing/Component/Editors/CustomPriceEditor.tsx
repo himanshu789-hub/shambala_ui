@@ -69,7 +69,7 @@ const ClassSpecifier = (name: keyof CustomPriceRowData) => CellClassRuleSpecifie
 const CustomPriceGrid = forwardRef<CustomPriceGridRef, CustomPriceProps>((props, ref) => {
     const gridApis = useRef<GridApis>();
     const [quantityMediator] = useState<IQuantityMediatorWrapper>(new QuantityMediatorWrapper(props.initialData.QuantityLimit));
-    const list = useState<CustomPrice[]>(props.initialData.Data.length ? props.initialData.Data : [{ Id: getARandomNumber(), Price: props.initialData.DefaultPrice, Quantity: 0 }]);
+    const list = props.initialData.Data.length ? props.initialData.Data : [{ Id: getARandomNumber(), Price: props.initialData.DefaultPrice, Quantity: 0 }];
 
     useImperativeHandle(ref, () => ({
         getValue: function () {

@@ -9,10 +9,7 @@ export const ProductCellRenderer =
     SelectWithAriaRenderer<ShipmentRendererParams<ShipmentDTO['ProductId']>>(e => e.data.Observer.GetProducts().map(e => ({ label: e.Title, value: e.Id })),
         e => e.data.Shipment.ProductId !== -1);
 
-export const FlavourCellRenderer = SelectWithAriaRenderer<ShipmentRendererParams<ShipmentDTO['FlavourId']>>((e) => (e.data.Observer.GetProducts().map(e => ({ label: e.Title, value: e.Id }))), (e) => e.data.Shipment.ProductId !== -1);
-
-
-
+export const FlavourCellRenderer = SelectWithAriaRenderer<ShipmentRendererParams<ShipmentDTO['FlavourId']>>((e) => (e.data.Observer.GetFlavours().map(e => ({ label: e.Title, value: e.Id }))), (e) => e.data.Shipment.ProductId !== -1);
 export const ProductValueGetter = (props: ShipmentGridGetterParams) => props.data.Shipment.ProductId;
 
 export const FlavourValueGetter = (props: ShipmentGridGetterParams) => props.data.Shipment.FlavourId;
@@ -43,6 +40,7 @@ export const ProductValueChangedEvent = (event: ShipmentCellValueChangeEvent<Shi
         data.Shipment.CaretSize = context.getCartetSizeByProductId(event.newValue);
         data.Shipment.FlavourId = isFlavourExists ? data.Shipment.FlavourId : -1;
         data.Shipment.TotalRecievedPieces = isFlavourExists ? data.Shipment.TotalRecievedPieces : 0;
+        
         if (event.context.ShouldLimitQuantity) {
             data.Observer.SetQuantity(data.Shipment.TotalRecievedPieces);
         }
@@ -50,7 +48,7 @@ export const ProductValueChangedEvent = (event: ShipmentCellValueChangeEvent<Shi
             update: [data]
         }
         event.api.applyTransaction(transaction);
-        event.api.refreshCells({ rowNodes: [event.node], force: true });
+ //       event.api.refreshCells({ rowNodes: [event.node], force: true });
     }
 }
 

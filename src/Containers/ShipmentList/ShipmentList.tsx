@@ -4,7 +4,7 @@ import MediatorSubject from 'Utilities/MediatorSubject';
 import { addDanger, addWarn } from 'Utilities/AlertUtility';
 import { InitialShipment } from 'Types/Types';
 import { AgGridReact } from '@ag-grid-community/react';
-import { ShipmentGridGetterParams, ShipmentGridDataTransation, IRowValue, GridContext, ShipmentGridRowNode, ShipmentGridSetter, ShipmentRendererParams, ShipmentRowValue, ShipmentGridEditorParams, ShipmentValueSetter } from './ShipmentList.d';
+import { ShipmentGridGetterParams, ShipmentGridDataTransation, IRowValue, GridContext, ShipmentGridRowNode, ShipmentGridSetter, ShipmentRendererParams, ShipmentRowValue, ShipmentGridEditorParams, ShipmentValueSetter, ToolTipRendererParams, CellClassParams } from './ShipmentList.d';
 import { GridOptions, GridReadyEvent, RowNode, ITooltipParams, Column } from '@ag-grid-community/all-modules';
 import { FlavourCellRenderer, FlavourValueChangedEvent, FlavourValueGetter, FlavourValueSetter, ProductCellRenderer, ProductValueChangedEvent, ProductValueGetter, ProductValueSetter } from './Component/Renderer/Renderer';
 import { GridSelectEditor } from 'Components/AgGridComponent/Editors/SelectWithAriaEditor';
@@ -20,6 +20,7 @@ import { ToolTipComponent, ToolTipGetter } from 'Components/AgGridComponent/Rend
 import CellClassSpecifier from 'Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle';
 import { ShipmentDTOValidation } from './../../Validation/ShipmentValidation';
 import { FlavourOccupiedError, QuantityLimitExceeded, UnknownSubscription } from 'Errors/Error';
+import './ShipmentList.d.ts';
 
 type IShipmentListProps = {
 	handleSubmit: (Shipments: ShipmentDTO[]) => void;
@@ -36,8 +37,9 @@ type IShipmentListState = {
 	Alert: { Show: boolean, Message: string };
 	GridOptions: GridOptions;
 };
-const ToolTipValueGetter = (name: keyof ShipmentDTO) => ToolTipGetter<ShipmentDTO, ShipmentDTOValidation>(ShipmentDTOValidation, name);
-const ClassRuleSpecifier = (name: keyof ShipmentDTO) => CellClassSpecifier<ShipmentDTO, ShipmentDTOValidation>(name, ShipmentDTOValidation);
+const ToolTipValueGetter = (name: keyof ShipmentDTO) => ToolTipGetter<ShipmentDTO, ShipmentDTOValidation>(ShipmentDTOValidation, name,
+	(e: ToolTipRendererParams) => e.data.Shipment);
+const ClassRuleSpecifier = (name: keyof ShipmentDTO) => CellClassSpecifier<ShipmentDTO, ShipmentDTOValidation>(name, ShipmentDTOValidation,(e:CellClassParams)=>e.data.Shipment);
 
 export default class ShipmentList extends React.Component<IShipmentListProps, IShipmentListState> {
 	products: Map<string, Product>;
@@ -55,6 +57,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 					tooltipComponentFramework: ToolTipComponent,
 					editable: true
 				},
+
 				columnDefs: [
 					{
 						cellRendererFramework: ProductCellRenderer,
@@ -64,15 +67,15 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						headerName: 'Product Name',
 						onCellValueChanged: ProductValueChangedEvent,
 						tooltipValueGetter: ToolTipValueGetter('ProductId'),
-						cellStyle: ClassRuleSpecifier('ProductId')
+						cellClassRules: ClassRuleSpecifier('ProductId')
 					},
 					{
 						cellRendererFramework: FlavourCellRenderer,
-						cellEditorFramework: GridSelectEditor<IRowValue, any>(e => (e.Observer?.GetFlavours().map(e => ({ label: e.Title, value: e.Quantity }) ?? [])), (data) => data.Shipment.ProductId != -1),
+						cellEditorFramework: GridSelectEditor<IRowValue, any>(e => (e.Observer?.GetFlavours().map(e => ({ label: e.Title, value: e.Id }) ?? [])), (data) => data.Shipment.ProductId != -1),
 						valueGetter: FlavourValueGetter,
 						valueSetter: FlavourValueSetter,
 						headerName: 'Flavour Name',
-						cellStyle: ClassRuleSpecifier('FlavourId'),
+						cellClassRules: ClassRuleSpecifier('FlavourId'),
 						onCellValueChanged: FlavourValueChangedEvent,
 						tooltipValueGetter: ToolTipValueGetter('FlavourId')
 					},
@@ -81,7 +84,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						editable: false,
 						headerName: 'Caret Size',
 						tooltipValueGetter: ToolTipValueGetter('CaretSize'),
-						cellStyle: ClassRuleSpecifier('CaretSize')
+						cellClassRules: ClassRuleSpecifier('CaretSize')
 					},
 					{
 						cellEditorFramework: CaretSizeEditor<ShipmentGridEditorParams<ShipmentRowValue['TotalRecievedPieces']>>(e => e.data.Shipment.CaretSize, (e) => e.data.Shipment.ProductId !== -1, (params) => {
@@ -99,7 +102,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 						},
 						headerName: 'Quantity',
 						tooltipValueGetter: ToolTipValueGetter('TotalRecievedPieces'),
-						cellStyle: ClassRuleSpecifier('TotalRecievedPieces')
+						cellClassRules: ClassRuleSpecifier('TotalRecievedPieces')
 					},
 					{
 						cellRendererFramework: ActionCellRenderer,
@@ -159,7 +162,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 				});
 				this.products = new Map(products);
 				this.componentListMediator = new MediatorSubject(Products);
-				this.setState({ Products: products, ShipmentInfos: [this.createAShipment(getARandomNumber())] });
+				this.setState({ Products: products, ShipmentInfos: [] });
 			}
 		}
 		if (nextProps.ResetElement && nextProps.ResetElement != this.props.ResetElement) {
@@ -212,7 +215,12 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			this.setState({ ShipmentInfos: ShipmentInfos });
 		}
 	}
-
+	getRowDataFromGrid = () => {
+		const { GridOptions: { api } } = this.state;
+		const data: ShipmentGridRowNode[] = [];
+		api?.forEachNode(node => data.push(node.data));
+		return data;
+	}
 	handleSubmit() {
 		const element = document.getElementsByClassName('is-invalid');
 		if (element.length > 0) {
@@ -220,9 +228,9 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		} else {
 			console.log('Valid Form');
 			const { handleSubmit } = this.props;
-			const { ShipmentInfos: Shipments } = this.state;
-			if (Shipments.length > 0)
-				handleSubmit(Shipments.map(e => ({ ...e.Shipment, TotalRecievedPieces: e.Shipment.TotalRecievedPieces })));
+			const shipments = this.getRowDataFromGrid();
+			if (shipments.length > 0)
+				handleSubmit(shipments.map(e => e.Shipment));
 			else
 				addWarn("Please, Add Atleast One Item");
 		}

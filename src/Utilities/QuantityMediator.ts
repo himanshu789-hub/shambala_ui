@@ -1,4 +1,4 @@
-import { AlreadySubscribedError, QuantityLimitExceeded, UnIdentifyComponentError, UnIdentityFlavourError, UnknownSubscription } from 'Errors/Error';
+import { AlreadySubscribedError, NullOrUndefinedError, QuantityLimitExceeded, UnIdentifyComponentError, UnIdentityFlavourError, UnknownSubscription } from 'Errors/Error';
 import { Flavour, Product } from 'Types/DTO';
 
 type QuantityFlavourInfo = {
@@ -59,7 +59,7 @@ export default class QuantityMediator implements IQuantityMediator {
 	}
 
 	private _checkArgumentNullException(...params: number[]) {
-		for (let i = 0; i < params.length; i++) if (!params[i]) throw new Error('Argument Not Set');
+		for (let i = 0; i < params.length; i++) if (!params[i]) throw new NullOrUndefinedError();
 	}
 	private _deductQuantity(productId: number, flavourId: number, quantity: number) {
 		const Flavours = this._productsWithFlavourLimit.get(productId) as Flavour[];

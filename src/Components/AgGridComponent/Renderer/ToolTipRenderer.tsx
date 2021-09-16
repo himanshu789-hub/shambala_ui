@@ -15,10 +15,11 @@ export const ToolTipComponent = forwardRef<{ getReactContainerClasses: () => str
         return <React.Fragment></React.Fragment>;
     return <span className="tool-tip-container border p-1"><i className="fa fa-info-circle text-danger"></i> {props.value}</span>
 });
-
-export function ToolTipGetter<T, V extends ValidateMember<T>>(validator: new (data:T)=>V, name: keyof T,getConstructorDataFromParams?:(e:ITooltipParams)=>T) {
+type ToolTipGetterParams = Omit<ITooltipParams,"data"|"value">&{data:any,value:any};
+export function ToolTipGetter<T, V extends ValidateMember<L>,L=T>(validator: new (data:T)=>V, name: keyof L,getConstructorDataFromParams?:(e:ToolTipGetterParams)=>T) {
     return function (params: ITooltipParams) {
         let ValidationResult: IValidateResult = { IsValid: false };
+        //@ts-ignore
         ValidationResult =(getConstructorDataFromParams?new validator(getConstructorDataFromParams(params)): ( new validator(params.data) as any))['Is' + name + 'Valid']() as IValidateResult;
         if (ValidationResult.IsValid)
             return '';

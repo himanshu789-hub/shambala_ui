@@ -59,10 +59,14 @@ interface IOutgoingShipmentAddDetail {
 	TotalQuantityReturned: number;
 }
 
+type SchemeInfo = {
+	TotalSchemePrice: number;
+	SchemeQuantity: number;
+	TotalQuantity:number;
+}
 interface IOutgoingShipmentUpdateDetail extends IOutgoingShipmentAddDetail {
-	SchemePrice: number;
+	SchemeInfo:SchemeInfo;
 	TotalQuantityShiped: number;
-	TotalSchemeQuantity: number;
 	CustomCaratPrices: CustomPrice[];
 }
 type CustomPrice = {
