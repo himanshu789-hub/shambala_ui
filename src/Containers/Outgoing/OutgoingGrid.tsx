@@ -441,7 +441,9 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                 .catch(e => this.handleError(e));
         }
         else {
-            alert('Valid');
+            const details = this.getAllRows().map(e => e.Shipment);
+            const outgoingData = this.state.OutgoingData;
+            this.outgoingService.UpdateOutgoingShipment({ DateCreated: new Date().toString(), SalesmanId: outgoingData.SalesmanId, Id: outgoingData.Id, OutgoingShipmentDetails: details });
         }
     }
 
