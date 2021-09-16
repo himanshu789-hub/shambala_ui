@@ -443,7 +443,11 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
         else {
             const details = this.getAllRows().map(e => e.Shipment);
             const outgoingData = this.state.OutgoingData;
-            this.outgoingService.UpdateOutgoingShipment({ DateCreated: new Date().toString(), SalesmanId: outgoingData.SalesmanId, Id: outgoingData.Id, OutgoingShipmentDetails: details });
+            this.outgoingService
+                .UpdateOutgoingShipment({ DateCreated: new Date().toString(), SalesmanId: outgoingData.SalesmanId, Id: outgoingData.Id, OutgoingShipmentDetails: details })
+                .then(() => this.props.history.push({ pathname: "/message/pass", search: "?message=Updated SuccessFully" }), (e) => this.handleError(e))
+
+
         }
     }
 
