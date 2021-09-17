@@ -23,7 +23,6 @@ export default function ActionCellRenderer<T>(props: ActionCellRendererParams<T>
                 else
                     setTimeout(() => minusRef.current?.focus());
             }
-
         }
         function onKeyDownEvent(event: KeyboardEvent) {
             if (IsLastRow && event.key === KeyName.LEFT && document.activeElement === plusRef.current) {
@@ -33,6 +32,7 @@ export default function ActionCellRenderer<T>(props: ActionCellRendererParams<T>
             if (IsLastRow && event.key === KeyName.RIGHT && document.activeElement === minusRef.current) {
                 plusRef.current?.focus();
             }
+
         }
         props.eGridCell.addEventListener('keyup', onKeyUpEvent);
         props.eGridCell.addEventListener('keydown', onKeyDownEvent);
@@ -41,9 +41,17 @@ export default function ActionCellRenderer<T>(props: ActionCellRendererParams<T>
             props.eGridCell.removeEventListener('keydown', onKeyDownEvent);
         }
     });
-
-    let minusButton = <Button className="btn-danger btn-sm" handleClick={() => props.deleteAChild(props.value)} ref={minusRef}><i className="fa fa-minus"></i></Button>;
-    let plusButton = <Button handleClick={props.addAChild} className="btn-warn ml-1 btn-sm" ref={plusRef} ><i className="fa fa-plus"></i></Button>
+    function handleClick(action: "add" | "del") {
+        if (action === 'add') {
+            props.addAChild()
+        }
+        else {
+            props.deleteAChild(props.value);
+        }
+        props.api.refreshCells({ force: true, columns: [props.column!] });
+    }
+    let minusButton = <Button className="btn-danger btn-sm" handleClick={() => handleClick('del')} ref={minusRef}><i className="fa fa-minus"></i></Button>;
+    let plusButton = <Button handleClick={() => handleClick('add')} className="btn-warn ml-1 btn-sm" ref={plusRef} ><i className="fa fa-plus"></i></Button>
     if (IsLastRow)
         return (<div className="text-center">{minusButton}{plusButton}</div>);
 

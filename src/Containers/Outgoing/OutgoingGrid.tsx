@@ -11,7 +11,7 @@ import { CustomPrice, Element, IOutgoingShipmentAddDetail, IOutgoingShipmentUpda
 import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer, RowStyleSpecifier } from "./Component/Renderers/Renderers";
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { GridSelectEditor } from "Components/AgGridComponent/Editors/SelectWithAriaEditor";
-import { getARandomNumber, KeyCode, Parser } from "Utilities/Utilities";
+import { getARandomNumber, KeyCode, Parser, UniqueValueProvider } from "Utilities/Utilities";
 import { CaretSizeEditor, CaretSizeValueOldAndNewValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 import CustomPriceEditor from "./Component/Editors/CustomPriceEditor";
@@ -103,7 +103,6 @@ const getColumnId = function (name: OutgoingGridColName) {
             columnIndex = 9; break;
         case 'TotalSchemePrice':
             columnIndex = 10; break;
-        case 'SchemeQuantity':
             break;
     }
     return columnIndex + '';
@@ -235,7 +234,7 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
         cellClassRules: ClassSpecifier('TotalQuantityReturned'),
         tooltipValueGetter: ToolTipValueGetter('TotalQuantityReturned'),
         cellEditorFramework: CaretSizeEditor<CellEditorParams<OutgoingUpdateRow['TotalQuantityReturned']>>(
-            (e) => e.data.Shipment.CaretSize, (e) => e.data.Shipment.TotalQuantityShiped > 0,
+            (e) => e.data.Shipment.CaretSize, (e) => e.data.Shipment.TotalQuantityTaken > 0,
             (e) => e.data.Shipment.TotalQuantityTaken
         ),
         colId: getColumnId('TotalQuantityReturned')
@@ -256,14 +255,10 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
 
             node.setDataValue(getColumnId('CustomCaratPrices'), ReInitializeCustomPrice(customPrices, params.newValue));
             const schemeQuantity = params.context.getProductDetails(params.data.Shipment.ProductId).SchemeQuantity;
-            const schemeProduct = params.context.getProductDetails(config.SchemeProductId);
-            const totalCaret = Math.floor(params.newValue / params.data.Shipment.CaretSize);
-            const totalBottle = (schemeQuantity || 0) * totalCaret;
-            const totalPrice = (schemeProduct.PricePerBottle) * totalBottle;
+
             // set corresponding SchemePrice and TotalSchemeQuantity
-            params.data.Shipment.SchemeInfo.SchemeQuantity = schemeQuantity || 0;
-            node.setDataValue(getColumnId('TotalSchemePrice'), totalPrice);
-            node.setDataValue(getColumnId('TotalSchemeQuantity'), totalBottle);
+            //node.setDataValue(getColumnId('TotalSchemePrice'), totalPrice);
+            node.setDataValue(getColumnId('TotalSchemeQuantity'), schemeQuantity);
         },
         cellClassRules: ClassSpecifier('TotalQuantityShiped'),
         tooltipValueGetter: ToolTipValueGetter('TotalQuantityShiped'),
@@ -281,9 +276,15 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
                 valueSetter: function (params: ValueSetterParams<OutgoingUpdateRow['SchemeInfo']['SchemeQuantity']>) {
                     if (!Number.isInteger(params.newValue))
                         return false;
+                    const totalCaret = Math.floor(params.data.Shipment.TotalQuantityShiped / params.data.Shipment.CaretSize);
+                    params.data.Shipment.SchemeInfo.TotalQuantity = params.newValue * totalCaret;
                     params.data.Shipment.SchemeInfo.SchemeQuantity = params.newValue;
-                    params.data.Shipment.SchemeInfo.TotalQuantity = params.newValue * (params.context.getProductDetails(config.SchemeProductId).SchemeQuantity || 0);
                     return true;
+                },
+                onCellValueChanged(params: CellValueChangedEvent<number>) {
+                    const schemeProduct = params.context.getProductDetails(config.SchemeProductId);
+                    const totalBottle = params.newValue;
+                    params.node.setDataValue(params.context.getColumnId('TotalSchemePrice'), schemeProduct.PricePerBottle * totalBottle);
                 }
             },
             {
@@ -336,6 +337,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
     private products: Product[];
     private outgoingService: IOutgoingShipmentService;
     private productService: IProductService;
+    private uniqueValueProvider = new UniqueValueProvider();
     constructor(props: OutgoingGridProps) {
         super(props);
         const { match: { params: { id } } } = this.props;
@@ -388,7 +390,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
     }
     addAShipment = () => {
         const { GridOptions: { api } } = this.state;
-        const componentId = getARandomNumber();
+        const componentId = this.uniqueValueProvider.GetUniqueValue() as number;
         const transaction: OutgoingRowDataTransaction = {
             add: [this.createAShipment(componentId)]
         }
@@ -397,8 +399,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
     deleteAShipment = (Id: string) => {
         const { GridOptions: { api } } = this.state;
         try {
-            this.mediatorSubject.UnsubscribeAComponent(1, Number.parseInt(Id));
-
+            this.mediatorSubject.UnsubscribeAComponent(1, (api!.getRowNode(Id)!.data as OutgoingGridRowValue).Shipment.Id);
         }
         catch (error) {
             if (error instanceof UnknownSubscription || error instanceof UnIdentifyComponentError) {
@@ -438,16 +439,15 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                 Shipments: rows.map(e => ({ Id: e.Shipment.Id, CaretSize: e.Shipment.CaretSize, FlavourId: e.Shipment.FlavourId, ProductId: e.Shipment.ProductId, TotalDefectedPieces: e.Shipment.TotalQuantityRejected, TotalRecievedPieces: e.Shipment.TotalQuantityTaken } as ShipmentDTO))
             }
             this.outgoingService.Add(data)
+                .then(() => this.props.history.push({ pathname: "/message/pass", search: "?message=Added SuccessFully" }))
                 .catch(e => this.handleError(e));
         }
         else {
             const details = this.getAllRows().map(e => e.Shipment);
             const outgoingData = this.state.OutgoingData;
             this.outgoingService
-                .UpdateOutgoingShipment({ DateCreated: new Date().toString(), SalesmanId: outgoingData.SalesmanId, Id: outgoingData.Id, OutgoingShipmentDetails: details })
+                .UpdateOutgoingShipment({ DateCreated: new Date().toISOString(), SalesmanId: outgoingData.SalesmanId, Id: outgoingData.Id, OutgoingShipmentDetails: details })
                 .then(() => this.props.history.push({ pathname: "/message/pass", search: "?message=Updated SuccessFully" }), (e) => this.handleError(e))
-
-
         }
     }
 
@@ -542,8 +542,10 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                             res.data.OutgoingShipmentDetails.forEach(details =>
                                 products.find(e => e.Id === details.ProductId)!.Flavours.find(e => e.Id === details.FlavourId)!.Quantity += details.TotalQuantityShiped);
                             this.setMediator(products);
+
                             const rowData: OutgoingGridRowValue[] = [];
                             res.data.OutgoingShipmentDetails.forEach(element => {
+                                this.uniqueValueProvider.Add(element.Id);
                                 const observer = this.mediatorSubject.GetAObserver(1, element.Id);
                                 observer.SetProduct(element.ProductId)
                                 observer.SetFlavour(element.FlavourId);

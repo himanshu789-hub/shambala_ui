@@ -68,7 +68,7 @@ export default class MediatorSubject {
 			this._quantityMediator.Unsubscibe(subscriptionId, componentId);
 	}
 	SetAProduct(subscriptionId: number, componentId: number, productId: number) {
-		let flavourId:number|undefined, quantity, previousProductId;
+		let flavourId: number | undefined, quantity, previousProductId;
 
 		if (this._productMediator.IsAlreadySubscribed(subscriptionId, componentId)) {
 			previousProductId = this._productMediator.GetSubscribedProduct(subscriptionId, componentId);
@@ -88,7 +88,7 @@ export default class MediatorSubject {
 						if (e instanceof UnIdentityFlavourError) {
 							IsFlavourExists = false;
 							flavourId = undefined;
-						 }
+						}
 						else
 							throw e;
 					}
@@ -100,6 +100,10 @@ export default class MediatorSubject {
 								this._quantityMediator.Subscribe(subscriptionId, componentId, productId, flavourId!, quantity);
 							}
 						}
+					}
+					else {
+						flavourId = undefined;
+						quantity = undefined;
 					}
 				}
 			}
@@ -125,12 +129,20 @@ export default class MediatorSubject {
 		const productId = this._productMediator.GetSubscribedProduct(subscribeId, componentId);
 		if (!this._flavourMediator.IsFlavourExists(productId, flavourId))
 			throw new UnIdentityFlavourError(productId, flavourId);
-
+		let quantity:number|undefined = undefined;
 		if (this._flavourMediator.IsSubscribed(subscribeId, componentId)) {
 			if (this._flavourMediator.ChangeSubscription(subscribeId, componentId, productId, flavourId)) {
 				if (this._quantityMediator.IsQuantitySubscribed(subscribeId, componentId)) {
-					const quantity = this._quantityMediator.GetQuantitySubscribed(subscribeId, componentId)!;
-					this._quantityMediator.ChangeQuantity(subscribeId, componentId, productId, flavourId, quantity);
+					 quantity = this._quantityMediator.GetQuantitySubscribed(subscribeId, componentId)!;
+					try {
+						this._quantityMediator.ChangeQuantity(subscribeId, componentId, productId, flavourId, quantity);
+					}
+					catch (e) {
+                        if(e instanceof QuantityLimitExceeded){
+							quantity = undefined;
+							this._quantityMediator.Unsubscibe(subscribeId,componentId);
+						}
+					}
 				}
 			}
 		}
@@ -138,6 +150,7 @@ export default class MediatorSubject {
 			this._flavourMediator.Subscribe(subscribeId, componentId, productId, flavourId);
 		const subscriptionInfo = this._findObserver(subscribeId, componentId);
 		subscriptionInfo.FlavourId = flavourId;
+		subscriptionInfo.Quantity = quantity;
 	}
 	SetAQuantity(subscribeId: number, componentId: number, quantity: number) {
 		const subscriptionInfo = this._findObserver(subscribeId, componentId);

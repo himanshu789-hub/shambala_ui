@@ -29,7 +29,7 @@ export default class OutgoingValidator implements ValidateMemberWithAll<Outgoing
         return new ValidationResultOK();
     }
     IsCustomCaratPricesValid(): IValidateResultOK {
-        if (!this.outgoing.CustomCaratPrices || this.outgoing.CustomCaratPrices.length == 0)
+        if (!this.outgoing.CustomCaratPrices )
             return { IsValid: false, Message: "Cannot Left Empty" } as IValidateResultBad;
         const validator = new CustomPriceCollectionValidation(this.outgoing.CustomCaratPrices, this.outgoing.TotalQuantityShiped);
         const result = validator.IsAllValid();

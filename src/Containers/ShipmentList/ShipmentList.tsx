@@ -11,7 +11,7 @@ import { GridSelectEditor } from 'Components/AgGridComponent/Editors/SelectWithA
 import CaretSizeRenderer from 'Components/AgGridComponent/Renderer/CaretSizeRenderer';
 import { CaretSizeEditor, CaretSizeValue, CaretSizeValueOldAndNewValue, CaretSizeValueParser, } from 'Components/AgGridComponent/Editors/CaretSizeEditor';
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
-import { getARandomNumber } from 'Utilities/Utilities';
+import { getARandomNumber, UniqueValueProvider } from 'Utilities/Utilities';
 import { AllCommunityModules } from '@ag-grid-community/all-modules';
 import Action from 'Components/Action/Action';
 import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
@@ -39,12 +39,12 @@ type IShipmentListState = {
 };
 const ToolTipValueGetter = (name: keyof ShipmentDTO) => ToolTipGetter<ShipmentDTO, ShipmentDTOValidation>(ShipmentDTOValidation, name,
 	(e: ToolTipRendererParams) => e.data.Shipment);
-const ClassRuleSpecifier = (name: keyof ShipmentDTO) => CellClassSpecifier<ShipmentDTO, ShipmentDTOValidation>(name, ShipmentDTOValidation,(e:CellClassParams)=>e.data.Shipment);
+const ClassRuleSpecifier = (name: keyof ShipmentDTO) => CellClassSpecifier<ShipmentDTO, ShipmentDTOValidation>(name, ShipmentDTOValidation, (e: CellClassParams) => e.data.Shipment);
 
 export default class ShipmentList extends React.Component<IShipmentListProps, IShipmentListState> {
 	products: Map<string, Product>;
 	componentListMediator: MediatorSubject;
-
+	uniqueValueProvider: UniqueValueProvider = new UniqueValueProvider();
 	constructor(props: IShipmentListProps) {
 		super(props);
 		this.products = new Map([]);
@@ -190,13 +190,14 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		if (InitialShipments && InitialShipments != this.props.InitialShipments) {
 			const ShipmentInfos: Array<IRowValue> = [];
 			for (var i = 0; i < InitialShipments.length; i++) {
-				const Id = (i + 1);
+				const Id = this.uniqueValueProvider.GetUniqueValue();
 				const observer = this.componentListMediator.GetAObserver(this.state.SubscriptionId, Id);
 				const initial = InitialShipments[i]; const shipment = initial.Shipment;
 				let quantity = 0;
 				try {
 					observer.SetProduct(shipment.ProductId);
 					observer.SetFlavour(shipment.FlavourId);
+
 					quantity = shipment.TotalRecievedPieces > observer.GetQuantityLimit() ? 0 : shipment.TotalRecievedPieces;
 					observer.SetQuantity(quantity);
 				}
@@ -250,7 +251,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 
 	addAShipment = () => {
 		const { Products, GridOptions: { api } } = this.state;
-		const componentId = getARandomNumber();
+		const componentId = this.uniqueValueProvider.GetUniqueValue();
 		if (Products.size !== 0) {
 			const currentRowCount = api?.getDisplayedRowCount();
 			const rowTransations: ShipmentGridDataTransation = {

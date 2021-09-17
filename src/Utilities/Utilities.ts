@@ -33,8 +33,8 @@ export function deepCloneProducts(products: Product[]) {
 }
 
 getARandomNumber.num = 1;
-export function doFlavourExists(flavours:Flavour[],Id:number){
-	return flavours.find(e=>e.Id===Id)!==null;
+export function doFlavourExists(flavours: Flavour[], Id: number) {
+	return flavours.find(e => e.Id === Id) !== null;
 }
 export function getARandomNumber(): number {
 	return getARandomNumber.num++;
@@ -108,4 +108,40 @@ export function toDateText(date: string) {
 }
 export function tocurrencyText(num: number) {
 	return 0x20B9 + num;
+}
+export class UniqueValueProvider<T = number>
+{
+	private _valueGenerator?: Function;
+	private _values: Set<T>;
+	private _maxIteration: number | undefined;
+	constructor(valueGenerater?: () => T, tryAgain?: number, values: T[] = []) {
+		this._valueGenerator = valueGenerater;
+		this._values = new Set<T>(values);
+		this._maxIteration = tryAgain;
+	}
+	DoValueExists(value: T) {
+		return this._values.has(value);
+	}
+	GetUniqueValue(): T {
+		let newValue: T;
+		let count = 0;
+		do {
+			if (count === this._maxIteration)
+				throw new Error('Cannot Generate Unique Value');
+			newValue = this._valueGenerator ? this._valueGenerator() : getARandomNumber();
+			count++;
+		}
+		while (this._values.has(newValue));
+		this._values.add(newValue);
+		return newValue;
+	}
+	Add(value: T) {
+		if (this._values.has(value)) {
+			throw new Error("Value Already Exists");
+		}
+		this._values.add(value);
+	}
+	Flush() {
+		this._values.clear();
+	}
 }

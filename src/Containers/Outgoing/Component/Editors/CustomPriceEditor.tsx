@@ -4,7 +4,7 @@ import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRend
 import { AgGridReact } from "@ag-grid-community/react";
 import NumericOnlyEditor from "./NumericOnlyEditor";
 import ActionCellRenderer, { ActionCellParams } from "Components/AgGridComponent/Renderer/ActionCellRender";
-import { getARandomNumber } from "Utilities/Utilities";
+import { getARandomNumber, UniqueValueProvider } from "Utilities/Utilities";
 import { CaretSizeEditor, CaretSizeValue, CaretSizeValueOldAndNewValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
 import QuantityMediatorWrapper, { IQuantityMediatorWrapper } from '../../../../Utilities/QuatityMediatorWrapper';
 import { addWarn } from "Utilities/AlertUtility";
@@ -15,7 +15,7 @@ import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
 import { CustomPriceGridEditorParams, CustomPriceProps, CustomPriceCellValueChnageEvent, CustomPriceGridCellRendererParams, CustomPriceGridValueGetterParams, CustomPriceRowData, CustomPriceValueSetterPrams, PriceGridContext, RowTransactionData, GridData } from './CustomPriceEditor.d';
 import { CellEditorParams, OutgoingUpdateRow, ColLiteral } from './../../OutgoingGrid.d';
 import CellClassRuleSpecifier from "Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle";
-import  {CustomPriceValidation}  from "Validation/CustomPriceCollectionValidation";
+import { CustomPriceValidation } from "Validation/CustomPriceCollectionValidation";
 import { ToolTipComponent, ToolTipGetter } from "Components/AgGridComponent/Renderer/ToolTipRenderer";
 
 type CustomPriceGridRef = {
@@ -70,6 +70,7 @@ const CustomPriceGrid = forwardRef<CustomPriceGridRef, CustomPriceProps>((props,
     const gridApis = useRef<GridApis>();
     const [quantityMediator] = useState<IQuantityMediatorWrapper>(new QuantityMediatorWrapper(props.initialData.QuantityLimit));
     const list = props.initialData.Data.length ? props.initialData.Data : [{ Id: getARandomNumber(), Price: props.initialData.DefaultPrice, Quantity: 0 }];
+    const [uniqueValueProvider] = useState<UniqueValueProvider>(new UniqueValueProvider(undefined,undefined,props.initialData.Data.map(e=>e.Id)));
 
     useImperativeHandle(ref, () => ({
         getValue: function () {
@@ -95,7 +96,7 @@ const CustomPriceGrid = forwardRef<CustomPriceGridRef, CustomPriceProps>((props,
             api?.forEachNode(node => data.push(node.data));
             if (!data.find(e => e.Quantity === 0)) {
                 const newPrice: CustomPriceRowData = {
-                    Id: getARandomNumber(),
+                    Id: uniqueValueProvider.GetUniqueValue(),
                     Price: props.initialData.DefaultPrice,
                     Quantity: 0
                 };
