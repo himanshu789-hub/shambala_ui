@@ -72,7 +72,7 @@ interface IOutgoingShipmentUpdateDetail extends IOutgoingShipmentAddDetail {
 type CustomPrice = {
 	Id: number;
 	Quantity: number;
-	Price: number;
+	PricePerCarat: number;
 }
 
 type OutgoingShipmentCompleteDetail = {

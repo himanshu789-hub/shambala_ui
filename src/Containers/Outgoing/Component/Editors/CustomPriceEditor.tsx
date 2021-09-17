@@ -52,7 +52,7 @@ function getColId(name: ColLiteral<CustomPrice>) {
     switch (name) {
         case 'Id':
             colId = '1'; break;
-        case 'Price': colId = '2'; break;
+        case 'PricePerCarat': colId = '2'; break;
         case 'Quantity': colId = '3'; break;
         case 'S.No.': colId = '4'; break;
         default: colId = null; break;
@@ -97,7 +97,7 @@ const CustomPriceGrid = forwardRef<CustomPriceGridRef, CustomPriceProps>((props,
             if (!data.find(e => e.Quantity === 0)) {
                 const newPrice: CustomPriceRowData = {
                     Id: uniqueValueProvider.GetUniqueValue(),
-                    Price: props.initialData.DefaultPrice,
+                    PricePerCarat: props.initialData.DefaultPrice,
                     Quantity: 0
                 };
                 const transaction: RowTransactionData = {
@@ -151,11 +151,11 @@ const CustomPriceGrid = forwardRef<CustomPriceGridRef, CustomPriceProps>((props,
             },
             {
                 headerName: 'Price',
-                field: 'Price',
-                colId: getColId('Price')!,
+                field: 'PricePerCarat',
+                colId: getColId('PricePerCarat')!,
                 cellEditorFramework: NumericOnlyEditor,
-                cellClassRules: ClassSpecifier('Price'),
-                tooltipValueGetter: ToolTipValueGetter("Price")
+                cellClassRules: ClassSpecifier('PricePerCarat'),
+                tooltipValueGetter: ToolTipValueGetter("PricePerCarat")
             },
             {
                 headerName: "Action",
@@ -178,7 +178,11 @@ const CustomPriceGrid = forwardRef<CustomPriceGridRef, CustomPriceProps>((props,
         // },
         defaultColDef: defaultColDef
     });
-
+      useEffect(()=>{
+         for(let element of list){
+             quantityMediator.Subscribe(element.Id,element.Quantity);
+         }
+      },[])  
     const onGridReady = function (event: GridReadyEvent) {
         gridApis.current = {
             columnApi: event.columnApi,

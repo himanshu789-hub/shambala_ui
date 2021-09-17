@@ -18,8 +18,8 @@ export class CustomPriceValidation implements ValidateMemberWithAll<CustomPrice>
 
         return new ValidationResultOK();
     }
-    IsPriceValid() {
-        if (this.data.Price === 0)
+    IsPricePerCaratValid() {
+        if (this.data.PricePerCarat === 0)
             return new ValidateResultBad('Cannot Be Zero');
         return { IsValid: true } as IValidateResultOK
     }

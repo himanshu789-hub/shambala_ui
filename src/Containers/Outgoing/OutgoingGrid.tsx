@@ -12,7 +12,7 @@ import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer, RowStyle
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { GridSelectEditor } from "Components/AgGridComponent/Editors/SelectWithAriaEditor";
 import { getARandomNumber, KeyCode, Parser, UniqueValueProvider } from "Utilities/Utilities";
-import { CaretSizeEditor, CaretSizeValueOldAndNewValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
+import { CaretSizeEditor, CaretSizeNewValue, CaretSizeValueOldAndNewValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 import CustomPriceEditor from "./Component/Editors/CustomPriceEditor";
 import CellClassRuleSpecifier from "Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle";
@@ -152,7 +152,7 @@ const commonColDefs: ColDef[] = [
             const { Quantity } = Observer.GetObserverInfo();
 
             if (!Quantity) {
-                Shipment.TotalQuantityTaken = 0;
+                params.node.setDataValue(params.context.getColumnId('TotalQuantityTaken'),{IsValid:true,Value:0} as CaretSizeNewValue);
             }
 
         },

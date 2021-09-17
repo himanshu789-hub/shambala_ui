@@ -7,7 +7,10 @@ export default forwardRef<ICellEditor, ICellEditorParams>((props, ref) => {
     const inputRef = useRef<HTMLInputElement>(null);
     useImperativeHandle(ref, () => ({
         getValue() {
-            return inputRef.current?.value;
+            const value = inputRef.current?.value;
+            if (!value)
+                return 0;
+            return Number.parseFloat(value);
         }
     }))
     setTimeout(() => (inputRef.current?.focus()));

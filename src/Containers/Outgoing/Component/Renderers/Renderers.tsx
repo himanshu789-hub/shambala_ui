@@ -18,7 +18,7 @@ export const CustomPriceRenderer = (params: CellRendererParams<IOutgoingShipment
     const prices = params.value;
     if (!prices || !prices.length)
         return <span>N/A</span>;
-    return params.value.map(e => `${getQuantityInText(e.Quantity, params.data.Shipment.CaretSize)}->${e.Price}`).join(" | ");
+    return params.value.map(e => `${getQuantityInText(e.Quantity, params.data.Shipment.CaretSize)}->${e.PricePerCarat}`).join(" | ");
 }
 export const RowStyleSpecifier = function (params: RowClassParams): CSSProperties {
     let css: CSSProperties = { background: 'initial' }
