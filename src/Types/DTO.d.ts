@@ -62,12 +62,19 @@ interface IOutgoingShipmentAddDetail {
 type SchemeInfo = {
 	TotalSchemePrice: number;
 	SchemeQuantity: number;
-	TotalQuantity:number;
+	TotalQuantity: number;
+}
+type CustomCaratPrice = {
+	Prices: CustomPrice[];
+	TotalPrice: number;
+	TotalQuantity: number
 }
 interface IOutgoingShipmentUpdateDetail extends IOutgoingShipmentAddDetail {
-	SchemeInfo:SchemeInfo;
+	SchemeInfo: SchemeInfo;
 	TotalQuantityShiped: number;
-	CustomCaratPrices: CustomPrice[];
+	CustomCaratPrices: CustomCaratPrice;
+	NetPrice: number;
+	TotalSalePrice: number;
 }
 type CustomPrice = {
 	Id: number;
@@ -98,7 +105,7 @@ type SalesmanDTO =
 		Id: number;
 		FullName: string;
 	}
-type OutOfStock = { ProductId: number, FlavourId: number,Quantity:number; }
+type OutOfStock = { ProductId: number, FlavourId: number, Quantity: number; }
 type BadRequestError =
 	{
 		Code: number;

@@ -12,7 +12,9 @@ type GridContext = {
   getColumnId(name:OutgoingGridColName): string;
   IsOnUpdate: boolean;
 }
-type OutgoingUpdateRow = IOutgoingShipmentUpdateDetail;
+type OutgoingUpdateRow = IOutgoingShipmentUpdateDetail & {
+  UnitPrice:number;
+};
 
 type RowNodeData = OutgoingUpdateRow & {
   Status: OutgoingGridRowCode

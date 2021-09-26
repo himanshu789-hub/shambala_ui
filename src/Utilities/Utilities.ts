@@ -42,7 +42,7 @@ export function getARandomNumber(): number {
 
 export function getQuantityInText(quantity: number, caretSize: number) {
 	const pieces = (quantity) % caretSize;
-	return `${Math.floor(quantity / caretSize)} Caret ${pieces} Piece${pieces <= 1 ? '' : 's'}`;
+	return `${Math.floor(quantity / caretSize)} C ${pieces} P${pieces <= 1 ? '' : 's'}`;
 }
 
 export function postValidSchemeValue(Type: SchemeKey, val: number) {
@@ -144,4 +144,10 @@ export class UniqueValueProvider<T = number>
 	Flush() {
 		this._values.clear();
 	}
+}
+export function getTotalPrice(quantity: number, pricePerCarat: number, PricePerBottle: number, caretSize: number) {
+	const caratPrice = Math.floor(quantity / caretSize) * pricePerCarat;
+	const piecePrice = (quantity % caretSize) * PricePerBottle;
+	return caratPrice + piecePrice;
+
 }

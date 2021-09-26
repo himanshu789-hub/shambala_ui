@@ -35,10 +35,10 @@ const CaretSize = memo(forwardRef<HTMLInputElement, ICaretSizeProps>((props, ref
 			setErrorMessage('Quantity Limit Exceed');
 			IsValid = false;
 		}
-		if (quantity == 0) {
-			setErrorMessage('Cannot Be Zero');
-			IsValid = false;
-		}
+		// if (quantity == 0) {
+		// 	setErrorMessage('Cannot Be Zero');
+		// 	IsValid = false;
+		// }
 		if (IsValid) {
 			setErrorMessage(null);
 		}
@@ -148,7 +148,7 @@ const CaretSize = memo(forwardRef<HTMLInputElement, ICaretSizeProps>((props, ref
 					className="form-control" onBlur={handleBlurEvent}
 					onFocus={handleFocusEvent} />
 			</div>
-			<div className='invalid-feedback pl-1'>${error}</div>
+			<div className='invalid-feedback pl-1'>{error}</div>
 		</div>
 	);
 }));

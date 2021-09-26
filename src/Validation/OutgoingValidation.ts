@@ -8,6 +8,22 @@ export default class OutgoingValidator implements ValidateMemberWithAll<Outgoing
     constructor(outgoing: OutgoingUpdateRow) {
         this.outgoing = outgoing;
     }
+    IsTotalSalePriceValid() {
+        if (!this.outgoing.TotalSalePrice)
+            return new ValidateResultBad("Sale Price Cannot Be Empty");
+        return new ValidationResultOK();
+    }
+    IsNetPriceValid() {
+        if (!this.outgoing.NetPrice)
+            return new ValidateResultBad('Cannot Be Empty');
+        return new ValidationResultOK();
+    }
+    IsUnitPriceValid() {
+        if (!this.outgoing.UnitPrice) {
+            return new ValidateResultBad('Cannot Be Empty');
+        }
+        return new ValidationResultOK();
+    }
     IsSchemeQuantityValid() {
         const schemeQuantity = this.outgoing.SchemeInfo.SchemeQuantity;
         if (Number.isInteger(schemeQuantity))
@@ -15,7 +31,7 @@ export default class OutgoingValidator implements ValidateMemberWithAll<Outgoing
         return new ValidateResultBad("Cannot Be Non-Integer");
     }
     IsAllValid(): IValidateResultBad | IValidateResultOK {
-        return enumerateValidateMemberOnly<OutgoingUpdateRow, OutgoingValidator,OutgoingGridCol>(this);
+        return enumerateValidateMemberOnly<OutgoingUpdateRow, OutgoingValidator, OutgoingGridCol>(this);
     }
     IsTotalSchemePriceValid() {
         const quantity = this.outgoing.SchemeInfo.TotalQuantity;
@@ -29,9 +45,9 @@ export default class OutgoingValidator implements ValidateMemberWithAll<Outgoing
         return new ValidationResultOK();
     }
     IsCustomCaratPricesValid(): IValidateResultOK {
-        if (!this.outgoing.CustomCaratPrices )
+        if (!this.outgoing.CustomCaratPrices)
             return { IsValid: false, Message: "Cannot Left Empty" } as IValidateResultBad;
-        const validator = new CustomPriceCollectionValidation(this.outgoing.CustomCaratPrices, this.outgoing.TotalQuantityShiped);
+        const validator = new CustomPriceCollectionValidation(this.outgoing.CustomCaratPrices.Prices, this.outgoing.TotalQuantityShiped);
         const result = validator.IsAllValid();
         if (!result.IsValid)
             return result;
@@ -67,12 +83,12 @@ export default class OutgoingValidator implements ValidateMemberWithAll<Outgoing
     }
     IsTotalQuantityReturnedValid(): IValidateResultOK | IValidateResultBad {
         const value = this.outgoing.TotalQuantityReturned;
-        if (!value)
+        if (!value && value !== 0)
             return { IsValid: false, Message: "Cannot Be Empty" }
         if (value > this.outgoing.TotalQuantityTaken) {
             return { IsValid: false, Message: "Cannot Be Greater To Taken" }
         }
-        return { IsValid: true };
+        return new ValidationResultOK();
     }
     IsTotalQuantityTakenValid(): IValidateResultOK | IValidateResultBad {
         const value = this.outgoing.TotalQuantityTaken;
@@ -82,14 +98,17 @@ export default class OutgoingValidator implements ValidateMemberWithAll<Outgoing
     }
     IsTotalQuantityShipedValid(): IValidateResultOK | IValidateResultBad {
         const value = this.outgoing.TotalQuantityShiped;
-        if (!value)
+        if (!value && value !== 0)
             return { IsValid: false, Message: "Cannot Be Empty" };
         if (!this.IsTotalQuantityTakenValid().IsValid)
             return { IsValid: false, Message: "Taken Quantity Must Have Value", Code: "Parameter" };
-        if (!this.outgoing.TotalQuantityReturned)
+        if (!this.outgoing.TotalQuantityReturned && this.outgoing.TotalQuantityReturned !== 0)
             return { IsValid: false, Message: "Return Quantity Must Have Value", Code: 'Parameter' };
         if (this.outgoing.TotalQuantityTaken - this.outgoing.TotalQuantityReturned < value)
-            return { IsValid: false, Message: "Cannot Be Greater Than Difference of Taken/Return Quantity", Code: 'Parameter' };
+            return { IsValid: false, Message: "Cannot Be Greater Than Difference of Taken/Return Quantity" };
+        const result = this.IsTotalSalePriceValid();
+        if (!result.IsValid)
+            return result;
         return { IsValid: true };
     }
     IsTotalSchemeQuantityValid(): IValidateResultBad | IValidateResultOK {

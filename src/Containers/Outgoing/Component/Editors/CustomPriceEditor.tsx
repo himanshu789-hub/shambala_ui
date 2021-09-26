@@ -22,7 +22,7 @@ type CustomPriceGridRef = {
     getValue(): CustomPrice[];
 }
 export default forwardRef<ICellEditor, CellEditorParams<OutgoingUpdateRow['CustomCaratPrices']>>((params, ref) => {
-    const [data, setData] = useState<CustomPrice[]>(params.data.Shipment.CustomCaratPrices || []);
+    const [data, setData] = useState<CustomPrice[]>(params.data.Shipment.CustomCaratPrices.Prices || []);
     const isProductIdValid = params.data.Shipment.ProductId !== -1;
     const defaultPrice: number = isProductIdValid ? params.context.getProductDetails(params.data.Shipment.ProductId).PricePerCaret : 0;
     const customGridRef = useRef<CustomPriceGridRef>(null);
@@ -70,7 +70,7 @@ const CustomPriceGrid = forwardRef<CustomPriceGridRef, CustomPriceProps>((props,
     const gridApis = useRef<GridApis>();
     const [quantityMediator] = useState<IQuantityMediatorWrapper>(new QuantityMediatorWrapper(props.initialData.QuantityLimit));
     const list = props.initialData.Data.length ? props.initialData.Data : [{ Id: getARandomNumber(), Price: props.initialData.DefaultPrice, Quantity: 0 }];
-    const [uniqueValueProvider] = useState<UniqueValueProvider>(new UniqueValueProvider(undefined,undefined,props.initialData.Data.map(e=>e.Id)));
+    const [uniqueValueProvider] = useState<UniqueValueProvider>(new UniqueValueProvider(undefined, undefined, props.initialData.Data.map(e => e.Id)));
 
     useImperativeHandle(ref, () => ({
         getValue: function () {
@@ -108,6 +108,7 @@ const CustomPriceGrid = forwardRef<CustomPriceGridRef, CustomPriceProps>((props,
             else
                 addWarn('Please, Fill Any Empty Row');
         }
+        addWarn('Quantitites Sum Reach Equals To Sale');
     }
 
     const deleteAChild = (Id: number) => {
@@ -178,11 +179,11 @@ const CustomPriceGrid = forwardRef<CustomPriceGridRef, CustomPriceProps>((props,
         // },
         defaultColDef: defaultColDef
     });
-      useEffect(()=>{
-         for(let element of list){
-             quantityMediator.Subscribe(element.Id,element.Quantity);
-         }
-      },[])  
+    useEffect(() => {
+        for (let element of list) {
+            quantityMediator.Subscribe(element.Id, element.Quantity);
+        }
+    }, [])
     const onGridReady = function (event: GridReadyEvent) {
         gridApis.current = {
             columnApi: event.columnApi,
