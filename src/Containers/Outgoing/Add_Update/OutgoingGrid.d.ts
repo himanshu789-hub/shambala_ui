@@ -1,6 +1,6 @@
-import Observer from '../../Utilities/Observer';
+import Observer from 'Utilities/Observer';
 import * as GridParams from './../../Components/AgGridComponent/Grid';
-import { CustomPrice, IOutgoingShipmentUpdateDetail, Product, SchemeInfo } from './../../Types/DTO';
+import { CustomPrice, IOutgoingShipmentUpdateDetail, Product, SchemeInfo } from './../../../Types/DTO.d';
 import { CaretSizeValue, CaretSizeValueOldAndNewValue } from './../../Components/AgGridComponent/Editors/CaretSizeEditor';
 import { OutgoingGridRowCode, OutgoingStatusErrorCode } from 'Enums/Enum';
 
@@ -12,6 +12,7 @@ type GridContext = {
   getColumnId(name:OutgoingGridColName): string;
   IsOnUpdate: boolean;
 }
+
 type OutgoingUpdateRow = IOutgoingShipmentUpdateDetail & {
   UnitPrice:number;
 };

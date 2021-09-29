@@ -1,5 +1,5 @@
 import { enumerateValidateMemberOnly, ValidateResultBad, ValidationResultOK } from './Validation';
-import { OutgoingUpdateRow, OutgoingGridCol } from 'Containers/Outgoing/OutgoingGrid.d';
+import { OutgoingGridCol,OutgoingUpdateRow } from 'Containers/Outgoing/Add_Update/OutgoingGrid.d';
 import CustomPriceCollectionValidation, { CustomPriceValidation } from './CustomPriceCollectionValidation';
 
 export default class OutgoingValidator implements ValidateMemberWithAll<OutgoingGridCol> {
@@ -8,6 +8,7 @@ export default class OutgoingValidator implements ValidateMemberWithAll<Outgoing
     constructor(outgoing: OutgoingUpdateRow) {
         this.outgoing = outgoing;
     }
+    
     IsTotalSalePriceValid() {
         if (!this.outgoing.TotalSalePrice)
             return new ValidateResultBad("Sale Price Cannot Be Empty");

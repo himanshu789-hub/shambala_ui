@@ -35,7 +35,21 @@ interface OutgoingShipment {
 	DateCreated: string;
 	OutgoingShipmentDetails: IOutgoingShipmentUpdateDetail[];
 };
-
+type OutgoingShipmentView = {
+	Id: number;
+	Salesman: SalesmanDTO;
+	Status: number;
+	OutgoingDetails: IAggregateDetailDTO[];
+	TotalSchemePrice: number;
+	TotalSaleQuantity: number;
+	TotalSalePrice: number;
+	TotalNetPrice: number;
+	TotalCustomCaratQuantity: number;
+}
+interface IAggregateDetailDTO extends IOutgoingShipmentUpdateDetail {
+	CaretSize: number;
+	UnitPrice: number;
+}
 interface OutgoingShipmentPost {
 	SalesmanId: number;
 	DateCreated: string;
@@ -76,6 +90,7 @@ interface IOutgoingShipmentUpdateDetail extends IOutgoingShipmentAddDetail {
 	NetPrice: number;
 	TotalSalePrice: number;
 }
+
 type CustomPrice = {
 	Id: number;
 	Quantity: number;

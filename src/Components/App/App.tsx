@@ -2,7 +2,7 @@ import React from 'react';
 import Nav from './Components/Nav/Nav';
 import Home from './Components/Home/Home';
 import IncoingShipment from '../../Components/IncomingShipment/IncomingShipment';
-import { Route, Switch,  useRouteMatch } from 'react-router-dom';
+import { Route, Switch, useRouteMatch } from 'react-router-dom';
 import Invoice from 'Components/Invoice/Invoice';
 import MessageModal from 'Components/MessageModal/MessageModal';
 import SearchProduct from 'Containers/SearchProduct/SearchProduct';
@@ -10,7 +10,7 @@ import Shop from 'Components/Shop/Shop';
 import Scheme from 'Components/Scheme/Scheme';
 import Salesman from 'Components/Salesman/Salesman';
 import Alert from 'Components/Alert/Alert';
-import OutgoingGrid from 'Containers/Outgoing/OutgoingGrid';
+import Outgoing from 'Components/Outgoing/Outgoing';
 
 
 function MessageRoute() {
@@ -26,7 +26,7 @@ export default class App extends React.Component {
 	render() {
 		return (
 			<React.Fragment>
-				<Alert/>
+				<Alert />
 				<Nav />
 				<Route path='/' exact>
 					<Home />
@@ -34,8 +34,9 @@ export default class App extends React.Component {
 				<Route path='/incoming'>
 					<IncoingShipment />
 				</Route>
-				<Route path='/outgoing/:id?' render={(props)=><OutgoingGrid {...props}/>}/>
-		
+				<Route path='/outgoing'>
+					<Outgoing />
+				</Route>
 				<Route path='/invoice'>
 					<Invoice />
 				</Route>
@@ -54,8 +55,8 @@ export default class App extends React.Component {
 				<Route path="/salesman">
 					<Salesman />
 				</Route>
-				
-				
+
+
 			</React.Fragment>
 		);
 	}

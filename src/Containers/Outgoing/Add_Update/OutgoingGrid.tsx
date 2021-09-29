@@ -8,16 +8,16 @@ import {
     CellClassParams, ToolTipRendererParams, RowNodeData, ValueFormatterParams, OutgoingGridColName, OutgoingGridCol
 } from './OutgoingGrid.d';
 import { CustomCaratPrice, CustomPrice, Element, IOutgoingShipmentAddDetail, IOutgoingShipmentUpdateDetail, OutOfStock, PostOutgoingShipment, Product, ResutModel, SchemeInfo, ShipmentDTO } from "Types/DTO";
-import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer, QuantityWithPriceCellRenderer, RowStyleSpecifier } from "./Component/Renderers/Renderers";
+import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer, QuantityWithPriceCellRenderer, RowStyleSpecifier } from "./../Components/Renderers/Renderers";
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { GridSelectEditor } from "Components/AgGridComponent/Editors/SelectWithAriaEditor";
 import { getARandomNumber, getTotalPrice, KeyCode, Parser, UniqueValueProvider } from "Utilities/Utilities";
 import { CaretSizeEditor, CaretSizeNewValue, CaretSizeValueOldAndNewValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
-import CustomPriceEditor from "./Component/Editors/CustomPriceEditor";
+import CustomPriceEditor from "./../Components/Editors/CustomPriceEditor";
 import CellClassRuleSpecifier from "Components/AgGridComponent/StyleSpeficier/ShipmentCellStyle";
 import OutgoingValidator from 'Validation/OutgoingValidation';
-import QuantityMediatorWrapper from '../../Utilities/QuatityMediatorWrapper';
+import QuantityMediatorWrapper from '../../../Utilities/QuatityMediatorWrapper';
 import MediatorSubject from 'Utilities/MediatorSubject';
 import config from 'config.json';
 import IProductService from 'Contracts/services/IProductService';
@@ -32,10 +32,10 @@ import { AllCommunityModules, SuppressKeyboardEventParams } from '@ag-grid-commu
 import Action from "Components/Action/Action";
 import { DeterminantsNotSetError, UnknownSubscription, UnIdentifyComponentError } from 'Errors/Error';
 import ProductService from 'Services/ProductService';
-import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
-import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
 import { Heading } from "Components/Miscellaneous/Miscellaneous";
 import { AxiosError } from "axios";
+import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
+import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
 
 
 interface OutgoingGridProps extends RouteComponentProps<{ id?: string }> {
@@ -117,7 +117,7 @@ const getColumnId = function (name: OutgoingGridColName) {
         case 'UnitPrice':
             columnId = 11; break;
         case 'NetPrice':
-            columnIndex: 12; break;
+            columnId = 12; break;
     }
     return columnId + '';
 }
@@ -172,7 +172,7 @@ const commonColDefs: ColDef[] = [
             }
 
         },
-        cellEditorFramework: GridSelectEditor<OutgoingGridRowValue, any>((e) => e.Observer.GetFlavours().map(e => ({ label: e.Title, value: e.Id })), (e) => e.Shipment.ProductId !== -1),
+        cellEditorFramework: GridSelectEditor<OutgoingGridRowValue, any>((e) => e.Observer.GetFlavours().map( (e) => ({ label: e.Title, value: e.Id })), (e) => e.Shipment.ProductId !== -1),
         editable: (params: EditableCallbackParams) => params.data.Shipment.ProductId != -1,
         colId: getColumnId('FlavourId')
     },
@@ -541,11 +541,12 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
             </div>);
     }
     handleError = (error: AxiosError) => {
-        if (error.response?.status === 422) {
+        if (error.response?.status === 400 && error.response.data.Code) {
             const { GridOptions: { api } } = this.state;
             const dataArray = [] as RowNodeData[];
             api?.forEachNode((node) => dataArray.push(node.data));
             const model = (error.response.data as ResutModel);
+
             const content = model.Content as Element[];
             switch (model.Code) {
                 case OutgoingStatusErrorCode.CUSTOM_CARAT_PRICE_NOT_VALID:
@@ -577,6 +578,9 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                     alert('Product Shiped Value Not Valid.\nPlease, Contact Administration');
                     break;
             }
+        }
+        else if (error.response?.status == 412) {
+            addDanger('Another User Already Changed The Shipment Details.\nPlease, Refresh');
         }
         else {
             addDanger('Error Sending Data');

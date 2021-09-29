@@ -1,6 +1,6 @@
 import { IQuantityMediatorWrapper } from '../../../../Utilities/QuatityMediatorWrapper';
-import { GridCellValueChangeEvent, GridEditorParams, GridGetterParams, GridRendererParams, GridRowDataTransaction, GridSetterParams, GridValueParserParams, GridCellClassParams } from '../../../../Components/AgGridComponent/Grid.d';
-import { CustomPrice } from './../../../../Types/DTO.d';
+import { GridCellValueChangeEvent, GridEditorParams, GridGetterParams, GridRendererParams, GridRowDataTransaction, GridSetterParams, GridValueParserParams, GridCellClassParams } from '../../../../Components/AgGridComponent/Grid';
+import { CustomPrice } from '../../../../Types/DTO';
 
 type CustomPriceRowData = CustomPrice;
 type GridData = {
