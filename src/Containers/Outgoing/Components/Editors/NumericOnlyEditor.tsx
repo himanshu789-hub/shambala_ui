@@ -1,9 +1,8 @@
+import { useRef,useImperativeHandle,forwardRef } from "react";
 import { ICellEditor, ICellEditorParams } from "@ag-grid-community/all-modules";
-import { useRef } from "react";
-import { useImperativeHandle } from "react";
-import { forwardRef } from "react";
+import { CellEditorParams,OutgoingUpdateRow } from "Containers/Outgoing/Add_Update/OutgoingGrid.d";
 
-export default forwardRef<ICellEditor, ICellEditorParams>((props, ref) => {
+export const NumericOnlyEditor =  forwardRef<ICellEditor, ICellEditorParams>((props, ref) => {
     const inputRef = useRef<HTMLInputElement>(null);
     useImperativeHandle(ref, () => ({
         getValue() {
@@ -15,4 +14,17 @@ export default forwardRef<ICellEditor, ICellEditorParams>((props, ref) => {
     }))
     setTimeout(() => (inputRef.current?.focus()));
     return <input ref={inputRef} pattern="^[0-9]+(\.[0-9]{1,2})?$" defaultValue={props.value} />
+})
+export const SchemeQuantityEditor = forwardRef<ICellEditor,CellEditorParams<OutgoingUpdateRow['SchemeInfo']>>((props,ref)=>{
+    const inputRef = useRef<HTMLInputElement>(null);
+    useImperativeHandle(ref,()=>({
+        getValue(){
+            const value = inputRef.current?.value;
+            if (!value)
+                return 0;
+            return Number.parseInt(value);
+        }
+    }));
+    setTimeout(() => (inputRef.current?.focus()));
+    return <input ref={inputRef} type="number" defaultValue={props.value.SchemeQuantity} />
 })

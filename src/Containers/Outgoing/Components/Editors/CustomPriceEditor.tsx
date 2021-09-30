@@ -2,7 +2,7 @@ import { ColDef, ColumnApi, GridApi, GridOptions, GridReadyEvent, ICellEditor } 
 import { forwardRef, useImperativeHandle, useEffect, useState, useRef } from "react"
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { AgGridReact } from "@ag-grid-community/react";
-import NumericOnlyEditor from "./NumericOnlyEditor";
+import {NumericOnlyEditor} from "./NumericOnlyEditor";
 import ActionCellRenderer, { ActionCellParams } from "Components/AgGridComponent/Renderer/ActionCellRender";
 import { getARandomNumber, UniqueValueProvider } from "Utilities/Utilities";
 import { CaretSizeEditor, CaretSizeValue, CaretSizeValueOldAndNewValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";

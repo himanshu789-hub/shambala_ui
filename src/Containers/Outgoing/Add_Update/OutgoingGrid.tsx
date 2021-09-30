@@ -37,7 +37,7 @@ import { AxiosError } from "axios";
 import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
 import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
 import './OutgoingGrid.css';
-import NumericOnlyEditor from "../Components/Editors/NumericOnlyEditor";
+import { NumericOnlyEditor, SchemeQuantityEditor } from "../Components/Editors/NumericOnlyEditor";
 
 
 interface OutgoingGridProps extends RouteComponentProps<{ id?: string }> {
@@ -324,26 +324,31 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
         children: [
             {
                 headerName: 'Quantity',
-                valueGetter: (params: ValueGetterParams) => params.data.Shipment.SchemeInfo.SchemeQuantity,
+                valueGetter: (params: ValueGetterParams) => params.data.Shipment.SchemeInfo,
                 tooltipValueGetter: ToolTipValueGetter('TotalSchemeQuantity'),
                 colId: getColumnId('TotalSchemeQuantity'),
                 valueSetter: function (params: ValueSetterParams<OutgoingUpdateRow['SchemeInfo']['SchemeQuantity']>) {
                     if (!Number.isInteger(params.newValue))
                         return false;
                     const totalCaret = Math.floor(params.data.Shipment.TotalQuantityShiped / params.data.Shipment.CaretSize);
-                    params.data.Shipment.SchemeInfo.TotalQuantity = params.newValue * totalCaret;
-                    params.data.Shipment.SchemeInfo.SchemeQuantity = params.newValue;
+                    params.data.Shipment.SchemeInfo = {
+                        SchemeQuantity: params.newValue,
+                        TotalQuantity: params.newValue * totalCaret,
+                        TotalSchemePrice: 0
+                    };
+                    // params.data.Shipment.SchemeInfo.TotalQuantity = params.newValue * totalCaret;
+                    // params.data.Shipment.SchemeInfo.SchemeQuantity = params.newValue;
                     return true;
                 },
-                onCellValueChanged(params: CellValueChangedEvent<number>) {
+                onCellValueChanged(params: CellValueChangedEvent<SchemeInfo>) {
                     const schemeProduct = params.context.getProductDetails(config.SchemeProductId);
-                    const totalBottle = params.newValue;
+                    const totalBottle = params.newValue.TotalQuantity;
                     params.node.setDataValue(params.context.getColumnId('TotalSchemePrice'), schemeProduct.PricePerBottle * totalBottle);
                 },
-                cellRenderer: function (params: CellRendererParams<number>) {
-                    debugger;
-                    return params.data.Shipment.SchemeInfo.TotalQuantity+'';
-                }
+                cellRenderer: function (params: CellRendererParams<SchemeInfo>) {
+                    return params.value.TotalQuantity + '';
+                }, 
+                cellEditorFramework: SchemeQuantityEditor
             },
             {
                 headerName: 'Price',
@@ -353,6 +358,9 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
                 valueSetter: function (params: ValueSetterParams<OutgoingUpdateRow['SchemeInfo']['TotalSchemePrice']>) {
                     params.data.Shipment.SchemeInfo.TotalSchemePrice = params.newValue;
                     return true;
+                },
+                valueFormatter: function (params: ValueFormatterParams<number>) {
+                    return getPriceInText(params.value);
                 }
             }
         ],
@@ -366,11 +374,11 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
             params.data.Shipment.CustomCaratPrices.Prices = params.newValue;
             params.data.Shipment.CustomCaratPrices.TotalQuantity = 0;
             const product = params.context.getProductDetails(params.data.Shipment.ProductId);
-           params.data.Shipment.CustomCaratPrices.TotalPrice = 0;
+            params.data.Shipment.CustomCaratPrices.TotalPrice = 0;
             for (const price of params.newValue) {
                 params.data.Shipment.CustomCaratPrices.TotalQuantity += price.Quantity;
-                params.data.Shipment.CustomCaratPrices.TotalPrice += 
-                getTotalPrice(params.data.Shipment.CustomCaratPrices.TotalQuantity, price.PricePerCarat, product.PricePerCaret/product.CaretSize, product.CaretSize)
+                params.data.Shipment.CustomCaratPrices.TotalPrice +=
+                    getTotalPrice(params.data.Shipment.CustomCaratPrices.TotalQuantity, price.PricePerCarat, product.PricePerCaret / product.CaretSize, product.CaretSize)
             }
             return true;
         },
@@ -401,7 +409,10 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
         valueGetter: function (params: ValueGetterParams) {
             return params.data.Shipment.NetPrice;
         },
-        colId: getColumnId('NetPrice')!
+        colId: getColumnId('NetPrice')!,
+        valueFormatter: function (params: ValueFormatterParams<number>) {
+            return getPriceInText(params.value);
+        }
     }
 ]
 const getActionColDef = function (cellParams: ActionCellParams<string>): ColDef {

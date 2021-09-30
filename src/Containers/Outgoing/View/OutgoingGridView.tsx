@@ -142,22 +142,24 @@ export default function OutgoingGridView(props: OutgoingGridViewProps) {
     const [data, setData] = useState<OutgoingShipmentView>();
     const [apiSatus, setApiStatus] = useState<ApiStatusInfo>({ Status: CallStatus.EMPTY });
     const [gridApi, setGridApi] = useState<GridApi>();
-    const isIDValid = !IsValidInteger(id);
+    const isIDValid = IsValidInteger(id);
     function onGridReady(params: GridReadyEvent) {
         setGridApi((api) => params.api);
     }
 
     useEffect(() => {
-        if (isIDValid)
+        if (isIDValid) {
+            setApiStatus({Status:CallStatus.LOADING});
             new OutgoingService().GetDetails(Number.parseInt(id)).then(res => {
                 setData(res.data);
                 setApiStatus({ Status: CallStatus.LOADED });
             }).catch(e => {
                 setApiStatus({ Status: CallStatus.ERROR });
             });
+        }
     }, []);
     useEffect(() => {
-        if (isIDValid) {
+        if (isIDValid && data) {
             const rowData: PinnedRowData[] = [{
                 FlavourId: null,
                 ProductId: null,
@@ -174,7 +176,7 @@ export default function OutgoingGridView(props: OutgoingGridViewProps) {
     }, [data])
 
     if (!isIDValid)
-        return <div className="alert alert-warning" role="alert">Id Provided Not Valid</div>;
+        return <div className="alert" role="alert">Id Provided Not Valid</div>;
 
     return (<Loader Status={apiSatus.Status} Message={apiSatus.Message}>
         <div>
@@ -189,12 +191,12 @@ export default function OutgoingGridView(props: OutgoingGridViewProps) {
                     <div className="input-group-prepend">
                         <div className="input-group-text">Shipment Status</div>
                     </div>
-                    <input type="text" className="form-control" value={Object.entries(OutgoingStatus).find((k, v) => v == data?.Status)![1]} />
+                    <input type="text" className="form-control" value={(Object.entries(OutgoingStatus).find((k, v) => v == data?.Status) || [0, 0])![1]} />
                 </div>
             </div>
         </div >
-        <div className="ag-theme-alphine" style={{width:'100vw',height:'751px',overflow:'visible'}}>
-            <AgGridReact gridOptions={options} modules={AllCommunityModules} rowData={data?.OutgoingDetails}></AgGridReact>
+        <div className="ag-theme-alphine" style={{ width: '100vw', height: '751px', overflow: 'visible' }}>
+            <AgGridReact gridOptions={options} onGridReady={onGridReady} modules={AllCommunityModules} rowData={data?.OutgoingDetails}></AgGridReact>
         </div>
     </Loader>);
 }
