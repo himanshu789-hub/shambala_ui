@@ -41,10 +41,10 @@ type OutgoingShipmentView = {
 	Status: number;
 	OutgoingDetails: IAggregateDetailDTO[];
 	TotalSchemePrice: number;
-	TotalSaleQuantity: number;
+	TotalSchemeQuantity:number;
 	TotalSalePrice: number;
 	TotalNetPrice: number;
-	TotalCustomCaratQuantity: number;
+	CustomCaratTotalPrice:number;
 }
 interface IAggregateDetailDTO extends IOutgoingShipmentUpdateDetail {
 	CaretSize: number;

@@ -1,5 +1,5 @@
 import Observer from 'Utilities/Observer';
-import * as GridParams from './../../Components/AgGridComponent/Grid';
+import * as GridParams from 'Components/AgGridComponent/Grid.d';
 import { CustomPrice, IOutgoingShipmentUpdateDetail, Product, SchemeInfo } from './../../../Types/DTO.d';
 import { CaretSizeValue, CaretSizeValueOldAndNewValue } from './../../Components/AgGridComponent/Editors/CaretSizeEditor';
 import { OutgoingGridRowCode, OutgoingStatusErrorCode } from 'Enums/Enum';

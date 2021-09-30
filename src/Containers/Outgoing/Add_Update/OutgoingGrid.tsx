@@ -36,6 +36,7 @@ import { Heading } from "Components/Miscellaneous/Miscellaneous";
 import { AxiosError } from "axios";
 import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
 import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
+import './OutgoingGrid.css';
 
 
 interface OutgoingGridProps extends RouteComponentProps<{ id?: string }> {
@@ -172,7 +173,7 @@ const commonColDefs: ColDef[] = [
             }
 
         },
-        cellEditorFramework: GridSelectEditor<OutgoingGridRowValue, any>((e) => e.Observer.GetFlavours().map( (e) => ({ label: e.Title, value: e.Id })), (e) => e.Shipment.ProductId !== -1),
+        cellEditorFramework: GridSelectEditor<OutgoingGridRowValue, any>((e) => e.Observer.GetFlavours().map((e) => ({ label: e.Title, value: e.Id })), (e) => e.Shipment.ProductId !== -1),
         editable: (params: EditableCallbackParams) => params.data.Shipment.ProductId != -1,
         colId: getColumnId('FlavourId')
     },
@@ -333,7 +334,8 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
                 }
             }
         ],
-        marryChildren: true
+        marryChildren: true,
+        headerClass: "top-header"
     },
     {
         headerName: 'Custom Price',
@@ -510,7 +512,8 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
             const outgoingData = this.state.OutgoingData;
             this.outgoingService
                 .UpdateOutgoingShipment({ DateCreated: new Date().toISOString(), SalesmanId: outgoingData.SalesmanId, Id: outgoingData.Id, OutgoingShipmentDetails: details })
-                .then(() => this.props.history.push({ pathname: "/message/pass", search: "?message=Updated SuccessFully" }), (e) => this.handleError(e))
+                .then(() => this.props.history.push({ pathname: "/message/pass", search: `?message=Updated SuccessFully&redirect=/outgoing/view/${outgoingData.Id}` }),
+                    (e) => this.handleError(e))
         }
     }
 

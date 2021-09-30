@@ -1,18 +1,19 @@
 import { AgGridReact } from "@ag-grid-community/react";
+import { GridOptions } from '@ag-grid-community/all-modules';
 import { RouteComponentProps } from "react-router";
 import { getQuantityInText, IsValidInteger } from "Utilities/Utilities";
-import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
-import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
 import { useEffect, useState } from "react";
 import { CustomCaratPrice, IAggregateDetailDTO, IOutgoingShipmentUpdateDetail, OutgoingShipmentView, SchemeInfo } from "Types/DTO";
 import Loader, { ApiStatusInfo, CallStatus } from "Components/Loader/Loader";
 import { OutgoingStatus } from "Enums/Enum";
-import { GridApi, GridOptions, GridReadyEvent } from "@ag-grid-community/core";
+import { GridApi, GridReadyEvent, ICellRendererParams } from "@ag-grid-community/core";
 import { getColumnName } from "../Helpher";
 import { QuantityWithPriceCellRenderer, showQuantityAndPrice } from "../Components/Renderers/Renderers";
-import { GridRendererParams, GridValueFormatterParams, GridValueParserParams } from './../../../Components/AgGridComponent/Grid.d';
+import { GridRendererParams, GridValueFormatterParams, GridValueParserParams, } from './../../../Components/AgGridComponent/Grid.d';
 import OutgoingService from "Services/OutgoingShipmentService";
 import { AllCommunityModules } from "@ag-grid-community/all-modules";
+import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
+import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
 
 type DataT = IAggregateDetailDTO;
 type Ctx = any;
@@ -20,7 +21,42 @@ type CellRendererParams<V> = GridRendererParams<V, DataT, Ctx>;
 function field(name: keyof IAggregateDetailDTO) {
     return name;
 }
+function QuantityCellRenderer(params: CellRendererParams<number>) {
+    return getQuantityInText(params.value, params.data.CaretSize);
+}
+type TotalCellData = {
+    Quantity: number;
+    Price: number;
+}
+type PinnedRowData = {
+    ProductId: null,
+    FlavourId: null,
+    UnitPrice: null,
+    TotalQuantityTaken: null;
+    TotalQuantityReturned: null;
+    TotalQuantityShiped: number;
+    SchemeInfo: TotalCellData;
+    CustomCaratPrices: number;
+    NetPrice: number;
+}
 const options: GridOptions = {
+    frameworkComponents: {
+        schemeRenderer: function (params: CellRendererParams<SchemeInfo>) {
+            return showQuantityAndPrice(params.data.SchemeInfo.TotalQuantity + '', params.data.SchemeInfo.TotalSchemePrice);
+        },
+        schemeTotalRenderer: function (params: CellRendererParams<TotalCellData>) {
+            return showQuantityAndPrice(params.value.Quantity + '', params.value.Price);
+        },
+        customPriceRenderer: function (params: CellRendererParams<CustomCaratPrice>) {
+            if (params.value.Prices.length == 0)
+                return "N/A";
+            return params.value.Prices.map(e => `${getQuantityInText(e.Quantity, params.data.CaretSize)}->${e.PricePerCarat}`).join('+').concat("=", `${getQuantityInText(params.value.TotalQuantity, params.data.CaretSize)}->${params.value.TotalPrice}`);
+        },
+        saleRenderer: QuantityWithPriceCellRenderer((e: CellRendererParams<number>) => e.value, (e: CellRendererParams<number>) => e.data.TotalSalePrice, (e: CellRendererParams<number>) => e.data.CaretSize),
+        priceRenderer: function (params: CellRendererParams<any>) {
+            return '\u20B9' + params.value;
+        }
+    },
     defaultColDef: {
         editable: false,
     },
@@ -39,35 +75,58 @@ const options: GridOptions = {
         },
         {
             headerName: getColumnName('TotalQuantityTaken'),
-            field: field('TotalQuantityTaken')
+            field: field('TotalQuantityTaken'),
+            cellRenderer: QuantityCellRenderer
         },
         {
             headerName: getColumnName('TotalQuantityReturned'),
-            field: field('TotalQuantityReturned')
+            field: field('TotalQuantityReturned'),
+            cellRenderer: QuantityCellRenderer
         },
         {
             headerName: getColumnName('TotalQuantityShiped'),
             field: field('TotalQuantityShiped'),
-            cellRendererFramework: QuantityWithPriceCellRenderer((e: CellRendererParams<number>) => e.value, (e: CellRendererParams<number>) => e.data.TotalSalePrice, (e: CellRendererParams<number>) => e.data.CaretSize)
+            cellRendererSelector: function (params: ICellRendererParams) {
+                if (params.node.rowPinned) {
+                    return {
+                        component: 'priceRenderer'
+                    }
+                }
+                return {
+                    component: 'saleRenderer'
+                }
+            }
         },
         {
             headerName: "Scheme",
             field: field('SchemeInfo'),
-            cellRendererFramework: function (params: CellRendererParams<SchemeInfo>) {
-                return showQuantityAndPrice(params.data.SchemeInfo.TotalQuantity + '', params.data.SchemeInfo.TotalSchemePrice);
+            cellRendererSelector: function (params) {
+                if (params.node.rowPinned) {
+                    return {
+                        component: 'schemeTotalRenderer'
+                    }
+                }
+                return {
+                    component: 'schemeRenderer'
+                }
             }
         },
         {
             headerName: "Custom Carat",
             field: field('CustomCaratPrices'),
-            cellRendererFramework: function (params: CellRendererParams<CustomCaratPrice>) {
-                if (params.value.Prices.length == 0)
-                    return "N/A";
-                return params.value.Prices.map(e => `${getQuantityInText(e.Quantity, params.data.CaretSize)}->${e.PricePerCarat}`).join('+').concat("=", `${getQuantityInText(params.value.TotalQuantity, params.data.CaretSize)}->${params.value.TotalPrice}`);
+            cellRendererSelector: function (params) {
+                if (params.node.rowPinned) {
+                    return {
+                        component: undefined
+                    }
+                }
+                return {
+                    component: 'customPriceRenderer'
+                }
             },
         },
         {
-            headerName: 'New Price',
+            headerName: 'Net Price',
             field: field('NetPrice'),
             valueFormatter: function (params: GridValueFormatterParams<number, DataT, Ctx>) {
                 return "\u20B9" + params.value;
@@ -97,8 +156,18 @@ export default function OutgoingGridView(props: OutgoingGridViewProps) {
         });
     }, []);
     useEffect(() => {
-        const rowData = [null,null,null,null,"Total",<span className="bg-warn">data?.TotalSaleQuantity</span>];
-        gridApi?.setPinnedBottomRowData([]);
+        const rowData: PinnedRowData[] = [{
+            FlavourId: null,
+            ProductId: null,
+            UnitPrice: null,
+            TotalQuantityTaken: null,
+            TotalQuantityReturned: null,
+            TotalQuantityShiped: data!.TotalSalePrice,
+            SchemeInfo: { Price: data!.TotalSchemePrice, Quantity: data!.TotalSchemeQuantity },
+            CustomCaratPrices: data!.CustomCaratTotalPrice,
+            NetPrice: data!.TotalNetPrice
+        }];
+        gridApi?.setPinnedBottomRowData(rowData);
     }, [data])
     return (<Loader Status={apiSatus.Status} Message={apiSatus.Message}>
         <div>
