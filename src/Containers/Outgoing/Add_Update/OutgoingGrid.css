@@ -1,5 +1,9 @@
 .top-header
 {
-    text-align: center;
+    text-align: center !important;
     background: grey;
+}
+.line-height
+{
+    line-height: 23px !important;
 }

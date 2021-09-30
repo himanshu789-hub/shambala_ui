@@ -49,6 +49,7 @@ const SelectWithAria = forwardRef<HTMLInputElement, SelectWithAriaProps & ReactS
     const onMouseEvent = function (e: React.MouseEvent<HTMLDivElement>) {
         const index = e.currentTarget.dataset.index;
         setIndex(Number.parseInt(index!));
+    
     }
     const makeSelect = function () {
         const value = elements[index].value;

@@ -42,7 +42,7 @@ export default class CustomPriceCollectionValidation implements ValidateArray<Cu
             return result;
         const quantityMediator = new QuantityMediatorWrapper(this.limit);
         for (const customPrice of this.arr) {
-            if (customPrice.Quantity < quantityMediator.GetQuantityLimit()) {
+            if (customPrice.Quantity <= quantityMediator.GetQuantityLimit()) {
                 quantityMediator.Subscribe(getARandomNumber(), customPrice.Quantity);
             }
             else

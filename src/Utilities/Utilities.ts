@@ -42,9 +42,11 @@ export function getARandomNumber(): number {
 
 export function getQuantityInText(quantity: number, caretSize: number) {
 	const pieces = (quantity) % caretSize;
-	return `${Math.floor(quantity / caretSize)} C ${pieces} P${pieces <= 1 ? '' : 's'}`;
+	return `${Math.floor(quantity / caretSize)}/${pieces}${pieces <= 1 ? '' : ''}`;
 }
-
+export function getPriceInText(price:number){
+	return '\u20B9 ' + price;
+}
 export function postValidSchemeValue(Type: SchemeKey, val: number) {
 	if (Type === SchemeKey.PERCENTAGE)
 		return val / 100;
@@ -149,5 +151,4 @@ export function getTotalPrice(quantity: number, pricePerCarat: number, PricePerB
 	const caratPrice = Math.floor(quantity / caretSize) * pricePerCarat;
 	const piecePrice = (quantity % caretSize) * PricePerBottle;
 	return caratPrice + piecePrice;
-
 }

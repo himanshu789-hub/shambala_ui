@@ -2,6 +2,11 @@
 	margin: 0;
 	padding: 0;
 }
+.error-text:not(:empty)::before
+{
+content: '**';
+color:red;
+}
 .table-wrapper th,
 td {
 	border: 1px solid #7080906e;

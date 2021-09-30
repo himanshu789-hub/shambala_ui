@@ -104,6 +104,7 @@ const CustomPriceGrid = forwardRef<CustomPriceGridRef, CustomPriceProps>((props,
                     add: [newPrice]
                 }
                 api?.applyTransaction(transaction);
+                api.refreshCells({columns:[getColId('Id')!],force:true})
             }
             else
                 addWarn('Please, Fill Any Empty Row');
@@ -117,6 +118,7 @@ const CustomPriceGrid = forwardRef<CustomPriceGridRef, CustomPriceProps>((props,
             remove: [{ Id: Id + '' }]
         }
         gridApis.current?.gridApi?.applyTransaction(transaction);
+        gridApis.current?.gridApi?.refreshCells({columns:[getColId('Id')!],force:true})
     };
 
     const [options] = useState<GridOptions>({

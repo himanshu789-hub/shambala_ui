@@ -48,7 +48,7 @@ export default function ActionCellRenderer<T>(props: ActionCellRendererParams<T>
         else {
             props.deleteAChild(props.value);
         }
-        props.api.refreshCells({ force: true, columns: [props.column!] });
+        props.api.setFocusedCell(props.rowIndex, props.column!);
     }
     let minusButton = <Button className="btn-danger btn-sm" handleClick={() => handleClick('del')} ref={minusRef}><i className="fa fa-minus"></i></Button>;
     let plusButton = <Button handleClick={() => handleClick('add')} className="btn-warn ml-1 btn-sm" ref={plusRef} ><i className="fa fa-plus"></i></Button>

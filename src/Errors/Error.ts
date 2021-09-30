@@ -47,5 +47,7 @@ export class QuantityLimitExceeded extends Error {
     }
 }
 export class DeterminantsNotSetError extends Error {
-
+    constructor() {
+        super("Determinants Not Set");
+    }
 }

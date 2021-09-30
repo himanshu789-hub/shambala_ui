@@ -2,7 +2,7 @@ import { CellClassParams, ICellRendererParams } from '@ag-grid-community/core';
 import { SelectWithAriaRenderer } from 'Components/AgGridComponent/Renderer/SelectWithAriaRenderer';
 import { OutgoingGridRowCode } from 'Enums/Enum';
 import { CSSProperties } from 'react';
-import { getQuantityInText } from 'Utilities/Utilities';
+import { getPriceInText, getQuantityInText } from 'Utilities/Utilities';
 import { CellRendererParams, RowClassParams } from '../../Add_Update/OutgoingGrid.d';
 import './../../../../Components/AgGridComponent/StyleSpeficier/StyleSpecifier.css';
 import {IOutgoingShipmentAddDetail,IOutgoingShipmentUpdateDetail} from 'Types/DTO.d';
@@ -27,7 +27,7 @@ export const QuantityWithPriceCellRenderer = (getQuantityFromParams: (params: IC
 export function showQuantityAndPrice(quantity: string, price: number) {
     return <span className="d-inline-flex flex-column jutify-content-center align-items-center">
         <span>{quantity}</span>
-        <span>{price}</span>
+        <span>{getPriceInText(price)}</span>
     </span>
 }
 

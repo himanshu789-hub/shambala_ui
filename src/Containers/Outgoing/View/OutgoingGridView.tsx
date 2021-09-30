@@ -1,7 +1,7 @@
 import { AgGridReact } from "@ag-grid-community/react";
 import { GridOptions } from '@ag-grid-community/all-modules';
 import { RouteComponentProps } from "react-router";
-import { getQuantityInText, IsValidInteger } from "Utilities/Utilities";
+import { getPriceInText, getQuantityInText, IsValidInteger } from "Utilities/Utilities";
 import { useEffect, useState } from "react";
 import { CustomCaratPrice, IAggregateDetailDTO, IOutgoingShipmentUpdateDetail, OutgoingShipmentView, SchemeInfo } from "Types/DTO";
 import Loader, { ApiStatusInfo, CallStatus } from "Components/Loader/Loader";
@@ -54,7 +54,7 @@ const options: GridOptions = {
         },
         saleRenderer: QuantityWithPriceCellRenderer((e: CellRendererParams<number>) => e.value, (e: CellRendererParams<number>) => e.data.TotalSalePrice, (e: CellRendererParams<number>) => e.data.CaretSize),
         priceRenderer: function (params: CellRendererParams<any>) {
-            return '\u20B9' + params.value;
+            return getPriceInText(params.value);
         }
     },
     defaultColDef: {
@@ -142,33 +142,40 @@ export default function OutgoingGridView(props: OutgoingGridViewProps) {
     const [data, setData] = useState<OutgoingShipmentView>();
     const [apiSatus, setApiStatus] = useState<ApiStatusInfo>({ Status: CallStatus.EMPTY });
     const [gridApi, setGridApi] = useState<GridApi>();
+    const isIDValid = !IsValidInteger(id);
     function onGridReady(params: GridReadyEvent) {
         setGridApi((api) => params.api);
     }
-    if (!IsValidInteger(id))
-        return <div className="alert alert-warning" role="alert">Id Provided Not Valid</div>;
+
     useEffect(() => {
-        new OutgoingService().GetDetails(Number.parseInt(id)).then(res => {
-            setData(res.data);
-            setApiStatus({ Status: CallStatus.LOADED });
-        }).catch(e => {
-            setApiStatus({ Status: CallStatus.ERROR });
-        });
+        if (isIDValid)
+            new OutgoingService().GetDetails(Number.parseInt(id)).then(res => {
+                setData(res.data);
+                setApiStatus({ Status: CallStatus.LOADED });
+            }).catch(e => {
+                setApiStatus({ Status: CallStatus.ERROR });
+            });
     }, []);
     useEffect(() => {
-        const rowData: PinnedRowData[] = [{
-            FlavourId: null,
-            ProductId: null,
-            UnitPrice: null,
-            TotalQuantityTaken: null,
-            TotalQuantityReturned: null,
-            TotalQuantityShiped: data!.TotalSalePrice,
-            SchemeInfo: { Price: data!.TotalSchemePrice, Quantity: data!.TotalSchemeQuantity },
-            CustomCaratPrices: data!.CustomCaratTotalPrice,
-            NetPrice: data!.TotalNetPrice
-        }];
-        gridApi?.setPinnedBottomRowData(rowData);
+        if (isIDValid) {
+            const rowData: PinnedRowData[] = [{
+                FlavourId: null,
+                ProductId: null,
+                UnitPrice: null,
+                TotalQuantityTaken: null,
+                TotalQuantityReturned: null,
+                TotalQuantityShiped: data!.TotalSalePrice,
+                SchemeInfo: { Price: data!.TotalSchemePrice, Quantity: data!.TotalSchemeQuantity },
+                CustomCaratPrices: data!.CustomCaratTotalPrice,
+                NetPrice: data!.TotalNetPrice
+            }];
+            gridApi?.setPinnedBottomRowData(rowData);
+        }
     }, [data])
+
+    if (!isIDValid)
+        return <div className="alert alert-warning" role="alert">Id Provided Not Valid</div>;
+
     return (<Loader Status={apiSatus.Status} Message={apiSatus.Message}>
         <div>
             <div className="d-flex">
@@ -186,6 +193,8 @@ export default function OutgoingGridView(props: OutgoingGridViewProps) {
                 </div>
             </div>
         </div >
-        <AgGridReact gridOptions={options} modules={AllCommunityModules} rowData={data?.OutgoingDetails}></AgGridReact>
+        <div className="ag-theme-alphine" style={{width:'100vw',height:'751px',overflow:'visible'}}>
+            <AgGridReact gridOptions={options} modules={AllCommunityModules} rowData={data?.OutgoingDetails}></AgGridReact>
+        </div>
     </Loader>);
 }
