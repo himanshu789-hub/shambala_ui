@@ -32,6 +32,7 @@ type FlavourSchemeDetail = {
 }
 interface OutgoingShipment {
 	Id: number;
+	RowVersion:number;
 	DateCreated: string;
 	OutgoingShipmentDetails: IOutgoingShipmentUpdateDetail[];
 };
@@ -39,12 +40,13 @@ type OutgoingShipmentView = {
 	Id: number;
 	Salesman: SalesmanDTO;
 	Status: number;
-	OutgoingDetails: IAggregateDetailDTO[];
+	OutgoingShipmentDetails: IAggregateDetailDTO[];
 	TotalSchemePrice: number;
 	TotalSchemeQuantity:number;
-	TotalSalePrice: number;
+	TotalShipedPrice: number;
 	TotalNetPrice: number;
 	CustomCaratTotalPrice:number;
+	RowVersion:number;
 }
 interface IAggregateDetailDTO extends IOutgoingShipmentUpdateDetail {
 	CaretSize: number;
@@ -88,7 +90,7 @@ interface IOutgoingShipmentUpdateDetail extends IOutgoingShipmentAddDetail {
 	TotalQuantityShiped: number;
 	CustomCaratPrices: CustomCaratPrice;
 	NetPrice: number;
-	TotalSalePrice: number;
+	TotalShipedPrice: number;
 }
 
 type CustomPrice = {

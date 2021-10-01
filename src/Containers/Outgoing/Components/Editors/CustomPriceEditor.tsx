@@ -83,7 +83,6 @@ const CustomPriceGrid = forwardRef<CustomPriceGridRef, CustomPriceProps>((props,
             if (firstElement && firstElement.Quantity === 0) {
                 return [];
             }
-
             return data;
         }
     }));

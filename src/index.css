@@ -91,7 +91,8 @@ a.action:active:before {
 
 .app-head
 {
-	background-image:url("images/wave.svg");font-weight: bold;
+	background: black;
+	font-weight: bold;
 	color: white;
 	padding: 7px;
 }

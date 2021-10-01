@@ -26,5 +26,5 @@ export const SchemeQuantityEditor = forwardRef<ICellEditor,CellEditorParams<Outg
         }
     }));
     setTimeout(() => (inputRef.current?.focus()));
-    return <input ref={inputRef} type="number" defaultValue={props.value.SchemeQuantity} />
+    return <input ref={inputRef} type="number" max="10" min="0" step="1" defaultValue={props.value.SchemeQuantity} />
 })

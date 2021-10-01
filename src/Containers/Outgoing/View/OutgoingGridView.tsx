@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { CustomCaratPrice, IAggregateDetailDTO, IOutgoingShipmentUpdateDetail, OutgoingShipmentView, SchemeInfo } from "Types/DTO";
 import Loader, { ApiStatusInfo, CallStatus } from "Components/Loader/Loader";
 import { OutgoingStatus } from "Enums/Enum";
-import { GridApi, GridReadyEvent, ICellRendererParams } from "@ag-grid-community/core";
+import { CellClassParams, GridApi, GridReadyEvent, ICellRendererParams } from "@ag-grid-community/core";
 import { getColumnName } from "../Helpher";
 import { QuantityWithPriceCellRenderer, showQuantityAndPrice } from "../Components/Renderers/Renderers";
 import { GridRendererParams, GridValueFormatterParams, GridValueParserParams, } from './../../../Components/AgGridComponent/Grid.d';
@@ -14,7 +14,8 @@ import OutgoingService from "Services/OutgoingShipmentService";
 import { AllCommunityModules } from "@ag-grid-community/all-modules";
 import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
 import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
-
+import './../Add_Update/OutgoingGrid.css';
+import { Heading } from "Components/Miscellaneous/Miscellaneous";
 type DataT = IAggregateDetailDTO;
 type Ctx = any;
 type CellRendererParams<V> = GridRendererParams<V, DataT, Ctx>;
@@ -33,12 +34,13 @@ type PinnedRowData = {
     FlavourId: null,
     UnitPrice: null,
     TotalQuantityTaken: null;
-    TotalQuantityReturned: null;
+    TotalQuantityReturned: "Total";
     TotalQuantityShiped: number;
     SchemeInfo: TotalCellData;
     CustomCaratPrices: number;
     NetPrice: number;
 }
+type PinnedCellRenderer = GridRendererParams<undefined, PinnedRowData, Ctx>;
 const options: GridOptions = {
     frameworkComponents: {
         schemeRenderer: function (params: CellRendererParams<SchemeInfo>) {
@@ -52,13 +54,15 @@ const options: GridOptions = {
                 return "N/A";
             return params.value.Prices.map(e => `${getQuantityInText(e.Quantity, params.data.CaretSize)}->${e.PricePerCarat}`).join('+').concat("=", `${getQuantityInText(params.value.TotalQuantity, params.data.CaretSize)}->${params.value.TotalPrice}`);
         },
-        saleRenderer: QuantityWithPriceCellRenderer((e: CellRendererParams<number>) => e.value, (e: CellRendererParams<number>) => e.data.TotalSalePrice, (e: CellRendererParams<number>) => e.data.CaretSize),
-        priceRenderer: function (params: CellRendererParams<any>) {
-            return getPriceInText(params.value);
-        }
+        saleRenderer: QuantityWithPriceCellRenderer((e: CellRendererParams<number>) => e.value, (e: CellRendererParams<number>) => e.data.TotalShipedPrice, (e: CellRendererParams<number>) => e.data.CaretSize),
+        salePriceRenderer: function (params: PinnedCellRenderer) {
+            return getPriceInText(params.data.TotalQuantityShiped);
+        },
+        quantityRenderer: QuantityCellRenderer
     },
     defaultColDef: {
-        editable: false,
+        flex:1,
+        editable: false
     },
     columnDefs: [
         {
@@ -71,17 +75,38 @@ const options: GridOptions = {
         },
         {
             headerName: getColumnName('UnitPrice'),
-            field: field('UnitPrice')
+            field: field('UnitPrice'),
+            valueFormatter:function(params){
+                return getPriceInText(params.value);
+            }
         },
         {
             headerName: getColumnName('TotalQuantityTaken'),
             field: field('TotalQuantityTaken'),
-            cellRenderer: QuantityCellRenderer
+            cellRendererSelector: function (params) {
+                if (params.node.rowPinned) {
+                    return {
+                        component: undefined
+                    }
+                }
+                return {
+                    component: 'quantityRenderer'
+                }
+            }
         },
         {
             headerName: getColumnName('TotalQuantityReturned'),
             field: field('TotalQuantityReturned'),
-            cellRenderer: QuantityCellRenderer
+            cellRendererSelector: function (params) {
+                if (params.node.rowPinned) {
+                    return {
+                        component: undefined
+                    }
+                }
+                return {
+                    component: 'quantityRenderer'
+                }
+            }
         },
         {
             headerName: getColumnName('TotalQuantityShiped'),
@@ -93,8 +118,11 @@ const options: GridOptions = {
                     }
                 }
                 return {
-                    component: 'saleRenderer'
+                    component: 'salePriceRenderer'
                 }
+            },
+            cellClassRules:{
+                'line-height':(params:CellClassParams)=>!params.node.rowPinned
             }
         },
         {
@@ -109,7 +137,8 @@ const options: GridOptions = {
                 return {
                     component: 'schemeRenderer'
                 }
-            }
+            },
+            cellClass:"line-height"
         },
         {
             headerName: "Custom Carat",
@@ -132,7 +161,8 @@ const options: GridOptions = {
                 return "\u20B9" + params.value;
             }
         }
-    ]
+    ],
+    rowHeight:53
 }
 interface OutgoingGridViewProps extends RouteComponentProps<{ id: string }> {
 
@@ -149,7 +179,7 @@ export default function OutgoingGridView(props: OutgoingGridViewProps) {
 
     useEffect(() => {
         if (isIDValid) {
-            setApiStatus({Status:CallStatus.LOADING});
+            setApiStatus({ Status: CallStatus.LOADING });
             new OutgoingService().GetDetails(Number.parseInt(id)).then(res => {
                 setData(res.data);
                 setApiStatus({ Status: CallStatus.LOADED });
@@ -165,8 +195,8 @@ export default function OutgoingGridView(props: OutgoingGridViewProps) {
                 ProductId: null,
                 UnitPrice: null,
                 TotalQuantityTaken: null,
-                TotalQuantityReturned: null,
-                TotalQuantityShiped: data!.TotalSalePrice,
+                TotalQuantityReturned: "Total",
+                TotalQuantityShiped: data!.TotalShipedPrice,
                 SchemeInfo: { Price: data!.TotalSchemePrice, Quantity: data!.TotalSchemeQuantity },
                 CustomCaratPrices: data!.CustomCaratTotalPrice,
                 NetPrice: data!.TotalNetPrice
@@ -179,24 +209,25 @@ export default function OutgoingGridView(props: OutgoingGridViewProps) {
         return <div className="alert" role="alert">Id Provided Not Valid</div>;
 
     return (<Loader Status={apiSatus.Status} Message={apiSatus.Message}>
-        <div>
+        <Heading label="View Shipment"/>
+        <div className="m-2">
             <div className="d-flex">
-                <div>
+                <div className="input-group">
                     <div className="input-group-prepend">
                         <div className="input-group-text">Salesman Name</div>
                     </div>
-                    <input type="text" className="form-control" value={data?.Salesman.FullName} />
+                    <input type="text" className="form-control" value={data?.Salesman?.FullName} />
                 </div>
-                <div>
+                <div className="input-group">
                     <div className="input-group-prepend">
                         <div className="input-group-text">Shipment Status</div>
                     </div>
                     <input type="text" className="form-control" value={(Object.entries(OutgoingStatus).find((k, v) => v == data?.Status) || [0, 0])![1]} />
                 </div>
             </div>
-        </div >
-        <div className="ag-theme-alphine" style={{ width: '100vw', height: '751px', overflow: 'visible' }}>
-            <AgGridReact gridOptions={options} onGridReady={onGridReady} modules={AllCommunityModules} rowData={data?.OutgoingDetails}></AgGridReact>
+        </div>
+        <div className="ag-theme-alpine" style={{ width: '100vw', height: '500px', overflow: 'visible' }}>
+            <AgGridReact gridOptions={options} onGridReady={onGridReady} modules={AllCommunityModules} rowData={data?.OutgoingShipmentDetails || []}></AgGridReact>
         </div>
     </Loader>);
 }

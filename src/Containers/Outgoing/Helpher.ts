@@ -37,7 +37,7 @@ export function getColumnName(name: OutgoingGridColName) {
             columnName = "Reject"; break;
         case 'TotalQuantityReturned': columnName = "Return"; break;
         case 'TotalQuantityTaken': columnName = "Taken"; break;
-        case 'TotalSalePrice':
+        case 'TotalShipedPrice':
         case 'TotalQuantityShiped': columnName = "Shiped"; break;
         case 'TotalSchemePrice':
         case 'TotalSchemeQuantity': columnName = "Price"; break;

@@ -44,7 +44,7 @@ export function getQuantityInText(quantity: number, caretSize: number) {
 	const pieces = (quantity) % caretSize;
 	return `${Math.floor(quantity / caretSize)}/${pieces}${pieces <= 1 ? '' : ''}`;
 }
-export function getPriceInText(price:number){
+export function getPriceInText(price: number) {
 	return '\u20B9 ' + price;
 }
 export function postValidSchemeValue(Type: SchemeKey, val: number) {
@@ -148,7 +148,13 @@ export class UniqueValueProvider<T = number>
 	}
 }
 export function getTotalPrice(quantity: number, pricePerCarat: number, PricePerBottle: number, caretSize: number) {
-	const caratPrice = Math.floor(quantity / caretSize) * pricePerCarat;
-	const piecePrice = (quantity % caretSize) * PricePerBottle;
-	return caratPrice + piecePrice;
+	const caratPrice = mulDecimal(Math.floor(quantity / caretSize), pricePerCarat);
+	const piecePrice = mulDecimal((quantity % caretSize), PricePerBottle);
+	return addDecimal(caratPrice , piecePrice);
+}
+export function addDecimal(numA: number, numB: number) {
+	return ((numA * 100) + (numB * 100)) / 100;
+}
+export function mulDecimal(numA: number, numB: number) {
+	return ((numA * 100) * (numB * 100)) / 10000;
 }

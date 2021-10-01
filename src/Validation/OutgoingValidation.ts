@@ -9,8 +9,8 @@ export default class OutgoingValidator implements ValidateMemberWithAll<Outgoing
         this.outgoing = outgoing;
     }
     
-    IsTotalSalePriceValid() {
-        if (!this.outgoing.TotalSalePrice)
+    IsTotalShipedPriceValid() {
+        if (!this.outgoing.TotalShipedPrice)
             return new ValidateResultBad("Sale Price Cannot Be Empty");
         return new ValidationResultOK();
     }
@@ -107,7 +107,7 @@ export default class OutgoingValidator implements ValidateMemberWithAll<Outgoing
             return { IsValid: false, Message: "Return Quantity Must Have Value", Code: 'Parameter' };
         if (this.outgoing.TotalQuantityTaken - this.outgoing.TotalQuantityReturned < value)
             return { IsValid: false, Message: "Cannot Be Greater Than Difference of Taken/Return Quantity" };
-        const result = this.IsTotalSalePriceValid();
+        const result = this.IsTotalShipedPriceValid();
         if (!result.IsValid)
             return result;
         return { IsValid: true };

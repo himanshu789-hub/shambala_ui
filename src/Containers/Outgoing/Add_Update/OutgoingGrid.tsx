@@ -11,7 +11,7 @@ import { CustomCaratPrice, CustomPrice, Element, IOutgoingShipmentAddDetail, IOu
 import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer, QuantityWithPriceCellRenderer, RowStyleSpecifier } from "./../Components/Renderers/Renderers";
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { GridSelectEditor } from "Components/AgGridComponent/Editors/SelectWithAriaEditor";
-import { getARandomNumber, getPriceInText, getTotalPrice, KeyCode, Parser, UniqueValueProvider } from "Utilities/Utilities";
+import { addDecimal, getARandomNumber, getPriceInText, getTotalPrice, KeyCode, mulDecimal, Parser, UniqueValueProvider } from "Utilities/Utilities";
 import { CaretSizeEditor, CaretSizeNewValue, CaretSizeValueOldAndNewValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 import CustomPriceEditor from "./../Components/Editors/CustomPriceEditor";
@@ -49,6 +49,7 @@ type OutgoingData = {
     Status?: OutgoingStatus;
     SalesmanId: number;
     Shipments: OutgoingGridRowValue[];
+    RowVersion:number;
 }
 type OutgoingGridState = {
     GridOptions: GridOptions;
@@ -78,7 +79,7 @@ const ReInitializeCustomPrice = function (customPrices: CustomCaratPrice, quanti
             break;
         }
         else {
-            customPrices.TotalPrice += getTotalPrice(customPrices.Prices[i].Quantity, pricePerCarat, pricePerBottle, caratSize);
+            customPrices.TotalPrice = addDecimal(customPrices.TotalPrice, getTotalPrice(customPrices.Prices[i].Quantity, pricePerCarat, pricePerBottle, caratSize));
             customPrices.TotalQuantity += customPrices.Prices[i].Quantity;
             quantityMediator.Subscribe(customPrices.Prices[i].Id, customPrices.Prices[i].Quantity);
         }
@@ -88,9 +89,9 @@ const ReInitializeCustomPrice = function (customPrices: CustomCaratPrice, quanti
 function CalculateNetPrice(data: OutgoingUpdateRow, pricePerBottle: number) {
     const saleQuantity = data.TotalQuantityShiped;
     const customCaratQuantity = data.CustomCaratPrices.TotalQuantity;
-    const saleMinusCustomQuantity = saleQuantity - customCaratQuantity;
+    const saleMinusCustomQuantity = saleQuantity -customCaratQuantity;
     const saleMinusCustomPrice = getTotalPrice(saleMinusCustomQuantity, data.UnitPrice, pricePerBottle, data.CaretSize);
-    return saleMinusCustomPrice + data.CustomCaratPrices.TotalPrice - data.SchemeInfo.TotalSchemePrice;
+    return addDecimal(addDecimal(saleMinusCustomPrice , data.CustomCaratPrices.TotalPrice) , -data.SchemeInfo.TotalSchemePrice);
 }
 const getColumnId = function (name: OutgoingGridColName) {
     let columnId: number | null = null;
@@ -299,7 +300,7 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
         valueSetter: function (params: ValueSetterParams<number>) {
             params.data.Shipment.TotalQuantityShiped = params.newValue;
             const product = params.context.getProductDetails(params.data.Shipment.ProductId);
-            params.data.Shipment.TotalSalePrice = getTotalPrice(params.newValue, product.PricePerCaret, product.PricePerBottle, product.CaretSize);
+            params.data.Shipment.TotalShipedPrice = getTotalPrice(params.newValue, product.PricePerCaret, product.PricePerBottle, product.CaretSize);
             return true;
         }, cellClass: "line-height",
         editable: false,
@@ -307,7 +308,7 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
             const { node, context: { getColumnId, getProductDetails } } = params;
             const customPrices = params.data.Shipment.CustomCaratPrices;
             const product = getProductDetails(params.data.Shipment.ProductId);
-            const schemeQuantity = product.SchemeQuantity;
+            const schemeQuantity = params.data.Shipment.SchemeInfo.SchemeQuantity;
             node.setDataValue(getColumnId('TotalSchemeQuantity'), schemeQuantity);
             node.setDataValue(getColumnId('CustomCaratPrices'), ReInitializeCustomPrice(customPrices, params.newValue, product.PricePerBottle, product.PricePerCaret, product.CaretSize).Prices);
             // set corresponding SchemePrice and TotalSchemeQuantity
@@ -317,7 +318,7 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
         cellClassRules: ClassSpecifier('TotalQuantityShiped'),
         tooltipValueGetter: ToolTipValueGetter('TotalQuantityShiped'),
         colId: getColumnId('TotalQuantityShiped'),
-        cellRendererFramework: QuantityWithPriceCellRenderer((params: CellRendererParams<number>) => params.data.Shipment.TotalQuantityShiped, (parsms: CellRendererParams<number>) => parsms.data.Shipment.TotalSalePrice, (params: CellRendererParams<number>) => params.data.Shipment.CaretSize)
+        cellRendererFramework: QuantityWithPriceCellRenderer((params: CellRendererParams<number>) => params.data.Shipment.TotalQuantityShiped, (parsms: CellRendererParams<number>) => parsms.data.Shipment.TotalShipedPrice, (params: CellRendererParams<number>) => params.data.Shipment.CaretSize)
     },
     {
         headerName: 'Scheme',
@@ -343,11 +344,11 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
                 onCellValueChanged(params: CellValueChangedEvent<SchemeInfo>) {
                     const schemeProduct = params.context.getProductDetails(config.SchemeProductId);
                     const totalBottle = params.newValue.TotalQuantity;
-                    params.node.setDataValue(params.context.getColumnId('TotalSchemePrice'), schemeProduct.PricePerBottle * totalBottle);
+                    params.node.setDataValue(params.context.getColumnId('TotalSchemePrice'), mulDecimal(schemeProduct.PricePerBottle , totalBottle));
                 },
                 cellRenderer: function (params: CellRendererParams<SchemeInfo>) {
                     return params.value.TotalQuantity + '';
-                }, 
+                },
                 cellEditorFramework: SchemeQuantityEditor
             },
             {
@@ -377,8 +378,8 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
             params.data.Shipment.CustomCaratPrices.TotalPrice = 0;
             for (const price of params.newValue) {
                 params.data.Shipment.CustomCaratPrices.TotalQuantity += price.Quantity;
-                params.data.Shipment.CustomCaratPrices.TotalPrice +=
-                    getTotalPrice(params.data.Shipment.CustomCaratPrices.TotalQuantity, price.PricePerCarat, product.PricePerCaret / product.CaretSize, product.CaretSize)
+                params.data.Shipment.CustomCaratPrices.TotalPrice = addDecimal(params.data.Shipment.CustomCaratPrices.TotalPrice,
+                    getTotalPrice(params.data.Shipment.CustomCaratPrices.TotalQuantity, price.PricePerCarat, product.PricePerBottle, product.CaretSize));
             }
             return true;
         },
@@ -467,7 +468,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
             },
             ApiInfo: { Status: CallStatus.LOADED },
             IsOnUpdate,
-            OutgoingData: { DateCreated: new Date().toDateString(), SalesmanId: -1, Shipments: [], Id: 0 },
+            OutgoingData: { DateCreated: new Date().toDateString(), SalesmanId: -1, Shipments: [], Id: 0 ,RowVersion:0},
 
         };
     }
@@ -485,7 +486,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
             Shipment: {
                 CaretSize: 0, CustomCaratPrices: { Prices: [], TotalPrice: 0, TotalQuantity: 0 }, FlavourId: -1, Id: componentId, ProductId: -1, SchemeInfo: { SchemeQuantity: 0, TotalQuantity: 0, TotalSchemePrice: 0 },
                 TotalQuantityRejected: 0, TotalQuantityReturned: 0, TotalQuantityShiped: 0, TotalQuantityTaken: 0, Status: OutgoingGridRowCode.NONE,
-                NetPrice: 0, UnitPrice: 0, TotalSalePrice: 0
+                NetPrice: 0, UnitPrice: 0, TotalShipedPrice: 0
             }
         }
     }
@@ -537,7 +538,11 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
             alert('Please, Select A Salesman')
             isValid = false;
         }
-        if (this.getAllRows().length == 0) {
+        if (!this.state.GridOptions.api) {
+            alert('Grid Api Not Set.\nPlease, Contact Administration');
+            isValid = false;
+        }
+        if (this.state.GridOptions.api?.getDisplayedRowCount() == 0) {
             alert('Please, Add Atleast One Item');
             isValid = false;
         }
@@ -561,10 +566,9 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
         }
         else {
             const details = this.getAllRows().map(e => e.Shipment);
-            const outgoingData = this.state.OutgoingData;
             this.outgoingService
-                .UpdateOutgoingShipment({ DateCreated: new Date().toISOString(), SalesmanId: outgoingData.SalesmanId, Id: outgoingData.Id, OutgoingShipmentDetails: details })
-                .then(() => this.props.history.push({ pathname: "/message/pass", search: `?message=Updated SuccessFully&redirect=/outgoing/view/${outgoingData.Id}` }),
+                .UpdateOutgoingShipment({ DateCreated: new Date().toISOString(), SalesmanId: OutgoingData.SalesmanId, Id: OutgoingData.Id, OutgoingShipmentDetails: details,RowVersion:OutgoingData.RowVersion })
+                .then(() => this.props.history.push({ pathname: "/message/pass", search: `?message=Updated SuccessFully&redirect=/outgoing/view/${OutgoingData.Id}` }),
                     (e) => this.handleError(e))
         }
     }
@@ -634,7 +638,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                     break;
             }
         }
-        else if (error.response?.status == 412) {
+        else if (error.response?.status == 422) {
             addDanger('Another User Already Changed The Shipment Details.\nPlease, Refresh');
         }
         else {
@@ -660,6 +664,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                         });
                         return this.productService.GetAll(res.data.DateCreated).then(res2 => {
                             const products: Product[] = res2.data;
+                            
                             res.data.OutgoingShipmentDetails.forEach(details =>
                                 products.find(e => e.Id === details.ProductId)!.Flavours.find(e => e.Id === details.FlavourId)!.Quantity += details.TotalQuantityShiped);
                             this.setMediator(products);
@@ -672,10 +677,11 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                                 observer.SetFlavour(element.FlavourId);
                                 //quantity are not added to mediator if return value not null
                                 observer.SetQuantity(element.TotalQuantityTaken);
+                                const product = products.find(e => e.Id == element.ProductId);
                                 rowData.push({
                                     Id: element.Id + '',
                                     Observer: observer,
-                                    Shipment: { ...element, Status: OutgoingGridRowCode.NONE, UnitPrice: products.find(e => e.Id == element.ProductId)?.PricePerCaret ?? 0 }
+                                    Shipment: { ...element, Status: OutgoingGridRowCode.NONE, UnitPrice:  product?.PricePerCaret ?? 0,CaretSize:product?.CaretSize ?? 0 }
                                 })
                             });
                             this.setState({ ApiInfo: { Status: CallStatus.LOADED, Message: undefined }, OutgoingData: { ...res.data, SalesmanId: res.data.Salesman.Id, Shipments: rowData } });
