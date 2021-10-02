@@ -7,3 +7,13 @@
 {
     line-height: 23px !important;
 }
+
+.c-table
+{
+    line-height: 12px;
+font-size: 11px;
+}
+.c-table>thead>tr
+{
+    font-weight: 400;
+}

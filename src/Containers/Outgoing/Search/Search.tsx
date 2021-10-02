@@ -86,7 +86,7 @@ export default function Search() {
                                     <td>{index + 1}</td>
                                     <td>{new Date(e.DateCreated).toLocaleDateString()}</td>
                                     <td><span className={`badge ${e.Status===OutgoingStatus.PENDING?"badge-warning":"badge-success"}`}>{Object.entries(OutgoingStatus).find((i) => i[1] == e.Status)?.[0]}</span></td>
-                                    <td>{[<NavLink className="btn btn-warning text-white fa fa-edit" to={`/outgoing/add/${e.Id}`} >Edit</NavLink>,e.Status == OutgoingStatus.FILLED ? (<NavLink className="btn btn-info" to={`/outgoing/view/${e.Id}`} >View</NavLink>) : ""]}</td>
+                                    <td>{[<NavLink className="btn btn-warning text-white fa fa-edit" to={`/outgoing/add/${e.Id}`} >Edit</NavLink>,e.Status == OutgoingStatus.FILLED ? (<NavLink className="ml-3 btn btn-info" to={`/outgoing/view/${e.Id}`} >View</NavLink>) : ""]}</td>
                                 </tr>)) : (<EmptyTableBody numberOfColumns={4} />)
                         }
                     </tbody>

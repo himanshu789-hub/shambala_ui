@@ -25,58 +25,61 @@ function field(name: keyof IAggregateDetailDTO) {
 function QuantityCellRenderer(params: CellRendererParams<number>) {
     return getQuantityInText(params.value, params.data.CaretSize);
 }
-type TotalCellData = {
-    Quantity: number;
-    Price: number;
-}
 type PinnedRowData = {
-    ProductId: null,
-    FlavourId: null,
+    ProductName: null,
+    FlavourName: null,
     UnitPrice: null,
     TotalQuantityTaken: null;
     TotalQuantityReturned: "Total";
     TotalQuantityShiped: number;
-    SchemeInfo: TotalCellData;
+    SchemeInfo: SchemeInfo;
     CustomCaratPrices: number;
     NetPrice: number;
 }
-type PinnedCellRenderer = GridRendererParams<undefined, PinnedRowData, Ctx>;
 const options: GridOptions = {
     frameworkComponents: {
         schemeRenderer: function (params: CellRendererParams<SchemeInfo>) {
-            return showQuantityAndPrice(params.data.SchemeInfo.TotalQuantity + '', params.data.SchemeInfo.TotalSchemePrice);
-        },
-        schemeTotalRenderer: function (params: CellRendererParams<TotalCellData>) {
-            return showQuantityAndPrice(params.value.Quantity + '', params.value.Price);
+            return showQuantityAndPrice(params.value.TotalQuantity + '', params.value.TotalSchemePrice);
         },
         customPriceRenderer: function (params: CellRendererParams<CustomCaratPrice>) {
             if (params.value.Prices.length == 0)
                 return "N/A";
-            return params.value.Prices.map(e => `${getQuantityInText(e.Quantity, params.data.CaretSize)}->${e.PricePerCarat}`).join('+').concat("=", `${getQuantityInText(params.value.TotalQuantity, params.data.CaretSize)}->${params.value.TotalPrice}`);
+            return (<table className="c-table">
+                <thead><tr><th>Qty</th><th>PrPerCarat</th></tr></thead>
+                <tbody>{
+                    params.value.Prices.map(e => <tr><td>{getQuantityInText(e.Quantity, params.data.CaretSize)}</td>
+                        <td>{getPriceInText(e.PricePerCarat)}</td></tr>).concat(
+                            <tr className="bg-dark text-light"><td>{"Total"}</td><td>{getPriceInText(params.value.TotalPrice)}</td></tr>
+                        )
+                }
+                </tbody>
+            </table>);
         },
         saleRenderer: QuantityWithPriceCellRenderer((e: CellRendererParams<number>) => e.value, (e: CellRendererParams<number>) => e.data.TotalShipedPrice, (e: CellRendererParams<number>) => e.data.CaretSize),
-        salePriceRenderer: function (params: PinnedCellRenderer) {
-            return getPriceInText(params.data.TotalQuantityShiped);
+        priceRenderer: function (params: CellRendererParams<number>) {
+            return getPriceInText(params.value);
         },
         quantityRenderer: QuantityCellRenderer
     },
     defaultColDef: {
-        flex:1,
+        flex: 1,
         editable: false
     },
     columnDefs: [
         {
             headerName: getColumnName('ProductId'),
-            field: field('ProductId')
+            field: field('ProductName')
         },
         {
             headerName: getColumnName('FlavourId'),
-            field: field('FlavourId')
+            field: field('FlavourName')
         },
         {
             headerName: getColumnName('UnitPrice'),
             field: field('UnitPrice'),
-            valueFormatter:function(params){
+            valueFormatter: function (params) {
+                if (!params.value)
+                    return '';
                 return getPriceInText(params.value);
             }
         },
@@ -118,27 +121,18 @@ const options: GridOptions = {
                     }
                 }
                 return {
-                    component: 'salePriceRenderer'
+                    component: 'saleRenderer'
                 }
             },
-            cellClassRules:{
-                'line-height':(params:CellClassParams)=>!params.node.rowPinned
+            cellClassRules: {
+                'line-height': (params: CellClassParams) => !params.node.rowPinned
             }
         },
         {
             headerName: "Scheme",
             field: field('SchemeInfo'),
-            cellRendererSelector: function (params) {
-                if (params.node.rowPinned) {
-                    return {
-                        component: 'schemeTotalRenderer'
-                    }
-                }
-                return {
-                    component: 'schemeRenderer'
-                }
-            },
-            cellClass:"line-height"
+            cellRenderer:'schemeRenderer',
+            cellClass: "line-height"
         },
         {
             headerName: "Custom Carat",
@@ -146,13 +140,13 @@ const options: GridOptions = {
             cellRendererSelector: function (params) {
                 if (params.node.rowPinned) {
                     return {
-                        component: undefined
+                        component: 'priceRenderer'
                     }
                 }
                 return {
                     component: 'customPriceRenderer'
                 }
-            },
+            }
         },
         {
             headerName: 'Net Price',
@@ -162,7 +156,7 @@ const options: GridOptions = {
             }
         }
     ],
-    rowHeight:53
+    rowHeight:100
 }
 interface OutgoingGridViewProps extends RouteComponentProps<{ id: string }> {
 
@@ -191,13 +185,13 @@ export default function OutgoingGridView(props: OutgoingGridViewProps) {
     useEffect(() => {
         if (isIDValid && data) {
             const rowData: PinnedRowData[] = [{
-                FlavourId: null,
-                ProductId: null,
+                FlavourName: null,
+                ProductName: null,
                 UnitPrice: null,
                 TotalQuantityTaken: null,
                 TotalQuantityReturned: "Total",
                 TotalQuantityShiped: data!.TotalShipedPrice,
-                SchemeInfo: { Price: data!.TotalSchemePrice, Quantity: data!.TotalSchemeQuantity },
+                SchemeInfo: { TotalSchemePrice: data!.TotalSchemePrice, TotalQuantity: data!.TotalSchemeQuantity,SchemeQuantity:-1 },
                 CustomCaratPrices: data!.CustomCaratTotalPrice,
                 NetPrice: data!.TotalNetPrice
             }];
@@ -209,7 +203,7 @@ export default function OutgoingGridView(props: OutgoingGridViewProps) {
         return <div className="alert" role="alert">Id Provided Not Valid</div>;
 
     return (<Loader Status={apiSatus.Status} Message={apiSatus.Message}>
-        <Heading label="View Shipment"/>
+        <Heading label="View Shipment" />
         <div className="m-2">
             <div className="d-flex">
                 <div className="input-group">

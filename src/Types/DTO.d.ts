@@ -51,6 +51,8 @@ type OutgoingShipmentView = {
 interface IAggregateDetailDTO extends IOutgoingShipmentUpdateDetail {
 	CaretSize: number;
 	UnitPrice: number;
+	ProductName:string;
+	FlavourName:string;
 }
 interface OutgoingShipmentPost {
 	SalesmanId: number;
