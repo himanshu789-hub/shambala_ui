@@ -15,7 +15,7 @@ export const NumericOnlyEditor =  forwardRef<ICellEditor, ICellEditorParams>((pr
     setTimeout(() => (inputRef.current?.focus()));
     return <input ref={inputRef} pattern="^[0-9]+(\.[0-9]{1,2})?$" defaultValue={props.value} />
 })
-export const SchemeQuantityEditor = forwardRef<ICellEditor,CellEditorParams<OutgoingUpdateRow['SchemeInfo']>>((props,ref)=>{
+export const MaxTenEditor = forwardRef<ICellEditor,CellEditorParams<OutgoingUpdateRow['SchemeInfo']>>((props,ref)=>{
     const inputRef = useRef<HTMLInputElement>(null);
     useImperativeHandle(ref,()=>({
         getValue(){

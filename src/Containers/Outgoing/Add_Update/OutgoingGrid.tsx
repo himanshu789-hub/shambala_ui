@@ -37,7 +37,7 @@ import { AxiosError } from "axios";
 import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
 import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
 import './OutgoingGrid.css';
-import { NumericOnlyEditor, SchemeQuantityEditor } from "../Components/Editors/NumericOnlyEditor";
+import { NumericOnlyEditor, MaxTenEditor } from "../Components/Editors/NumericOnlyEditor";
 
 
 interface OutgoingGridProps extends RouteComponentProps<{ id?: string }> {
@@ -349,7 +349,7 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
                 cellRenderer: function (params: CellRendererParams<SchemeInfo>) {
                     return params.value.TotalQuantity + '';
                 },
-                cellEditorFramework: SchemeQuantityEditor
+                cellEditorFramework: MaxTenEditor
             },
             {
                 headerName: 'Price',

@@ -18,3 +18,6 @@ export enum OutgoingStatusErrorCode {
 export enum OutgoingGridRowCode {
     OUT_OF_STOCK=123,NONE
 }
+export enum CreditType  {
+CASH,CHEQUE
+}

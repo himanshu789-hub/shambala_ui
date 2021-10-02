@@ -32,27 +32,34 @@ type FlavourSchemeDetail = {
 }
 interface OutgoingShipment {
 	Id: number;
-	RowVersion:number;
+	RowVersion: number;
 	DateCreated: string;
 	OutgoingShipmentDetails: IOutgoingShipmentUpdateDetail[];
 };
+
+
+type CreditAndNetHolderDTO = {
+	Type: number;
+	Amount: number;
+	Qty: number;
+}
 type OutgoingShipmentView = {
 	Id: number;
 	Salesman: SalesmanDTO;
 	Status: number;
 	OutgoingShipmentDetails: IAggregateDetailDTO[];
 	TotalSchemePrice: number;
-	TotalSchemeQuantity:number;
+	TotalSchemeQuantity: number;
 	TotalShipedPrice: number;
 	TotalNetPrice: number;
-	CustomCaratTotalPrice:number;
-	RowVersion:number;
+	CustomCaratTotalPrice: number;
+	RowVersion: number;
 }
 interface IAggregateDetailDTO extends IOutgoingShipmentUpdateDetail {
 	CaretSize: number;
 	UnitPrice: number;
-	ProductName:string;
-	FlavourName:string;
+	ProductName: string;
+	FlavourName: string;
 }
 interface OutgoingShipmentPost {
 	SalesmanId: number;
