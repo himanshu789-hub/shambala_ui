@@ -10,7 +10,7 @@ export default class OutgoingValidator implements ValidateMemberWithAll<Outgoing
     }
     
     IsTotalShipedPriceValid() {
-        if (!this.outgoing.TotalShipedPrice)
+        if ((!this.outgoing.TotalShipedPrice && this.outgoing.TotalShipedPrice!==0))
             return new ValidateResultBad("Sale Price Cannot Be Empty");
         return new ValidationResultOK();
     }
@@ -114,7 +114,7 @@ export default class OutgoingValidator implements ValidateMemberWithAll<Outgoing
     }
     IsTotalSchemeQuantityValid(): IValidateResultBad | IValidateResultOK {
         const value = this.outgoing.SchemeInfo.TotalQuantity;
-        if (!value)
+        if (!value && value!==0)
             return new ValidateResultBad("Canot Be Empty");
         if (!this.IsCaretSizeValid().IsValid)
             return new ValidateResultBad("Caret Size Not Valid", 'Parameter');

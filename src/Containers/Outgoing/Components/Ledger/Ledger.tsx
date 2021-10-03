@@ -101,14 +101,14 @@ export class Ledger extends React.Component<LedgerProps, LedgerState>
         } as LedgerDTO;
 
         new LedgerService().Post(data).then(() => {
-            this.props.history.push({ pathname: "/", search: `?redirect=/outgoing/view/${this.props.shipmentId}` });
+            this.props.history.push({ pathname: "/message/pass", search: `?message=Updated SuccessFully&redirect=/outgoing/view/${this.props.shipmentId}` });
         }).catch(e => this.handError(e));
     }
     handError = (e: AxiosError) => {
         if (e.response?.status === 422) {
             addWarn("Another User Already Changed Resource\nPlease,Refresh");
         }
-        else if (e.response?.status === 400 && e.response.data.Code!=undefined) {
+        else if (e.response?.status === 400 && e.response.data.Code!==undefined) {
             switch (e.response.data.Code) {
                 case LedgerErrorCode.INVALID_TotalPrice:
                     alert('InValid Net Price.\nPlease, Contact Administration');
