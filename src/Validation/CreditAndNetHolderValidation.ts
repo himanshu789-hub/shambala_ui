@@ -1,18 +1,21 @@
-import { CreditType } from "Enums/Enum";
+import { CapitalType, Medium } from "Enums/Enum";
 import { CreditAndNetHolderDTO } from "Types/DTO";
-import { ValidateResultBad, ValidationResultOK } from "./Validation";
+import { checkAllElementValidInCollection, enumerateValidateMemberOnly, ValidateResultBad, ValidationResultOK } from "./Validation";
 
-export class CreditAndNetHolderValidation implements ValidateMember<CreditAndNetHolderDTO>
+export class CreditAndNetHolderValidation implements ValidateMemberWithAll<CreditAndNetHolderDTO>
 {
     data: CreditAndNetHolderDTO;
     constructor(data: CreditAndNetHolderDTO) {
         this.data = data;
     }
-    IsTypeValid() {
-        if (!this.data.Type && this.data.Type !== 0) {
+    IsAllValid() {
+        return enumerateValidateMemberOnly<CreditAndNetHolderDTO, CreditAndNetHolderValidation>(this);
+    }
+    IsMediumValid() {
+        if (!this.data.Medium && this.data.Medium !== 0) {
             return new ValidateResultBad("Cannot Be Empty");
         }
-        if (this.data.Type === CreditType.CASH || this.data.Type === CreditType.CHEQUE)
+        if (this.data.Medium === Medium.CASH || this.data.Medium === Medium.CHEQUE)
             return new ValidationResultOK();
         return new ValidateResultBad("InValid Value");
     }
@@ -23,8 +26,16 @@ export class CreditAndNetHolderValidation implements ValidateMember<CreditAndNet
             return new ValidateResultBad("Must Be A Number");
         return new ValidationResultOK();
     }
+    IsTypeValid() {
+        if (this.data.Type === CapitalType.CREDIT || this.data.Type === CapitalType.DEBIT) {
+            return new ValidationResultOK();
+        }
+        return new ValidateResultBad("Unknown Value");
+    }
     IsQtyValid() {
-        if (this.data.Type === CreditType.CASH) {
+        if (this.data.Medium === Medium.CASH) {
+            if (this.data.Qty > 0)
+                return new ValidateResultBad("Qty Must Be Zero,If Medium is CASH");
             return new ValidationResultOK();
         }
         if (!this.data.Qty)
@@ -33,5 +44,15 @@ export class CreditAndNetHolderValidation implements ValidateMember<CreditAndNet
             return new ValidateResultBad("Cannot Be Greater Than 10");
         }
         return new ValidationResultOK();
+    }
+}
+export default class CreditAndNetHolderCollectionValidation implements ValidateArray<CreditAndNetHolderDTO>
+{
+    private arr: CreditAndNetHolderDTO[];
+    constructor(arr: CreditAndNetHolderDTO[]) {
+        this.arr = arr;
+    }
+    IsAllValid() {
+        return checkAllElementValidInCollection(this.arr, CreditAndNetHolderValidation);
     }
 }

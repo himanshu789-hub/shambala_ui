@@ -6,18 +6,24 @@ export enum SchemeType {
     FIXED = 1, VARIABLE, NONE
 }
 export enum InvoiceStatus {
-    DUE=1, COMPLTED
+    DUE = 1, COMPLTED
 }
 export enum SchemeKey {
     PERCENTAGE = 1, BOTTLE, CARET
 }
 
 export enum OutgoingStatusErrorCode {
-    DUPLICATE = 1221, SCHEME_EXCEED, OUT_OF_STOCK, SCHEME_QUANTITY_NOT_VALID,SHIPED_QUANTITY_NOT_VALID,CUSTOM_CARAT_PRICE_NOT_VALID,SCHEME_PRICE_NOT_VALID
+    DUPLICATE = 1221, SCHEME_EXCEED, OUT_OF_STOCK, SCHEME_QUANTITY_NOT_VALID, SHIPED_QUANTITY_NOT_VALID, CUSTOM_CARAT_PRICE_NOT_VALID, SCHEME_PRICE_NOT_VALID
 }
 export enum OutgoingGridRowCode {
-    OUT_OF_STOCK=123,NONE
+    OUT_OF_STOCK = 123, NONE
 }
-export enum CreditType  {
-CASH,CHEQUE
+export enum Medium {
+    CASH, CHEQUE
+}
+export enum CapitalType {
+    CREDIT, DEBIT
+}
+export enum LedgerErrorCode {
+    INVALID_TotalPrice
 }

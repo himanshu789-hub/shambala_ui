@@ -36,12 +36,28 @@ interface OutgoingShipment {
 	DateCreated: string;
 	OutgoingShipmentDetails: IOutgoingShipmentUpdateDetail[];
 };
-
-
+type LedgerDetailDTO = {
+	OldCheque: number;
+	NewCheque: number;
+	TotalOldCheque: number;
+	TotalNewCheque: number;
+	OldCash: number;
+}
+type LedgerDTO = LedgerDetailDTO & {
+	OutgoingShipmentId: number;
+	RowVersion: number;
+	NetPrice: number;
+}
 type CreditAndNetHolderDTO = {
 	Type: number;
 	Amount: number;
 	Qty: number;
+	Medium: number;
+}
+type CreditDebitDTO = {
+	Ledgers: CreditAndNetHolderDTO[];
+	RowVersion: number;
+	OutgoingShipmentId: number;
 }
 type OutgoingShipmentView = {
 	Id: number;
@@ -54,6 +70,7 @@ type OutgoingShipmentView = {
 	TotalNetPrice: number;
 	CustomCaratTotalPrice: number;
 	RowVersion: number;
+	Ledger:number | nulls;
 }
 interface IAggregateDetailDTO extends IOutgoingShipmentUpdateDetail {
 	CaretSize: number;

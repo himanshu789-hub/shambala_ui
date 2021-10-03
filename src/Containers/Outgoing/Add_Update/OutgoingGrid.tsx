@@ -345,6 +345,7 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
                     const schemeProduct = params.context.getProductDetails(config.SchemeProductId);
                     const totalBottle = params.newValue.TotalQuantity;
                     params.node.setDataValue(params.context.getColumnId('TotalSchemePrice'), mulDecimal(schemeProduct.PricePerBottle , totalBottle));
+                params.node.setDataValue(params.context.getColumnId('NetPrice'),CalculateNetPrice(params.data.Shipment,params.context.getProductDetails(params.data.Shipment.ProductId).PricePerBottle));
                 },
                 cellRenderer: function (params: CellRendererParams<SchemeInfo>) {
                     return params.value.TotalQuantity + '';

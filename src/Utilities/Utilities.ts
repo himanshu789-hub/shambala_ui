@@ -4,7 +4,7 @@ import { Flavour, IOutgoingShipmentAddDetail, Product, SchemeDTO, ShipmentDTO } 
 import { ProductInfo } from 'Types/Mediator';
 
 export const IsValidInteger = function (num: string): boolean {
-	if (num.length == 0)
+	if (num.length === 0)
 		return false;
 	return num.search("[\D]") == -1;
 }

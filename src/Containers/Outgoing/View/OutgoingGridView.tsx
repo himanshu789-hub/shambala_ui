@@ -16,6 +16,7 @@ import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
 import '@ag-grid-community/all-modules//dist/styles/ag-theme-alpine.css';
 import './../Add_Update/OutgoingGrid.css';
 import { Heading } from "Components/Miscellaneous/Miscellaneous";
+import { Ledger } from "../Components/Ledger/Ledger";
 type DataT = IAggregateDetailDTO;
 type Ctx = any;
 type CellRendererParams<V> = GridRendererParams<V, DataT, Ctx>;
@@ -47,7 +48,7 @@ const options: GridOptions = {
             return (<table className="c-table">
                 <thead><tr><th>Qty</th><th>PrPerCarat</th></tr></thead>
                 <tbody>{
-                    params.value.Prices.map(e => <tr><td>{getQuantityInText(e.Quantity, params.data.CaretSize)}</td>
+                    params.value.Prices.map((e,index) => <tr key={index}><td>{getQuantityInText(e.Quantity, params.data.CaretSize)}</td>
                         <td>{getPriceInText(e.PricePerCarat)}</td></tr>).concat(
                             <tr className="bg-dark text-light"><td>{"Total"}</td><td>{getPriceInText(params.value.TotalPrice)}</td></tr>
                         )
@@ -131,7 +132,7 @@ const options: GridOptions = {
         {
             headerName: "Scheme",
             field: field('SchemeInfo'),
-            cellRenderer:'schemeRenderer',
+            cellRenderer: 'schemeRenderer',
             cellClass: "line-height"
         },
         {
@@ -156,7 +157,7 @@ const options: GridOptions = {
             }
         }
     ],
-    rowHeight:100
+    rowHeight: 100
 }
 interface OutgoingGridViewProps extends RouteComponentProps<{ id: string }> {
 
@@ -191,7 +192,7 @@ export default function OutgoingGridView(props: OutgoingGridViewProps) {
                 TotalQuantityTaken: null,
                 TotalQuantityReturned: "Total",
                 TotalQuantityShiped: data!.TotalShipedPrice,
-                SchemeInfo: { TotalSchemePrice: data!.TotalSchemePrice, TotalQuantity: data!.TotalSchemeQuantity,SchemeQuantity:-1 },
+                SchemeInfo: { TotalSchemePrice: data!.TotalSchemePrice, TotalQuantity: data!.TotalSchemeQuantity, SchemeQuantity: -1 },
                 CustomCaratPrices: data!.CustomCaratTotalPrice,
                 NetPrice: data!.TotalNetPrice
             }];
@@ -222,6 +223,9 @@ export default function OutgoingGridView(props: OutgoingGridViewProps) {
         </div>
         <div className="ag-theme-alpine" style={{ width: '100vw', height: '500px', overflow: 'visible' }}>
             <AgGridReact gridOptions={options} onGridReady={onGridReady} modules={AllCommunityModules} rowData={data?.OutgoingShipmentDetails || []}></AgGridReact>
+        </div>
+        <div style={{width:'400px',float:'right'}}>
+            <Ledger {...props} ledger={data?.Ledger} shipmentId={data?.Id || 0} rowVersion={data?.RowVersion || -1}  rawPrice={data?.TotalNetPrice || 0}></Ledger>
         </div>
     </Loader>);
 }
