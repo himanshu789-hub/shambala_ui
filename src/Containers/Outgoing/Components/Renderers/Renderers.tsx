@@ -17,6 +17,7 @@ export const CustomPriceRenderer = (params: CellRendererParams<IOutgoingShipment
     return QuantityWithPriceCellRenderer((params: CellRendererParams<number>) => params.data.Shipment.CustomCaratPrices.TotalQuantity, (params: CellRendererParams<number>) => params.data.Shipment.CustomCaratPrices.TotalPrice, (params: CellRendererParams<number>) => params.data.Shipment.CaretSize)(params);
 }
 export const QuantityWithPriceCellRenderer = (getQuantityFromParams: (params: ICellRendererParams) => number, getPriceFromParams: (params: ICellRendererParams) => number, getCaretSizeFromParams: (params: ICellRendererParams) => number) => {
+    
     return (params: ICellRendererParams) => {
         const price = getPriceFromParams(params);
         const quantity = getQuantityFromParams(params);
@@ -33,7 +34,7 @@ export function showQuantityAndPrice(quantity: string, price: number) {
 
 export const RowStyleSpecifier = function (params: RowClassParams): CSSProperties {
     let css: CSSProperties = { background: 'initial' }
-    switch (params.data.Status) {
+    switch (params.data.Shipment.Status) {
         case OutgoingGridRowCode.OUT_OF_STOCK:
             css = { background: '#ff9966' };
             break;

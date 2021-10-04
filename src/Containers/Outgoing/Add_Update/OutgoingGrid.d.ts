@@ -37,5 +37,5 @@ type OutgoingRowDataTransaction = GridParams.GridRowDataTransaction<OutgoingGrid
 type QuantityValueParser = CaretSizeValueOldAndNewValue<GridParams.GridValueParserParams<CaretSizeValue, OutgoingGridRowValue, GridContext>>;
 type CellClassParams = GridParams.GridCellClassParams<OutgoingGridRowValue>;
 type ToolTipRendererParams = GridParams.GridToolTipParams<OutgoingGridRowValue>;
-type RowClassParams = GridParams.RowStyleParams<RowNodeData, GridContext>;
+type RowClassParams = GridParams.RowStyleParams<OutgoingGridRowValue, GridContext>;
 type ValueFormatterParams<V> = GridParams.GridValueFormatterParams<OutgoingGridRowValue, GridContext, V>;

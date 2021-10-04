@@ -103,7 +103,7 @@ const SelectWithAria = forwardRef<HTMLInputElement, SelectWithAriaProps & ReactS
     function selectNewValue() {
         let newList = list;
         if (inputLabel?.length > 0) {
-            newList = list.filter(e => e.label.startsWith(inputLabel))
+            newList = list.filter(e => e.label.toLowerCase().startsWith(inputLabel.toLowerCase()))
         }
         setElements(newList);
         setIndex(newList.findIndex(e => e.value === value));

@@ -110,7 +110,8 @@ export default class QuantityMediator implements IQuantityMediator {
 		// const NewQuantity = QuantityAssigned.get(componentId)?.Quantity as number;
 		// if (NewQuantity && quantity <= NewQuantity)
 		this._deductQuantity(productId, flavourId, quantity);
-
+        QuantityFlavourInfo.FlavourId = flavourId;
+		QuantityFlavourInfo.ProductId  = productId;
 		return true;
 	}
 	private _isFlavourValid(flavourId: number, productId: number) {

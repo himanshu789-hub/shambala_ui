@@ -27,11 +27,11 @@ const CaretSize = memo(forwardRef<HTMLInputElement, ICaretSizeProps>((props, ref
 
 	useEffect(() => {
 		let IsValid = true;
-		if (MinLimit && quantity < MinLimit) {
-			setErrorMessage('Quantity Limit Surpass');
+		if ((MinLimit || MinLimit===0) && quantity < MinLimit) {
+			setErrorMessage('Quantity Limit Poor');
 			IsValid = false;
 		}
-		if (MaxLimit && quantity > MaxLimit) {
+		if ((MaxLimit || MaxLimit===0)  && quantity > MaxLimit) {
 			setErrorMessage('Quantity Limit Exceed');
 			IsValid = false;
 		}

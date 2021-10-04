@@ -33,12 +33,12 @@ export default class FetchList<T> extends React.Component<FetchListProps<T>, Fet
 
     handleSubmit = () => {
         if (this.IsAllValid()) {
-            this.setState({ FetchRequestInfo: { Status: CallStatus.LOADING, Message: undefined } })
+            this.setState({ FetchRequestInfo: { Status: CallStatus.LOADING, Message:'Fetching List' } });
             this.props
                 .fetchAllByName(this.state.Name)
                 .then((res) => {
                     this.setState({ data: res.data, FetchRequestInfo: { Message: '', Status: CallStatus.LOADED } })
-                })
+                }).catch(()=>this.setState({FetchRequestInfo: { Message: 'Error Fetching List', Status: CallStatus.ERROR }}))
         }
     }
     render() {

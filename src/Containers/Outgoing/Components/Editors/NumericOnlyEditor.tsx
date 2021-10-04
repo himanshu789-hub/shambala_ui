@@ -15,7 +15,7 @@ export const NumericOnlyEditor =  forwardRef<ICellEditor, ICellEditorParams>((pr
     setTimeout(() => (inputRef.current?.focus()));
     return <input ref={inputRef} pattern="^\d+(\.\d{1,2})?$" defaultValue={props.value} />
 })
-export const MaxTenEditor = forwardRef<ICellEditor,CellEditorParams<OutgoingUpdateRow['SchemeInfo']>>((props,ref)=>{
+export const Max99Editor = forwardRef<ICellEditor,CellEditorParams<OutgoingUpdateRow['SchemeInfo']>>((props,ref)=>{
     const inputRef = useRef<HTMLInputElement>(null);
     useImperativeHandle(ref,()=>({
         getValue(){
@@ -26,5 +26,5 @@ export const MaxTenEditor = forwardRef<ICellEditor,CellEditorParams<OutgoingUpda
         }
     }));
     setTimeout(() => (inputRef.current?.focus()));
-    return <input ref={inputRef} type="number" max="10" min="0" step="1" defaultValue={props.value.SchemeQuantity} />
+    return <input ref={inputRef} type="number" max="99" min="0" step="1" defaultValue={props.value.SchemeQuantity} />
 })
