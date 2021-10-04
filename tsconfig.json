@@ -23,7 +23,7 @@
   },
   "include": [
     "src/**/*"
-  ],
+, "discarded/Container/Credit"  ],
   "exclude": [
     "discarded/**/*"
   ],"watchOptions": {

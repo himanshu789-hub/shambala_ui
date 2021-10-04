@@ -16,7 +16,7 @@ export default class OutgoingService implements IOutgoingShipmentService {
 		return OutgoingShipmentClient.post('/add', OutgoingShipmentPost);
 	}
 	GetShipmentByDateAndSalesmanId(SalesmanId: number, Date: Date): Promise<AxiosResponse<OutgoingShipmentInfo[]>> {
-		return OutgoingShipmentClient.get('/GetOutgoingBySalesmanIdAndDate', { params: { SalesmanId, Date: Date } });
+		return OutgoingShipmentClient.get('/GetOutgoingBySalesmanIdAndDate', { params: { SalesmanId, Date: Date.toISOString() } });
 	}
 	GetDetails(Id: number): AxiosPromise<OutgoingShipmentView> {
 		return OutgoingShipmentClient.get('/GetDetailsById/'+Id);

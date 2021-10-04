@@ -1,5 +1,5 @@
 import { enumerateValidateMemberOnly, ValidateResultBad, ValidationResultOK } from './Validation';
-import { OutgoingGridCol,OutgoingUpdateRow } from 'Containers/Outgoing/Add_Update/OutgoingGrid.d';
+import { OutgoingGridCol, OutgoingUpdateRow } from 'Containers/Outgoing/Add_Update/OutgoingGrid.d';
 import CustomPriceCollectionValidation, { CustomPriceValidation } from './CustomPriceCollectionValidation';
 
 export default class OutgoingValidator implements ValidateMemberWithAll<OutgoingGridCol> {
@@ -8,15 +8,17 @@ export default class OutgoingValidator implements ValidateMemberWithAll<Outgoing
     constructor(outgoing: OutgoingUpdateRow) {
         this.outgoing = outgoing;
     }
-    
+
     IsTotalShipedPriceValid() {
-        if ((!this.outgoing.TotalShipedPrice && this.outgoing.TotalShipedPrice!==0))
+        if ((!this.outgoing.TotalShipedPrice && this.outgoing.TotalShipedPrice !== 0))
             return new ValidateResultBad("Sale Price Cannot Be Empty");
         return new ValidationResultOK();
     }
     IsNetPriceValid() {
         if (!this.outgoing.NetPrice)
             return new ValidateResultBad('Cannot Be Empty');
+        if (this.outgoing.NetPrice < 0)
+            return new ValidateResultBad("Cannot Be Less Than 0");
         return new ValidationResultOK();
     }
     IsUnitPriceValid() {
@@ -114,7 +116,7 @@ export default class OutgoingValidator implements ValidateMemberWithAll<Outgoing
     }
     IsTotalSchemeQuantityValid(): IValidateResultBad | IValidateResultOK {
         const value = this.outgoing.SchemeInfo.TotalQuantity;
-        if (!value && value!==0)
+        if (!value && value !== 0)
             return new ValidateResultBad("Canot Be Empty");
         if (!this.IsCaretSizeValid().IsValid)
             return new ValidateResultBad("Caret Size Not Valid", 'Parameter');

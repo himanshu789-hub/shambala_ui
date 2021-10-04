@@ -5,7 +5,7 @@ import { addDanger, addWarn } from 'Utilities/AlertUtility';
 import { InitialShipment } from 'Types/Types';
 import { AgGridReact } from '@ag-grid-community/react';
 import { ShipmentGridGetterParams, ShipmentGridDataTransation, IRowValue, GridContext, ShipmentGridRowNode, ShipmentGridSetter, ShipmentRendererParams, ShipmentRowValue, ShipmentGridEditorParams, ShipmentValueSetter, ToolTipRendererParams, CellClassParams } from './ShipmentList.d';
-import { GridOptions} from '@ag-grid-community/all-modules';
+import { GridOptions } from '@ag-grid-community/all-modules';
 import { FlavourCellRenderer, FlavourValueChangedEvent, FlavourValueGetter, FlavourValueSetter, ProductCellRenderer, ProductValueChangedEvent, ProductValueGetter, ProductValueSetter } from './Component/Renderer/Renderer';
 import { GridSelectEditor } from 'Components/AgGridComponent/Editors/SelectWithAriaEditor';
 import CaretSizeRenderer from 'Components/AgGridComponent/Renderer/CaretSizeRenderer';
@@ -36,6 +36,7 @@ type IShipmentListState = {
 	SubscriptionId: number;
 	Alert: { Show: boolean, Message: string };
 	GridOptions: GridOptions;
+	shoulDisable: boolean;
 };
 const ToolTipValueGetter = (name: keyof ShipmentDTO) => ToolTipGetter<ShipmentDTO, ShipmentDTOValidation>(ShipmentDTOValidation, name,
 	(e: ToolTipRendererParams) => e.data.Shipment);
@@ -50,6 +51,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 		this.products = new Map([]);
 		this.componentListMediator = new MediatorSubject([]);
 		this.state = {
+			shoulDisable: false,
 			ShipmentInfos: [],
 			GridOptions: {
 				defaultColDef: {
@@ -230,6 +232,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			console.log('Valid Form');
 			const { handleSubmit } = this.props;
 			const shipments = this.getRowDataFromGrid();
+			this.setState({ shoulDisable: true });
 			if (shipments.length > 0)
 				handleSubmit(shipments.map(e => e.Shipment));
 			else
@@ -292,7 +295,7 @@ export default class ShipmentList extends React.Component<IShipmentListProps, IS
 			<AgGridReact modules={AllCommunityModules} singleClickEdit={true} gridOptions={GridOptions}
 				rowData={ShipmentInfos}>
 			</AgGridReact>
-			<Action handleAdd={this.addAShipment} handleProcess={this.handleSubmit} />
+			<Action handleAdd={this.addAShipment} handleProcess={this.handleSubmit} shouldDisable={this.state.shoulDisable} />
 		</div>);
 	}
 }

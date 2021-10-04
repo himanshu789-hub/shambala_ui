@@ -70,18 +70,29 @@ export class Ledger extends React.Component<LedgerProps, LedgerState>
             msg.TotalNewCheque = "Invalid value";
             isValid = false;
         }
-        else if (msg.NewCheque.length === 0 && this.state.ledger.NewCheque !== 0 && this.state.ledger.TotalNewCheque === 0) {
-            isValid = false;
-            msg.TotalNewCheque = 'Cannot be Zero if cheque amount exists';
+        else if (msg.NewCheque.length === 0 && this.state.ledger.NewCheque != 0) {
+            if (this.state.ledger.TotalNewCheque == 0) {
+                msg.TotalNewCheque = 'Cannot be Zero if cheque amount exists';
+                isValid = false;
+            }
+            else if (this.state.ledger.TotalNewCheque > 128) {
+                msg.TotalNewCheque = "Cannot Me Greater Than 127";
+            }
         }
 
         if (!/^\d+$/.test(ledger.TotalOldCheque + '')) {
             msg.TotalOldCheque = "Invalid value";
             isValid = false;
         }
-        if (msg.OldCheque.length === 0 && ledger.OldCheque !== 0 && ledger.TotalOldCheque === 0) {
-            isValid = false;
-            msg.TotalOldCheque = 'Cannot be Zero if cheque amount exists';
+        if (msg.OldCheque.length === 0 && ledger.OldCheque !== 0) {
+            if (ledger.TotalOldCheque === 0) {
+                isValid = false;
+                msg.TotalOldCheque = 'Cannot be Zero if cheque amount exists';
+            }
+            else if (this.state.ledger.TotalOldCheque > 127) {
+                isValid = false;
+                msg.TotalOldCheque = "Cannot be Greater Than 127";
+            }
         }
         this.setState({ message: msg });
         return isValid;
@@ -97,7 +108,7 @@ export class Ledger extends React.Component<LedgerProps, LedgerState>
         const data = {
             NewCheque: Number.parseFloat(ledger.NewCheque + ''), OldCash: Number.parseFloat(ledger.OldCash + ''), OldCheque: Number.parseFloat(ledger.OldCheque + '')
             , TotalNewCheque: Number.parseInt(ledger.TotalNewCheque + ''), TotalOldCheque: Number.parseInt(ledger.TotalOldCheque + ''),
-            OutgoingShipmentId: shipmentId, RowVersion: rowVersion, NetPrice:calculateNetPrice(this.props.rawPrice,ledger)
+            OutgoingShipmentId: shipmentId, RowVersion: rowVersion, NetPrice: calculateNetPrice(this.props.rawPrice, ledger)
         } as LedgerDTO;
 
         new LedgerService().Post(data).then(() => {
@@ -108,7 +119,7 @@ export class Ledger extends React.Component<LedgerProps, LedgerState>
         if (e.response?.status === 422) {
             addWarn("Another User Already Changed Resource\nPlease,Refresh");
         }
-        else if (e.response?.status === 400 && e.response.data.Code!==undefined) {
+        else if (e.response?.status === 400 && e.response.data.Code !== undefined) {
             switch (e.response.data.Code) {
                 case LedgerErrorCode.INVALID_TotalPrice:
                     alert('InValid Net Price.\nPlease, Contact Administration');
@@ -165,10 +176,10 @@ export class Ledger extends React.Component<LedgerProps, LedgerState>
                     <button className="btn btn-warning btn-sm" onClick={this.handleCalculate}>Calculate</button>
                     <button className="btn btn-info btn-sm m-2" onClick={this.handleSubmit}>Post</button>
                 </div>
-                <div className="form-group col-md-6">
+                <div className="form-group col-md-12">
                     {
                         this.state.shouldNetPriceShow &&
-                        <label className="text-underline text-dark font-weight-bold">Net Price : {getPriceInText(this.state.netPrice)}</label>
+                        <label className="text-underline text-dark font-weight-bold">In Hand(Amount) : {getPriceInText(this.state.netPrice)}</label>
                     }
                 </div>
             </div>

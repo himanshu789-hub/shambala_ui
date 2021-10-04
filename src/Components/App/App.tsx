@@ -3,7 +3,6 @@ import Nav from './Components/Nav/Nav';
 import Home from './Components/Home/Home';
 import IncoingShipment from '../../Components/IncomingShipment/IncomingShipment';
 import { Route, Switch, useRouteMatch } from 'react-router-dom';
-import Invoice from 'Components/Invoice/Invoice';
 import MessageModal from 'Components/MessageModal/MessageModal';
 import SearchProduct from 'Containers/SearchProduct/SearchProduct';
 import Shop from 'Components/Shop/Shop';
@@ -36,9 +35,6 @@ export default class App extends React.Component {
 				</Route>
 				<Route path='/outgoing'>
 					<Outgoing />
-				</Route>
-				<Route path='/invoice'>
-					<Invoice />
 				</Route>
 				<Route path="/message" >
 					<MessageRoute />

@@ -18,6 +18,10 @@ export function provideValidFloat(num: string): number {
 	const re = Number.parseFloat(Number.parseFloat(num).toFixed(2));
 	return num.indexOf('.') != -1 ? re + 0.00 : re;
 }
+export function divideDecimal(numA:number,numB:number){
+	const result = ((numA*100)/(numB*100)).toString();
+	return Number.parseFloat(result.substring(0,result.indexOf('.')+3));
+}
 export function deepCloneProducts(products: Product[]) {
 	let CloneProducts = [];
 	for (let i = 0; i < products.length; i++) {

@@ -11,7 +11,7 @@ import { CustomCaratPrice, CustomPrice, Element, IOutgoingShipmentAddDetail, IOu
 import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer, QuantityWithPriceCellRenderer, RowStyleSpecifier } from "./../Components/Renderers/Renderers";
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { GridSelectEditor } from "Components/AgGridComponent/Editors/SelectWithAriaEditor";
-import { addDecimal, getARandomNumber, getPriceInText, getTotalPrice, KeyCode, mulDecimal, Parser, UniqueValueProvider } from "Utilities/Utilities";
+import { addDecimal, divideDecimal, getARandomNumber, getPriceInText, getTotalPrice, KeyCode, mulDecimal, Parser, UniqueValueProvider } from "Utilities/Utilities";
 import { CaretSizeEditor, CaretSizeNewValue, CaretSizeValueOldAndNewValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 import CustomPriceEditor from "./../Components/Editors/CustomPriceEditor";
@@ -54,6 +54,7 @@ type OutgoingGridState = {
     GridOptions: GridOptions;
     ApiInfo: ApiStatusInfo;
     IsOnUpdate: boolean;
+    ShouldDisable:boolean;
     OutgoingData: OutgoingData;
 }
 const defaultColDef: ColDef = {
@@ -78,7 +79,7 @@ const ReInitializeCustomPrice = function (customPrices: CustomCaratPrice, quanti
             break;
         }
         else {
-            customPrices.TotalPrice = addDecimal(customPrices.TotalPrice, getTotalPrice(customPrices.Prices[i].Quantity, pricePerCarat, pricePerBottle, caratSize));
+            customPrices.TotalPrice = addDecimal(customPrices.TotalPrice, getTotalPrice(customPrices.Prices[i].Quantity, customPrices.Prices[i].PricePerCarat, divideDecimal(customPrices.Prices[i].PricePerCarat,caratSize), caratSize));
             customPrices.TotalQuantity += customPrices.Prices[i].Quantity;
             quantityMediator.Subscribe(customPrices.Prices[i].Id, customPrices.Prices[i].Quantity);
         }
@@ -381,7 +382,7 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
             for (const price of params.newValue) {
                 params.data.Shipment.CustomCaratPrices.TotalQuantity += price.Quantity;
                 params.data.Shipment.CustomCaratPrices.TotalPrice = addDecimal(params.data.Shipment.CustomCaratPrices.TotalPrice,
-                    getTotalPrice(params.data.Shipment.CustomCaratPrices.TotalQuantity, price.PricePerCarat, product.PricePerBottle, product.CaretSize));
+                    getTotalPrice(params.data.Shipment.CustomCaratPrices.TotalQuantity, price.PricePerCarat, divideDecimal(price.PricePerCarat,product.CaretSize), product.CaretSize));
             }
             return true;
         },
@@ -415,7 +416,9 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
         colId: getColumnId('NetPrice')!,
         valueFormatter: function (params: ValueFormatterParams<number>) {
             return getPriceInText(params.value);
-        }
+        },
+        tooltipValueGetter:ToolTipValueGetter('NetPrice'),
+        cellClassRules:ClassSpecifier('NetPrice')
     }
 ]
 const getActionColDef = function (cellParams: ActionCellParams<string>): ColDef {
@@ -452,6 +455,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
             colDefs = [...commonColDefs, actionColDef]
         const IsOnUpdate = id !== undefined;
         this.state = {
+            ShouldDisable:false,
             GridOptions: {
                 columnDefs: colDefs,
                 context: {
@@ -554,6 +558,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
         if (!this.IsFormValid()) {
             return;
         }
+        this.setState({ShouldDisable:true});
         if (!IsOnUpdate) {
             const rows = this.getAllRows();
             const data: PostOutgoingShipment = {
@@ -594,7 +599,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                     <div className="ag-theme-alpine" style={{ height: '500px', width: '100vw' }}>
                         <AgGridReact gridOptions={GridOptions} rowData={OutgoingData.Shipments} modules={AllCommunityModules}
                             onGridReady={this.OnGridReady} rowHeight={50}></AgGridReact>
-                        <Action handleAdd={this.addAShipment} handleProcess={this.handleSubmit} />
+                        <Action handleAdd={this.addAShipment} handleProcess={this.handleSubmit} shouldDisable={this.state.ShouldDisable}/>
                     </div>
                 </Loader>
 
@@ -645,6 +650,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
         else {
             addDanger('Error Sending Data');
         }
+        this.setState({ShouldDisable:false});
     }
 
     private setMediator(products: Product[]) {

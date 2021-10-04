@@ -9,11 +9,11 @@ export const NumericOnlyEditor =  forwardRef<ICellEditor, ICellEditorParams>((pr
             const value = inputRef.current?.value;
             if (!value)
                 return 0;
-            return Number.parseFloat(value);
+            return Number.parseFloat(Number.parseFloat(value).toFixed(2));
         }
     }))
     setTimeout(() => (inputRef.current?.focus()));
-    return <input ref={inputRef} pattern="^[0-9]+(\.[0-9]{1,2})?$" defaultValue={props.value} />
+    return <input ref={inputRef} pattern="^\d+(\.\d{1,2})?$" defaultValue={props.value} />
 })
 export const MaxTenEditor = forwardRef<ICellEditor,CellEditorParams<OutgoingUpdateRow['SchemeInfo']>>((props,ref)=>{
     const inputRef = useRef<HTMLInputElement>(null);
