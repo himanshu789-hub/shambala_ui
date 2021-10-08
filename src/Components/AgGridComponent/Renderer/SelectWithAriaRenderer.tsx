@@ -7,6 +7,6 @@ export function SelectWithAriaRenderer<T extends ICellRendererParams>(getListFro
     return (params: T) => {
         if (!isValid(params))
             return '##';
-        return getListFromParams(params).find(e => e.value === params.value)?.label ?? ' Not Found ';
+        return getListFromParams(params).find(e => e.value === params.value)?.label ?? 'N/A';
     }
 }

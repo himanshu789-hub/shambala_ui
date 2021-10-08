@@ -2,7 +2,7 @@ import { ColDef, ColumnApi, GridApi, GridOptions, GridReadyEvent, ICellEditor } 
 import { forwardRef, useImperativeHandle, useEffect, useState, useRef } from "react"
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { AgGridReact } from "@ag-grid-community/react";
-import {NumericOnlyEditor} from "./NumericOnlyEditor";
+import { NumericOnlyEditor } from "./NumericOnlyEditor";
 import ActionCellRenderer, { ActionCellParams } from "Components/AgGridComponent/Renderer/ActionCellRender";
 import { getARandomNumber, UniqueValueProvider } from "Utilities/Utilities";
 import { CaretSizeEditor, CaretSizeValue, CaretSizeValueOldAndNewValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
@@ -26,6 +26,7 @@ export default forwardRef<ICellEditor, CellEditorParams<OutgoingUpdateRow['Custo
     const isProductIdValid = params.data.Shipment.ProductId !== -1;
     const defaultPrice: number = isProductIdValid ? params.context.getProductDetails(params.data.Shipment.ProductId).PricePerCaret : 0;
     const customGridRef = useRef<CustomPriceGridRef>(null);
+    const quantityLimit = params.data.Shipment.TotalQuantityShiped;
     useImperativeHandle(ref, () => ({
         getValue() {
             return customGridRef.current?.getValue();
@@ -38,7 +39,7 @@ export default forwardRef<ICellEditor, CellEditorParams<OutgoingUpdateRow['Custo
         }
     })
     );
-    return <CustomPriceGrid initialData={{ CaretSize: params.data.Shipment.CaretSize, Data: data, DefaultPrice: defaultPrice, QuantityLimit: params.data.Shipment.TotalQuantityShiped }} ref={customGridRef} />
+    return <CustomPriceGrid initialData={{ CaretSize: params.data.Shipment.CaretSize, Data: data, DefaultPrice: defaultPrice, QuantityLimit: quantityLimit }} ref={customGridRef} />
 });
 
 const defaultColDef: ColDef = {
@@ -69,7 +70,7 @@ const ClassSpecifier = (name: keyof CustomPriceRowData) => CellClassRuleSpecifie
 const CustomPriceGrid = forwardRef<CustomPriceGridRef, CustomPriceProps>((props, ref) => {
     const gridApis = useRef<GridApis>();
     const [quantityMediator] = useState<IQuantityMediatorWrapper>(new QuantityMediatorWrapper(props.initialData.QuantityLimit));
-    const list:CustomPrice[] = props.initialData.Data.length ? props.initialData.Data : [{ Id: getARandomNumber(), PricePerCarat: props.initialData.DefaultPrice, Quantity: 0 }];
+    const list: CustomPrice[] = props.initialData.Data.length > 0 ? props.initialData.Data : [{ Id: getARandomNumber(), PricePerCarat: props.initialData.DefaultPrice, Quantity: 0 }];
     const [uniqueValueProvider] = useState<UniqueValueProvider>(new UniqueValueProvider(undefined, undefined, props.initialData.Data.map(e => e.Id)));
 
     useImperativeHandle(ref, () => ({
@@ -77,7 +78,9 @@ const CustomPriceGrid = forwardRef<CustomPriceGridRef, CustomPriceProps>((props,
             const { gridApi: api } = gridApis.current!;
             const data: CustomPrice[] = [];
             api?.forEachNode(node => {
-                data.push(node.data);
+                const currentRow = node.data as CustomPrice;
+                if (currentRow.PricePerCarat && currentRow.Quantity)
+                    data.push(node.data);
             });
             const firstElement = data[0] as CustomPrice;
             if (firstElement && firstElement.Quantity === 0) {
@@ -93,7 +96,7 @@ const CustomPriceGrid = forwardRef<CustomPriceGridRef, CustomPriceProps>((props,
             const { gridApi: api } = gridApis.current!;
             const data: CustomPrice[] = [];
             api?.forEachNode(node => data.push(node.data));
-            if (!data.find(e => e.Quantity === 0)) {
+            if (!data.find(e => e.Quantity === 0 || e.PricePerCarat === 0)) {
                 const newPrice: CustomPriceRowData = {
                     Id: uniqueValueProvider.GetUniqueValue(),
                     PricePerCarat: props.initialData.DefaultPrice,
@@ -103,12 +106,13 @@ const CustomPriceGrid = forwardRef<CustomPriceGridRef, CustomPriceProps>((props,
                     add: [newPrice]
                 }
                 api?.applyTransaction(transaction);
-                api.refreshCells({columns:[getColId('Id')!],force:true})
+                api.refreshCells({ columns: [getColId('Id')!], force: true })
             }
             else
                 addWarn('Please, Fill Any Empty Row');
         }
-        addWarn('Quantitites Sum Reach Equals To Sale');
+        else
+            addWarn('Quantitites Sum Reach Equals To Sale');
     }
 
     const deleteAChild = (Id: number) => {
@@ -117,7 +121,7 @@ const CustomPriceGrid = forwardRef<CustomPriceGridRef, CustomPriceProps>((props,
             remove: [{ Id: Id + '' }]
         }
         gridApis.current?.gridApi?.applyTransaction(transaction);
-        gridApis.current?.gridApi?.refreshCells({columns:[getColId('Id')!],force:true})
+        gridApis.current?.gridApi?.refreshCells({ columns: [getColId('Id')!], force: true })
     };
 
     const [options] = useState<GridOptions>({

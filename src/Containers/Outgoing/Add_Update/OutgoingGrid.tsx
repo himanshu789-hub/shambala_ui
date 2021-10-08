@@ -11,7 +11,7 @@ import { CustomCaratPrice, CustomPrice, Element, IOutgoingShipmentAddDetail, IOu
 import { CustomPriceRenderer, FlavourCellRenderer, ProductCellRenderer, QuantityWithPriceCellRenderer, RowStyleSpecifier } from "./../Components/Renderers/Renderers";
 import CaretSizeRenderer from "Components/AgGridComponent/Renderer/CaretSizeRenderer";
 import { GridSelectEditor } from "Components/AgGridComponent/Editors/SelectWithAriaEditor";
-import { addDecimal, divideDecimal, getARandomNumber, getPriceInText, getTotalPrice, KeyCode, mulDecimal, Parser, UniqueValueProvider } from "Utilities/Utilities";
+import { addDecimal, divideDecimalAndRound, getARandomNumber, getPriceInText, getTotalPrice, KeyCode, mulDecimal, Parser, UniqueValueProvider } from "Utilities/Utilities";
 import { CaretSizeEditor, CaretSizeNewValue, CaretSizeValueOldAndNewValue } from "Components/AgGridComponent/Editors/CaretSizeEditor";
 import ActionCellRenderer, { ActionCellParams } from 'Components/AgGridComponent/Renderer/ActionCellRender';
 import CustomPriceEditor from "./../Components/Editors/CustomPriceEditor";
@@ -79,7 +79,7 @@ const ReInitializeCustomPrice = function (customPrices: CustomCaratPrice, quanti
             break;
         }
         else {
-            customPrices.TotalPrice = addDecimal(customPrices.TotalPrice, getTotalPrice(customPrices.Prices[i].Quantity, customPrices.Prices[i].PricePerCarat, divideDecimal(customPrices.Prices[i].PricePerCarat,caratSize), caratSize));
+            customPrices.TotalPrice = addDecimal(customPrices.TotalPrice, getTotalPrice(customPrices.Prices[i].Quantity, customPrices.Prices[i].PricePerCarat, divideDecimalAndRound(customPrices.Prices[i].PricePerCarat,caratSize), caratSize));
             customPrices.TotalQuantity += customPrices.Prices[i].Quantity;
             quantityMediator.Subscribe(customPrices.Prices[i].Id, customPrices.Prices[i].Quantity);
         }
@@ -381,8 +381,9 @@ const updateColDefs: (ColDef | ColGroupDef)[] = [
             params.data.Shipment.CustomCaratPrices.TotalPrice = 0;
             for (const price of params.newValue) {
                 params.data.Shipment.CustomCaratPrices.TotalQuantity += price.Quantity;
+                const pricePerBottle = divideDecimalAndRound(price.PricePerCarat,product.CaretSize);
                 params.data.Shipment.CustomCaratPrices.TotalPrice = addDecimal(params.data.Shipment.CustomCaratPrices.TotalPrice,
-                    getTotalPrice(params.data.Shipment.CustomCaratPrices.TotalQuantity, price.PricePerCarat, divideDecimal(price.PricePerCarat,product.CaretSize), product.CaretSize));
+                    getTotalPrice(params.data.Shipment.CustomCaratPrices.TotalQuantity, price.PricePerCarat,pricePerBottle , product.CaretSize));
             }
             params.data.Shipment.CustomCaratPrices = {...params.data.Shipment.CustomCaratPrices};
             return true;

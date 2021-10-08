@@ -1,3 +1,3 @@
 var config =  {
-	SchemeProductId:1
+	SchemeProductId:32
 }

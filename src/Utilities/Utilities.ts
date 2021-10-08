@@ -18,9 +18,9 @@ export function provideValidFloat(num: string): number {
 	const re = Number.parseFloat(Number.parseFloat(num).toFixed(2));
 	return num.indexOf('.') != -1 ? re + 0.00 : re;
 }
-export function divideDecimal(numA:number,numB:number){
-	const result = ((numA*100)/(numB*100)).toString();
-	return Number.parseFloat(result.substring(0,result.indexOf('.')+3));
+export function divideDecimalAndRound(numA:number,numB:number){
+	const result = numA/numB;
+	return Math.round(result*100)/100;
 }
 export function deepCloneProducts(products: Product[]) {
 	let CloneProducts = [];
@@ -35,10 +35,13 @@ export function deepCloneProducts(products: Product[]) {
 	}
 	return CloneProducts;
 }
-
+export function round(num:number) {
+    var m = Number((Math.abs(num) * 100).toPrecision(15));
+    return Math.round(m) / 100 * Math.sign(num);
+}
 getARandomNumber.num = 1;
 export function doFlavourExists(flavours: Flavour[], Id: number) {
-	return flavours.find(e => e.Id === Id) !== null;
+	return flavours.find(e => e.Id === Id) !== undefined;
 }
 export function getARandomNumber(): number {
 	return getARandomNumber.num++;

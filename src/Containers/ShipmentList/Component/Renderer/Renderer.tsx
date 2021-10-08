@@ -40,15 +40,16 @@ export const ProductValueChangedEvent = (event: ShipmentCellValueChangeEvent<Shi
         data.Shipment.CaretSize = context.getCartetSizeByProductId(event.newValue);
         data.Shipment.FlavourId = isFlavourExists ? data.Shipment.FlavourId : -1;
         data.Shipment.TotalRecievedPieces = isFlavourExists ? data.Shipment.TotalRecievedPieces : 0;
-        
+         
         if (event.context.ShouldLimitQuantity) {
             data.Observer.SetQuantity(data.Shipment.TotalRecievedPieces);
+        
         }
         const transaction: ShipmentGridDataTransation = {
             update: [data]
         }
         event.api.applyTransaction(transaction);
- //       event.api.refreshCells({ rowNodes: [event.node], force: true });
+      // event.api.refreshCells({ rowNodes: [event.node], force: true });
     }
 }
 
