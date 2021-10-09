@@ -2,6 +2,7 @@
 import { SchemeKey, SchemeType } from "Enums/Enum";
 import { Flavour, IOutgoingShipmentAddDetail, Product, SchemeDTO, ShipmentDTO } from "Types/DTO";
 import { ProductInfo } from 'Types/Mediator';
+import Big from 'big.js';
 
 export const IsValidInteger = function (num: string): boolean {
 	if (num.length === 0)
@@ -160,8 +161,8 @@ export function getTotalPrice(quantity: number, pricePerCarat: number, PricePerB
 	return addDecimal(caratPrice , piecePrice);
 }
 export function addDecimal(numA: number, numB: number) {
-	return ((numA * 100) + (numB * 100)) / 100;
+	return new Big(numA).add(numB).toNumber();
 }
 export function mulDecimal(numA: number, numB: number) {
-	return ((numA * 100) * (numB * 100)) / 10000;
+	return new Big(numA).mul(numB).round(2).toNumber();
 }

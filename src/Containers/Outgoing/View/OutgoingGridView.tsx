@@ -157,7 +157,7 @@ const options: GridOptions = {
             }
         }
     ],
-    rowHeight: 100
+    rowHeight: 150
 }
 interface OutgoingGridViewProps extends RouteComponentProps<{ id: string }> {
 
