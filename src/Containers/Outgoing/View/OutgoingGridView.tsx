@@ -37,6 +37,7 @@ type PinnedRowData = {
     CustomCaratPrices: number;
     NetPrice: number;
 }
+const gridRowHeight=150;
 const options: GridOptions = {
     frameworkComponents: {
         schemeRenderer: function (params: CellRendererParams<SchemeInfo>) {
@@ -157,7 +158,7 @@ const options: GridOptions = {
             }
         }
     ],
-    rowHeight: 150
+    rowHeight: gridRowHeight
 }
 interface OutgoingGridViewProps extends RouteComponentProps<{ id: string }> {
 
@@ -221,7 +222,7 @@ export default function OutgoingGridView(props: OutgoingGridViewProps) {
                 </div>
             </div>
         </div>
-        <div className="ag-theme-alpine" style={{ width: '100vw', height: '500px', overflow: 'visible' }}>
+        <div className="ag-theme-alpine" style={{ width: '100vw', height: `${gridRowHeight*((data?.OutgoingShipmentDetails?.length||0) + 2)-100}px` }}>
             <AgGridReact gridOptions={options} onGridReady={onGridReady} modules={AllCommunityModules} rowData={data?.OutgoingShipmentDetails || []}></AgGridReact>
         </div>
         <div style={{width:'400px',float:'right'}}>

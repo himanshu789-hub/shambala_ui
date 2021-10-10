@@ -20,8 +20,7 @@ export function provideValidFloat(num: string): number {
 	return num.indexOf('.') != -1 ? re + 0.00 : re;
 }
 export function divideDecimalAndRound(numA:number,numB:number){
-	const result = numA/numB;
-	return Math.round(result*100)/100;
+	return new Big(numA).div(numB).round(2).toNumber();
 }
 export function deepCloneProducts(products: Product[]) {
 	let CloneProducts = [];

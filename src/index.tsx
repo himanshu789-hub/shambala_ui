@@ -13,7 +13,7 @@ ReactDOM.render(
 	</React.StrictMode>,
 	document.getElementById('root'),
 );
-document.onkeydown = function (e) {
+document.onkeyup = function (e) {
 	if (e.key == "/") {
 		var elements = document.querySelectorAll("input[data-controltype='search']");
 		if (elements.length > 0) {

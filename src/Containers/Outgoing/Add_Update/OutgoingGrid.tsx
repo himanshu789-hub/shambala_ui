@@ -643,7 +643,7 @@ export default class OutgoingGrid extends React.Component<OutgoingGridProps, Out
                     addDanger('Scheme Product Quantity Excceed');
                     break;
                 case OutgoingStatusErrorCode.SCHEME_QUANTITY_NOT_VALID:
-                    alert('Scheme Calculation Not Valid.\nPlease, Contact Administration');
+                    alert('Scheme Quantity  Not Valid.\nPlease, Contact Administration');
                     break;
                 case OutgoingStatusErrorCode.SHIPED_QUANTITY_NOT_VALID:
                     alert('Product Shiped Value Not Valid.\nPlease, Contact Administration');
