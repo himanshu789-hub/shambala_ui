@@ -105,13 +105,13 @@ export function Ledger(props: LedgerProps) {
             setNetPrice(v);
             shouldShow(true);
         }
-    }, [oldCheque.countProps.value, newCheque.countProps.value, oldCash, props.ledger,oldCheque.valueProps.error,newCheque.valueProps.error])
+    }, [oldCheque.countProps.value, newCheque.countProps.value, oldCash, oldCheque.valueProps.error, newCheque.valueProps.error])
 
-    // useEffect(() => {
-    //     if (props.ledger) {
-    //         setNetPrice(calculateNetPrice(props.rawPrice, props.ledger));
-    //     }
-    // }, [props.ledger])
+    useEffect(() => {
+        if (props.ledger) {
+            setOldCash(props.ledger.OldCash);
+        }
+    }, [props.ledger])
     return (<div>
         <div className="form-row">
             <div className="form-group col-md-6">
